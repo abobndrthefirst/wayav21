@@ -2,6 +2,23 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import './styles.css'
 
+/* ─── Supabase config ─── */
+const SUPABASE_URL = 'https://unnheqshkxpbflozechm.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubmhlcXNoa3hwYmZsb3plY2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTkwNjksImV4cCI6MjA5MDQzNTA2OX0.XHAbOOdPtuwD0pJErxhBw9C3RJPouPeUhMS9hSThON0'
+
+async function submitLead({ contact, store_name, industry }) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ contact, store_name, industry }),
+  })
+  return res.ok
+}
+
 /* ─── i18n content ─── */
 const content = {
   ar: {
@@ -11,9 +28,14 @@ const content = {
       title2: 'يسوى أكثر من عشرة جدد',
       subtitle: 'وايا يحوّل زيارة وحدة إلى علاقة طويلة. برنامج ولاء جاهز، يشتغل من أول يوم — بدون تطبيق، بدون تعقيد، وبدون ما تحتاج فريق تقني.',
       freeTrial: 'اول أسبوعين مجاناً — بدون أي التزام — جربها بنفسك',
-      inputPlaceholder: 'إيميلك أو رقم جوالك للتجربة المجانية',
+      inputPlaceholder: 'إيميلك أو رقم جوالك',
+      storeNamePlaceholder: 'اسم متجرك',
+      industryPlaceholder: 'نوع النشاط',
+      industries: ['مطعم', 'كافيه', 'صالون', 'مغسلة', 'حلويات', 'بقالة', 'ملابس', 'أخرى'],
       btn: 'ابدأ تجربتك المجانية',
       whatsapp: 'تواصل معنا عبر واتساب',
+      successMsg: 'تم التسجيل بنجاح! بنتواصل معك قريباً',
+      errorMsg: 'يرجى تعبئة جميع الحقول',
     },
     stats: [
       { value: '٥–٢٥x', label: 'تكلفة اكتساب العميل الجديد مقارنة بالاحتفاظ بالحالي' },
@@ -131,9 +153,14 @@ const content = {
       title2: 'is worth more than ten new ones',
       subtitle: 'Waya turns a single visit into a lasting relationship. A ready-made loyalty program that works from day one — no app, no complexity, and no tech team needed.',
       freeTrial: 'First 2 weeks free — no commitment at all — try it yourself',
-      inputPlaceholder: 'Your email or phone number for free trial',
+      inputPlaceholder: 'Your email or phone number',
+      storeNamePlaceholder: 'Your store name',
+      industryPlaceholder: 'Industry',
+      industries: ['Restaurant', 'Café', 'Salon', 'Laundry', 'Bakery', 'Grocery', 'Clothing', 'Other'],
       btn: 'Start Your Free Trial',
       whatsapp: 'Contact us on WhatsApp',
+      successMsg: 'Registered successfully! We\'ll be in touch soon',
+      errorMsg: 'Please fill in all fields',
     },
     stats: [
       { value: '5–25x', label: 'Cost of acquiring a new customer vs. retaining an existing one' },
@@ -399,6 +426,74 @@ function Navbar({ lang, setLang, t }) {
   )
 }
 
+/* ─── Signup Form (shared between Hero and CTA) ─── */
+function SignupForm({ t, id }) {
+  const [contact, setContact] = useState('')
+  const [storeName, setStoreName] = useState('')
+  const [industry, setIndustry] = useState('')
+  const [status, setStatus] = useState(null) // null | 'sending' | 'success' | 'error'
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!contact.trim() || !storeName.trim() || !industry) {
+      setStatus('error')
+      setTimeout(() => setStatus(null), 3000)
+      return
+    }
+    setStatus('sending')
+    const ok = await submitLead({ contact: contact.trim(), store_name: storeName.trim(), industry })
+    if (ok) {
+      setStatus('success')
+      setContact('')
+      setStoreName('')
+      setIndustry('')
+    } else {
+      setStatus('error')
+      setTimeout(() => setStatus(null), 3000)
+    }
+  }
+
+  return (
+    <form className="hero-form" id={id} onSubmit={handleSubmit}>
+      <div className="hero-input-wrap">
+        <input type="text" placeholder={t.hero.inputPlaceholder} className="hero-input" value={contact} onChange={(e) => setContact(e.target.value)} />
+      </div>
+      <div className="hero-input-wrap">
+        <input type="text" placeholder={t.hero.storeNamePlaceholder} className="hero-input" value={storeName} onChange={(e) => setStoreName(e.target.value)} />
+      </div>
+      <div className="hero-input-wrap">
+        <select className="hero-input hero-select" value={industry} onChange={(e) => setIndustry(e.target.value)}>
+          <option value="" disabled>{t.hero.industryPlaceholder}</option>
+          {t.hero.industries.map((ind, i) => (
+            <option key={i} value={ind}>{ind}</option>
+          ))}
+        </select>
+      </div>
+
+      {status === 'success' ? (
+        <motion.div className="form-success" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <span>{t.hero.successMsg}</span>
+        </motion.div>
+      ) : (
+        <>
+          <button type="submit" className="hero-btn" disabled={status === 'sending'}>
+            {status === 'sending' ? '...' : t.hero.btn}
+          </button>
+          {status === 'error' && (
+            <motion.p className="form-error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{t.hero.errorMsg}</motion.p>
+          )}
+        </>
+      )}
+
+      <a href="https://wa.me/966509076104" target="_blank" rel="noopener noreferrer" className="hero-whatsapp-btn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <span>{t.hero.whatsapp}</span>
+      </a>
+    </form>
+  )
+}
+
 /* ─── Hero ─── */
 function Hero({ t }) {
   const { scrollYProgress } = useScroll()
@@ -447,16 +542,7 @@ function Hero({ t }) {
             <div className="hero-free-badge">{t.hero.freeTrial}</div>
           </Reveal>
           <Reveal delay={0.3}>
-            <div className="hero-form">
-              <div className="hero-input-wrap">
-                <input type="text" placeholder={t.hero.inputPlaceholder} className="hero-input" />
-              </div>
-              <button className="hero-btn">{t.hero.btn}</button>
-              <a href="https://wa.me/966509076104" target="_blank" rel="noopener noreferrer" className="hero-whatsapp-btn">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                <span>{t.hero.whatsapp}</span>
-              </a>
-            </div>
+            <SignupForm t={t} id="hero-signup" />
           </Reveal>
         </div>
       </motion.div>
@@ -729,17 +815,8 @@ function CTA({ t }) {
         <div className="hero-free-badge" style={{ marginBottom: 16 }}>{t.hero.freeTrial}</div>
       </Reveal>
       <Reveal delay={0.3}>
-        <div className="hero-form" style={{ justifyContent: 'center', maxWidth: 520, margin: '0 auto' }}>
-          <div className="hero-input-wrap">
-            <input type="text" placeholder={t.hero.inputPlaceholder} className="hero-input" />
-          </div>
-          <motion.button className="hero-btn" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-            {t.cta.btn}
-          </motion.button>
-          <a href="https://wa.me/966509076104" target="_blank" rel="noopener noreferrer" className="hero-whatsapp-btn">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            <span>{t.hero.whatsapp}</span>
-          </a>
+        <div style={{ maxWidth: 520, margin: '0 auto' }}>
+          <SignupForm t={t} id="cta-signup" />
         </div>
       </Reveal>
     </section>

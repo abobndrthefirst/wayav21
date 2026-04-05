@@ -348,6 +348,51 @@ body {
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
+.hero-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A8A8A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: left 16px center;
+  cursor: pointer;
+}
+
+[dir="ltr"] .hero-select,
+.ltr-mode .hero-select {
+  background-position: right 16px center;
+}
+
+.hero-select option {
+  background: #1C1B18;
+  color: var(--white);
+}
+
+.form-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 32px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--green-bright);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.form-error {
+  text-align: center;
+  color: #EF4444;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.hero-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .hero-btn {
   width: 100%;
   padding: 16px 18px;
