@@ -30,7 +30,6 @@ html {
   background: var(--bg);
   color: var(--cream);
   font-family: var(--font);
-  direction: rtl;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -44,6 +43,39 @@ body {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+}
+
+/* ─── LTR mode for English ─── */
+.ltr-mode .hero-text-side {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.ltr-mode .dashboard-header,
+.ltr-mode .stat-card,
+.ltr-mode .feature-card,
+.ltr-mode .price-note {
+  text-align: left;
+}
+
+.ltr-mode .pricing-amount,
+.ltr-mode .pricing-plan-label-row,
+.ltr-mode .comparison-header,
+.ltr-mode .comparison-list li,
+.ltr-mode .pricing-features li {
+  justify-content: flex-start;
+}
+
+.ltr-mode .hero-input {
+  direction: ltr;
+}
+
+.ltr-mode .nav-pill {
+  flex-direction: row-reverse;
+}
+
+.ltr-mode .nav-links {
+  flex-direction: row-reverse;
 }
 
 /* ─── Navbar (glass pill) ─── */
@@ -73,6 +105,12 @@ body {
   backdrop-filter: blur(12.6px);
   -webkit-backdrop-filter: blur(12.6px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nav-left-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .nav-logo {
@@ -118,6 +156,28 @@ body {
 .nav-cta:hover {
   background: rgba(16, 185, 129, 0.65);
   transform: translateY(-1px);
+}
+
+/* ─── Language Toggle ─── */
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--gray);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.lang-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white);
 }
 
 /* ─── Hero (side-by-side) ─── */
@@ -206,20 +266,9 @@ body {
   border: 1px solid rgba(72, 72, 69, 0.15);
 }
 
-.floating-bubble-1 {
-  bottom: 113px;
-  left: 141px;
-}
-
-.floating-bubble-2 {
-  bottom: 138px;
-  left: 53px;
-}
-
-.floating-bubble-3 {
-  bottom: 40px;
-  left: 97px;
-}
+.floating-bubble-1 { bottom: 113px; left: 141px; }
+.floating-bubble-2 { bottom: 138px; left: 53px; }
+.floating-bubble-3 { bottom: 40px; left: 97px; }
 
 .hero-text-side {
   flex: 0 0 auto;
@@ -305,82 +354,44 @@ body {
   box-shadow: 0 4px 24px rgba(16, 185, 129, 0.25);
 }
 
-/* ─── Industry Tags Section ─── */
-.tags-section {
+/* ─── Stats Bar Section ─── */
+.stats-bar-section {
   background: var(--bg-card);
-  padding: 48px 80px;
-  overflow: hidden;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 48px 64px;
 }
 
-.tags-content {
+.stats-bar-inner {
   max-width: var(--max-w);
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
-  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
 }
 
-.tags-stat {
+.stats-bar-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  z-index: 2;
+  text-align: center;
+  gap: 8px;
+  padding: 16px;
 }
 
-.tags-stat-number {
-  font-size: 56px;
+.stats-bar-value {
+  font-size: 40px;
   font-weight: 800;
-  color: var(--cream);
-  letter-spacing: -1.5px;
+  color: var(--green-bright);
+  letter-spacing: -1px;
+  line-height: 1;
 }
 
-.tags-stat-label {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--cream);
-}
-
-.tags-floating {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: space-between;
-  pointer-events: none;
-}
-
-.tags-column {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  justify-content: center;
-  pointer-events: auto;
-}
-
-.tags-left { align-items: flex-start; padding-right: 60px; }
-.tags-right { align-items: flex-end; padding-left: 60px; }
-
-.industry-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: #F8F5F0;
-  border: 1px solid #E6E1DA;
-  color: #1C1B18;
+.stats-bar-label {
   font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
-  white-space: nowrap;
-}
-
-.industry-tag:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: var(--gray-dim);
+  line-height: 1.5;
+  max-width: 240px;
 }
 
 /* ─── Sections ─── */
@@ -600,6 +611,38 @@ body {
   line-height: 1.6;
 }
 
+/* ─── Wallet Cards Showcase ─── */
+.wallet-section {
+  overflow: hidden;
+}
+
+.wallet-cards-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap;
+  perspective: 1200px;
+}
+
+.wallet-card-wrap {
+  width: 260px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  transition: box-shadow 0.4s;
+}
+
+.wallet-card-wrap:hover {
+  box-shadow: 0 24px 64px rgba(16, 185, 129, 0.15), 0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+.wallet-card-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ─── Comparison ─── */
 .comparison-grid {
   display: grid;
@@ -696,6 +739,55 @@ body {
   flex-shrink: 0;
 }
 
+/* ─── Social Proof ─── */
+.social-proof-section {
+  background: transparent;
+}
+
+.social-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.social-proof-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 28px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.social-proof-card:hover {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.social-proof-value {
+  display: block;
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--green-bright);
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+
+.social-proof-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+
+.social-proof-desc {
+  font-size: 14px;
+  color: var(--gray-dim);
+  line-height: 1.6;
+}
+
 /* ─── Pricing ─── */
 .pricing-cards {
   display: grid;
@@ -717,12 +809,6 @@ body {
 
 .pricing-active {
   border-color: rgba(16, 185, 129, 0.3);
-}
-
-.pricing-active::before {
-  content: '';
-  display: block;
-  height: 0;
 }
 
 .pricing-plan-label {
@@ -886,6 +972,22 @@ body {
   color: var(--gray-dim);
 }
 
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: var(--gray-dim);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: var(--white);
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 1024px) {
   .hero-inner {
@@ -904,9 +1006,19 @@ body {
     text-align: center;
   }
 
+  .ltr-mode .hero-text-side {
+    align-items: center;
+    text-align: center;
+  }
+
   .hero { padding: 120px 32px 40px; }
   .navbar { padding: 16px 24px; }
   .navbar.scrolled { padding: 8px 24px; }
+
+  .stats-bar-inner {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -915,22 +1027,45 @@ body {
   .features-grid { grid-template-columns: 1fr; }
   .comparison-grid { grid-template-columns: 1fr; }
   .pricing-cards { grid-template-columns: 1fr; max-width: 440px; }
+  .social-proof-grid { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
   .nav-links { display: none; }
   .section { padding: 60px 24px; }
   .section-alt { padding: 60px 24px; }
-  .tags-section { padding: 40px 24px; }
-  .tags-floating { display: none; }
+  .stats-bar-section { padding: 40px 24px; }
   .cta-section { padding: 60px 24px 80px; }
   .footer { padding: 24px; }
+
+  .wallet-cards-row {
+    gap: 20px;
+  }
+
+  .wallet-card-wrap {
+    width: 220px;
+  }
 }
 
 @media (max-width: 600px) {
   .stats-grid { grid-template-columns: 1fr; }
+  .stats-bar-inner { grid-template-columns: 1fr; gap: 16px; }
   .hero-title { font-size: 32px; }
   .hero-image { height: 320px; }
   .floating-bubble { display: none; }
   .footer-content { flex-direction: column; gap: 16px; text-align: center; }
   .hero { padding: 100px 20px 32px; }
+
+  .wallet-cards-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .wallet-card-wrap {
+    width: 240px;
+  }
+
+  .stats-bar-value {
+    font-size: 32px;
+  }
 }
 
 /* ─── Smooth selection ─── */
