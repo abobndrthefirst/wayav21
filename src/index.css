@@ -1,0 +1,241 @@
+@import "tailwindcss";
+
+html, body {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  background: #12110f;
+  color: #fffbff;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── Language switch ────────────────────────────────────────────────────────── */
+.lang-transition { transition: font-family 0.25s ease; }
+
+/* ── Focus ──────────────────────────────────────────────────────────────────── */
+button:focus-visible, a:focus-visible, input:focus-visible {
+  outline: 3px solid #10BA83;
+  outline-offset: 2px;
+}
+
+/* ── FLOAT ──────────────────────────────────────────────────────────────────── */
+@keyframes float {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  25%  { transform: translateY(-16px) rotate(1deg); }
+  75%  { transform: translateY(-8px) rotate(-0.5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+.animate-float { animation: float 3.5s ease-in-out infinite; will-change: transform; }
+
+/* ── BREATHE ────────────────────────────────────────────────────────────────── */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50%      { transform: scale(1.18); opacity: 0.72; }
+}
+.animate-breathe { animation: breathe 5s ease-in-out infinite; will-change: transform, opacity; }
+
+/* ── PING (WhatsApp) ────────────────────────────────────────────────────────── */
+@keyframes ping {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+.wa-ping-wrapper { position: relative; display: block; }
+.wa-ping-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 14px;
+  background: #25D366;
+  animation: ping 1.8s ease-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.wa-ping-wrapper > * { position: relative; z-index: 1; }
+
+/* ── SCROLL REVEAL ──────────────────────────────────────────────────────────── */
+.reveal {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.in-view { opacity: 1; transform: translateY(0); }
+
+.reveal-scale {
+  opacity: 0; transform: scale(0.97) translateY(18px);
+  transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-scale.in-view { opacity: 1; transform: scale(1) translateY(0); }
+
+.reveal-left {
+  opacity: 0; transform: translateX(-28px);
+  transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-left.in-view { opacity: 1; transform: translateX(0); }
+
+.reveal-right {
+  opacity: 0; transform: translateX(28px);
+  transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-right.in-view { opacity: 1; transform: translateX(0); }
+
+.reveal-delay-1 { transition-delay: 0.08s; }
+.reveal-delay-2 { transition-delay: 0.16s; }
+.reveal-delay-3 { transition-delay: 0.24s; }
+.reveal-delay-4 { transition-delay: 0.32s; }
+.reveal-delay-5 { transition-delay: 0.40s; }
+
+/* ── HERO fade-up on load ───────────────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up    { animation: fade-up 0.7s cubic-bezier(0.16,1,0.3,1) forwards; opacity: 0; }
+.delay-100  { animation-delay: 0.10s; }
+.delay-200  { animation-delay: 0.22s; }
+.delay-300  { animation-delay: 0.36s; }
+.delay-400  { animation-delay: 0.50s; }
+
+/* ── Card hover lift ────────────────────────────────────────────────────────── */
+.waya-card {
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s cubic-bezier(0.16,1,0.3,1), border-color 0.25s ease;
+}
+.waya-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.32) !important;
+  border-color: rgba(16,186,131,0.18) !important;
+}
+
+/* ── Button hover ───────────────────────────────────────────────────────────── */
+.waya-btn {
+  transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s ease, filter 0.18s ease;
+}
+.waya-btn:hover  { transform: translateY(-2px); filter: brightness(1.1); }
+.waya-btn:active { transform: translateY(1px); }
+
+.waya-wa-btn {
+  transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+.waya-wa-btn:hover  { transform: translateY(-2px); filter: brightness(1.08); }
+.waya-wa-btn:active { transform: translateY(1px); }
+
+/* ── Nav link underline ─────────────────────────────────────────────────────── */
+.waya-nav-link {
+  position: relative; transition: color 0.18s ease;
+}
+.waya-nav-link::after {
+  content: ''; position: absolute; bottom: -2px;
+  inset-inline-start: 0; inset-inline-end: 0;
+  height: 2px; background: #10BA83; border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.22s cubic-bezier(0.16,1,0.3,1);
+  transform-origin: inline-end;
+}
+[dir="rtl"] .waya-nav-link::after { transform-origin: right; }
+[dir="ltr"] .waya-nav-link::after { transform-origin: left; }
+.waya-nav-link:hover { color: #fffbff !important; }
+.waya-nav-link:hover::after { transform: scaleX(1); }
+
+/* ── Logo hover ─────────────────────────────────────────────────────────────── */
+.waya-logo { transition: transform 0.18s ease; }
+.waya-logo:hover { transform: scale(1.08); }
+
+/* ── Input focus ────────────────────────────────────────────────────────────── */
+.waya-input {
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.waya-input:focus {
+  border-color: #10BA83 !important;
+  box-shadow: 0 0 0 3px rgba(16,186,131,0.18) !important;
+  outline: none;
+}
+
+/* ── Glassmorphism nav ──────────────────────────────────────────────────────── */
+.glass-nav {
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ── Floating stat circles ──────────────────────────────────────────────────── */
+.floating-stat {
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  background: rgba(44,44,41,0.6);
+  border: 1px solid rgba(72,72,69,0.15);
+  border-radius: 999px; padding: 20px;
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+.floating-stat:hover { transform: scale(1.12); }
+
+/* ── Industry pills ─────────────────────────────────────────────────────────── */
+.industry-pill {
+  background: rgba(30,28,26,0.8);
+  border: 1px solid rgba(72,72,69,0.2);
+  border-radius: 999px; padding: 8px 14px;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: transform 0.22s cubic-bezier(0.16,1,0.3,1);
+  color: #fffbff; font-family: 'Roboto Slab', serif; font-size: 13px;
+}
+.industry-pill:hover { transform: scale(1.08); }
+
+/* ── Feature card ───────────────────────────────────────────────────────────── */
+.feature-card {
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.28);
+  border-color: rgba(16,186,131,0.14);
+}
+
+/* ── Comparison panels ──────────────────────────────────────────────────────── */
+.comparison-with    { background: linear-gradient(135deg, rgba(16,186,131,0.12), rgba(16,186,131,0.06)); border: 1px solid rgba(16,186,131,0.2); }
+.comparison-without { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); }
+
+/* ── Pricing card glow ──────────────────────────────────────────────────────── */
+.pricing-card { position: relative; overflow: hidden; }
+.pricing-card::before {
+  content: ''; position: absolute;
+  top: -50%; right: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at center, rgba(16,186,131,0.05), transparent 50%);
+  pointer-events: none;
+}
+
+/* ── Grid pattern overlay ──────────────────────────────────────────────────── */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 11.9px 11.9px;
+}
+
+/* ── No scrollbar ───────────────────────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Pulse ──────────────────────────────────────────────────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+.animate-pulse { animation: pulse 2s ease-in-out infinite; }
+
+/* ── Reduced motion ─────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float, .animate-breathe, .fade-up,
+  .wa-ping-wrapper::before { animation: none !important; opacity: 1 !important; }
+  .reveal, .reveal-scale, .reveal-left, .reveal-right {
+    opacity: 1 !important; transform: none !important; transition: none !important;
+  }
+  .waya-card:hover, .waya-btn:hover, .waya-wa-btn:hover,
+  .feature-card:hover, .floating-stat:hover, .industry-pill:hover {
+    transform: none !important;
+  }
+}
