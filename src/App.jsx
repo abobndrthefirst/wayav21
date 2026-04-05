@@ -40,49 +40,33 @@ function Reveal({ children, delay = 0, direction = 'up', className = '' }) {
   )
 }
 
-/* ─── Logo SVG ─── */
-function Logo({ size = 40 }) {
+/* ─── Logo (from Figma) ─── */
+function Logo({ size = 34 }) {
   return (
-    <svg width={size} height={size * 0.67} viewBox="0 0 81 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <g filter="url(#filter0_f_logo)">
-        <path d="M60.3354 43.9013H47.1469C44.8562 43.9013 43 42.045 43 39.7543V22.3071C43 21.3487 43.3323 20.4222 43.9361 19.681L50.5303 11.6203C52.1884 9.59156 55.2907 9.59156 56.9488 11.6203L63.543 19.681C64.15 20.4222 64.4791 21.3487 64.4791 22.3071V39.7543C64.4791 42.045 62.6229 43.9013 60.3322 43.9013H60.3354Z" fill="url(#paint0_linear_logo)"/>
-      </g>
-      <defs>
-        <filter id="filter0_f_logo" x="0" y="-32.9013" width="107.479" height="119.803" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-          <feFlood floodOpacity="0" result="BackgroundImageFix"/>
-          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-          <feGaussianBlur stdDeviation="21.5" result="effect1_foregroundBlur"/>
-        </filter>
-        <linearGradient id="paint0_linear_logo" x1="53.7411" y1="45.2623" x2="53.7411" y2="11.6363" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#559D36"/>
-          <stop offset="0.52" stopColor="#39B139"/>
-          <stop offset="1" stopColor="#35A977"/>
-        </linearGradient>
-      </defs>
-    </svg>
+    <img src="/logo.svg" alt="وايا" style={{ width: size, height: 'auto' }} />
   )
 }
 
 /* ─── Icons ─── */
-function CheckIcon() {
+function CheckIcon({ color = '#10B981' }) {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke="#00FFA9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M16.5 5.5L7.5 14.5L3.5 10.5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
 
 function XIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M15 5L5 15M5 5L15 15" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M13 5L5 13M5 5L13 13" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }
 
 function StoreIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00FFA9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
     </svg>
   )
@@ -90,7 +74,7 @@ function StoreIcon() {
 
 function QRIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00FFA9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/>
     </svg>
   )
@@ -98,7 +82,7 @@ function QRIcon() {
 
 function HeartIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00FFA9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
   )
@@ -106,7 +90,7 @@ function HeartIcon() {
 
 function BellIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00FFA9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
     </svg>
   )
@@ -114,7 +98,7 @@ function BellIcon() {
 
 function ChartIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00FFA9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
     </svg>
   )
@@ -122,7 +106,7 @@ function ChartIcon() {
 
 function ShareIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00FFA9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
       <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
     </svg>
@@ -131,13 +115,13 @@ function ShareIcon() {
 
 function CalendarIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00FFA9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   )
 }
 
-/* ─── Navbar ─── */
+/* ─── Navbar (glass-morphism pill) ─── */
 function Navbar() {
   const [scrolled, setScrolled] = useState(false)
 
@@ -154,26 +138,26 @@ function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
-      <div className="nav-content">
-        <div className="nav-logo">
-          <Logo size={48} />
-          <span className="nav-logo-text">وايا</span>
-        </div>
-        <div className="nav-links">
-          <a href="#how">كيف يعمل</a>
-          <a href="#features">المميزات</a>
-          <a href="#pricing">الأسعار</a>
-        </div>
+      <div className="nav-pill">
         <a href="#cta" className="nav-cta">انضم</a>
+        <div className="nav-links">
+          <a href="#pricing">الأسعار</a>
+          <a href="#features">المميزات</a>
+          <a href="#how">كيف يعمل</a>
+        </div>
+        <div className="nav-logo">
+          <span className="nav-logo-text">وايا</span>
+          <Logo size={34} />
+        </div>
       </div>
     </motion.nav>
   )
 }
 
-/* ─── Hero ─── */
+/* ─── Hero (side-by-side layout) ─── */
 function Hero() {
   const { scrollYProgress } = useScroll()
-  const y = useTransform(scrollYProgress, [0, 0.3], [0, -80])
+  const y = useTransform(scrollYProgress, [0, 0.3], [0, -60])
   const opacity = useTransform(scrollYProgress, [0, 0.25], [1, 0])
 
   return (
@@ -181,64 +165,123 @@ function Hero() {
       <div className="hero-glow" />
       <div className="hero-glow-2" />
 
-      <motion.div className="hero-content" style={{ y, opacity }}>
-        <Reveal>
-          <h1 className="hero-title">
-            <span className="text-white">برامج ولاء تشتغل </span>
-            <span className="text-green">بسهولة</span>
-          </h1>
-        </Reveal>
-
-        <Reveal delay={0.15}>
-          <p className="hero-subtitle">
-            حوّل عملائك إلى ضيوف دائمين. منصة الموقد تمنحك الأدوات الدافئة
-            <br />
-            لبناء علاقات تدوم، دون تعقيدات تقنية.
-          </p>
-        </Reveal>
-
-        <Reveal delay={0.3}>
-          <div className="hero-input-group">
-            <input type="text" placeholder="إيميلك أو رقم واتسابك" className="hero-input" />
-            <button className="hero-btn">اشترك عبر الواتس اب</button>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.45}>
-          <div className="hero-stats">
-            <div className="hero-stat-badge">
-              <span className="stat-number">+٤٧٧</span>
-              <span className="stat-label">محل مسجّل</span>
-            </div>
-          </div>
-        </Reveal>
-      </motion.div>
-
-      <Reveal delay={0.2} className="hero-image-wrapper">
-        <motion.img
-          src="/hero.png"
-          alt="وايا"
-          className="hero-image"
-          initial={{ scale: 1.1, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-        />
-      </Reveal>
-
-      <Reveal delay={0.6}>
-        <div className="industry-tags">
-          {['حلويات', 'مغاسل', 'صالونات'].map((tag, i) => (
-            <motion.span
-              key={i}
-              className="tag"
-              whileHover={{ scale: 1.05, backgroundColor: 'rgba(0,255,169,0.15)' }}
-              transition={{ duration: 0.2 }}
+      <motion.div className="hero-inner" style={{ y, opacity }}>
+        {/* Image side (left in RTL = visually left) */}
+        <Reveal delay={0.2} direction="right" className="hero-image-side">
+          <div className="hero-image-container">
+            <motion.img
+              src="/hero.png"
+              alt="وايا"
+              className="hero-image"
+              initial={{ scale: 1.05, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+            />
+            {/* Floating stat bubbles */}
+            <motion.div
+              className="floating-bubble floating-bubble-1"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              {tag}
-            </motion.span>
-          ))}
+              <img src="/icon-monitoring.svg" alt="" width="24" height="24" />
+            </motion.div>
+            <motion.div
+              className="floating-bubble floating-bubble-2"
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+            >
+              <img src="/icon-favorite.svg" alt="" width="24" height="24" />
+            </motion.div>
+            <motion.div
+              className="floating-bubble floating-bubble-3"
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            >
+              <img src="/icon-leaderboard.svg" alt="" width="24" height="24" />
+            </motion.div>
+          </div>
+        </Reveal>
+
+        {/* Text side (right) */}
+        <div className="hero-text-side">
+          <Reveal>
+            <h1 className="hero-title">
+              <span className="text-cream">برامج ولاء تشتغل </span>
+              <span className="text-green">بسهولة</span>
+            </h1>
+          </Reveal>
+
+          <Reveal delay={0.15}>
+            <p className="hero-subtitle">
+              حوّل عملائك إلى ضيوف دائمين. منصة الموقد تمنحك الأدوات الدافئة
+              لبناء علاقات تدوم، دون تعقيدات تقنية.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.3}>
+            <div className="hero-form">
+              <div className="hero-input-wrap">
+                <input type="text" placeholder="إيميلك أو رقم واتسابك" className="hero-input" />
+              </div>
+              <button className="hero-btn">اشترك عبر الواتس اب</button>
+            </div>
+          </Reveal>
         </div>
-      </Reveal>
+      </motion.div>
+    </section>
+  )
+}
+
+/* ─── Industry Tags + Stats ─── */
+function IndustryTags() {
+  const tags = [
+    { label: 'مغاسل', emoji: '👔' },
+    { label: 'حلويات', emoji: '🍰' },
+    { label: 'صالونات', emoji: '💇' },
+  ]
+
+  return (
+    <section className="tags-section">
+      <div className="tags-content">
+        <Reveal>
+          <div className="tags-stat">
+            <span className="tags-stat-number">+٤٧٧</span>
+            <span className="tags-stat-label">محل مسجّل</span>
+          </div>
+        </Reveal>
+
+        <div className="tags-floating">
+          {/* Left side tags */}
+          <div className="tags-column tags-left">
+            {tags.map((tag, i) => (
+              <Reveal key={`l-${i}`} delay={0.1 * i} direction="right">
+                <motion.span
+                  className="industry-tag"
+                  style={{ opacity: 0.7 + i * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  {tag.label} {tag.emoji}
+                </motion.span>
+              </Reveal>
+            ))}
+          </div>
+
+          {/* Right side tags */}
+          <div className="tags-column tags-right">
+            {tags.map((tag, i) => (
+              <Reveal key={`r-${i}`} delay={0.15 * i} direction="left">
+                <motion.span
+                  className="industry-tag"
+                  style={{ opacity: 0.7 + i * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  {tag.emoji} {tag.label}
+                </motion.span>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
@@ -254,6 +297,7 @@ function HowItWorks() {
   return (
     <section className="section" id="how">
       <Reveal>
+        <div className="section-badge">حلويات</div>
         <h2 className="section-title">ثلاث خطوات بس</h2>
         <p className="section-subtitle">بساطة التصميم، روعة النتائج.</p>
       </Reveal>
@@ -263,7 +307,7 @@ function HowItWorks() {
           <Reveal key={i} delay={i * 0.15}>
             <motion.div
               className="step-card"
-              whileHover={{ y: -8, boxShadow: '0 20px 60px rgba(0,255,169,0.08)' }}
+              whileHover={{ y: -8, boxShadow: '0 20px 60px rgba(16,185,129,0.06)' }}
               transition={{ duration: 0.3 }}
             >
               <div className="step-icon">{step.icon}</div>
@@ -332,7 +376,7 @@ function Features() {
           <Reveal key={i} delay={i * 0.1}>
             <motion.div
               className="feature-card"
-              whileHover={{ y: -6, backgroundColor: 'rgba(255,255,255,0.06)' }}
+              whileHover={{ y: -6 }}
               transition={{ duration: 0.3 }}
             >
               <div className="feature-icon">{feat.icon}</div>
@@ -365,19 +409,24 @@ function Comparison() {
   ]
 
   return (
-    <section className="section">
+    <section className="section section-alt">
       <Reveal>
-        <p className="section-tag">ليش التجار يتحولون</p>
+        <div className="section-badge">ليش التجار يتحولون</div>
         <h2 className="section-title">ماذا لو برامج الولاء ما كانت بس للكبار؟</h2>
       </Reveal>
 
       <div className="comparison-grid">
         <Reveal delay={0.1} direction="right">
           <div className="comparison-card comparison-without">
-            <h3 className="comparison-heading">بدون نظام الولاء</h3>
+            <div className="comparison-header comparison-header-without">
+              <h3>بدون نظام الولاء</h3>
+            </div>
             <ul className="comparison-list">
               {withoutItems.map((item, i) => (
-                <li key={i}><XIcon /> <span>{item}</span></li>
+                <li key={i} className="comparison-item-without">
+                  <div className="comparison-x-icon"><XIcon /></div>
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           </div>
@@ -385,10 +434,15 @@ function Comparison() {
 
         <Reveal delay={0.2} direction="left">
           <div className="comparison-card comparison-with">
-            <h3 className="comparison-heading comparison-heading-green">مع نظام الولاء</h3>
+            <div className="comparison-header comparison-header-with">
+              <h3>مع نظام الولاء</h3>
+            </div>
             <ul className="comparison-list">
               {withItems.map((item, i) => (
-                <li key={i}><CheckIcon /> <span>{item}</span></li>
+                <li key={i} className="comparison-item-with">
+                  <div className="comparison-check-icon"><CheckIcon color="#10B981" /></div>
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           </div>
@@ -415,55 +469,61 @@ function Pricing() {
   return (
     <section className="section" id="pricing">
       <Reveal>
-        <p className="section-tag">الاسعار</p>
+        <div className="section-badge">الاسعار</div>
         <h2 className="section-title">خطة بسيطة، بدون تعقيد</h2>
       </Reveal>
 
       <Reveal delay={0.2}>
-        <div className="pricing-toggle">
-          <button className={`toggle-btn ${!annual ? 'active' : ''}`} onClick={() => setAnnual(false)}>
-            الخطة الشهرية
-          </button>
-          <button className={`toggle-btn ${annual ? 'active' : ''}`} onClick={() => setAnnual(true)}>
-            <span>الخطة السنوية</span>
-            <span className="save-badge">الأكثر توفيراً</span>
-          </button>
-        </div>
-      </Reveal>
-
-      <Reveal delay={0.3}>
-        <motion.div className="pricing-card" layout transition={{ duration: 0.4 }}>
-          <div className="pricing-card-inner">
+        <div className="pricing-cards">
+          {/* Monthly */}
+          <motion.div
+            className={`pricing-card ${!annual ? 'pricing-active' : ''}`}
+            onClick={() => setAnnual(false)}
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span className="pricing-plan-label">الخطة الشهرية</span>
             <div className="pricing-amount">
-              <motion.span
-                className="price"
-                key={annual ? 'annual' : 'monthly'}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {annual ? '٥٥' : '٧٥'}
-              </motion.span>
+              <span className="price">٧٥</span>
               <span className="price-label">ر.س / شهر</span>
             </div>
-
-            {annual ? (
-              <p className="price-note">يُفوتر ١،٤٢٨ ر.س سنوياً — توفير ٣٥٨ ر.س</p>
-            ) : (
-              <p className="price-note">بدون التزام — الغي بأي وقت</p>
-            )}
-
+            <p className="price-note">بدون التزام — الغي بأي وقت</p>
             <ul className="pricing-features">
               {planFeatures.map((f, i) => (
-                <li key={i}><CheckIcon /> <span>{f}</span></li>
+                <li key={i}><CheckIcon color="#10B981" /> <span>{f}</span></li>
               ))}
             </ul>
-
-            <motion.button className="pricing-cta" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+            <motion.button className="pricing-cta" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               ابدأ الآن
             </motion.button>
-          </div>
-        </motion.div>
+          </motion.div>
+
+          {/* Annual */}
+          <motion.div
+            className={`pricing-card ${annual ? 'pricing-active' : ''}`}
+            onClick={() => setAnnual(true)}
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="pricing-plan-label-row">
+              <span className="pricing-plan-label">الخطة السنوية</span>
+              <span className="save-badge">الأكثر توفيراً</span>
+            </div>
+            <div className="pricing-amount">
+              <span className="price">٥٥</span>
+              <span className="price-label">ر.س / شهر</span>
+            </div>
+            <p className="price-note">يُفوتر ١،٤٢٨ ر.س سنوياً — توفير ٣٥٨ ر.س</p>
+            <ul className="pricing-features">
+              {planFeatures.map((f, i) => (
+                <li key={i}><CheckIcon color="#10B981" /> <span>{f}</span></li>
+              ))}
+            </ul>
+            <motion.button className="pricing-cta" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              ابدأ الآن
+            </motion.button>
+          </motion.div>
+        </div>
       </Reveal>
     </section>
   )
@@ -481,9 +541,11 @@ function CTA() {
         <p className="cta-subtitle">انضم لقائمة الانتظار اليوم. كن أول من يطلق برنامج ولائه قبل العيد.</p>
       </Reveal>
       <Reveal delay={0.3}>
-        <div className="hero-input-group" style={{ justifyContent: 'center' }}>
-          <input type="text" placeholder="إيميلك أو رقم واتسابك" className="hero-input" />
-          <motion.button className="hero-btn" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+        <div className="hero-form" style={{ justifyContent: 'center', maxWidth: 520, margin: '0 auto' }}>
+          <div className="hero-input-wrap">
+            <input type="text" placeholder="إيميلك أو رقم واتسابك" className="hero-input" />
+          </div>
+          <motion.button className="hero-btn" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
             اشترك عبر واتس اب
           </motion.button>
         </div>
@@ -497,11 +559,11 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-content">
-        <div className="footer-logo">
-          <Logo size={36} />
-          <span className="nav-logo-text">وايا</span>
-        </div>
         <p className="footer-copy">٢٠٢٦ وايا.</p>
+        <div className="footer-logo">
+          <span className="nav-logo-text">وايا</span>
+          <Logo size={28} />
+        </div>
       </div>
     </footer>
   )
@@ -530,6 +592,7 @@ export default function App() {
     <div className="app">
       <Navbar />
       <Hero />
+      <IndustryTags />
       <HowItWorks />
       <Features />
       <Comparison />
