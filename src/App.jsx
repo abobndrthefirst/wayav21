@@ -10,7 +10,7 @@ const content = {
       title1: 'عميلك اللي يرجع',
       title2: 'يسوى أكثر من عشرة جدد',
       subtitle: 'وايا يحوّل زيارة وحدة إلى علاقة طويلة. برنامج ولاء جاهز، يشتغل من أول يوم — بدون تطبيق، بدون تعقيد، وبدون ما تحتاج فريق تقني.',
-      freeTrial: '٢ أسبوعين مجاناً — بدون أي التزام — جربها بنفسك',
+      freeTrial: 'اول أسبوعين مجاناً — بدون أي التزام — جربها بنفسك',
       inputPlaceholder: 'إيميلك أو رقم جوالك للتجربة المجانية',
       btn: 'ابدأ تجربتك المجانية',
       whatsapp: 'تواصل معنا عبر واتساب',
@@ -130,7 +130,7 @@ const content = {
       title1: 'A returning customer',
       title2: 'is worth more than ten new ones',
       subtitle: 'Waya turns a single visit into a lasting relationship. A ready-made loyalty program that works from day one — no app, no complexity, and no tech team needed.',
-      freeTrial: '2 weeks free — no commitment at all — try it yourself',
+      freeTrial: 'First 2 weeks free — no commitment at all — try it yourself',
       inputPlaceholder: 'Your email or phone number for free trial',
       btn: 'Start Your Free Trial',
       whatsapp: 'Contact us on WhatsApp',
@@ -596,22 +596,6 @@ function Comparison({ t }) {
 
       <div className="comparison-grid">
         <Reveal delay={0.1} direction="right">
-          <div className="comparison-card comparison-without">
-            <div className="comparison-header comparison-header-without">
-              <h3>{t.comparison.without.header}</h3>
-            </div>
-            <ul className="comparison-list">
-              {t.comparison.without.items.map((item, i) => (
-                <li key={i} className="comparison-item-without">
-                  <div className="comparison-x-icon"><XIcon /></div>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.2} direction="left">
           <div className="comparison-card comparison-with">
             <div className="comparison-header comparison-header-with">
               <h3>{t.comparison.with.header}</h3>
@@ -620,6 +604,22 @@ function Comparison({ t }) {
               {t.comparison.with.items.map((item, i) => (
                 <li key={i} className="comparison-item-with">
                   <div className="comparison-check-icon"><CheckIcon color="#10B981" /></div>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.2} direction="left">
+          <div className="comparison-card comparison-without">
+            <div className="comparison-header comparison-header-without">
+              <h3>{t.comparison.without.header}</h3>
+            </div>
+            <ul className="comparison-list">
+              {t.comparison.without.items.map((item, i) => (
+                <li key={i} className="comparison-item-without">
+                  <div className="comparison-x-icon"><XIcon /></div>
                   <span>{item}</span>
                 </li>
               ))}
@@ -680,9 +680,11 @@ function Pricing({ t }) {
                 <li key={i}><CheckIcon color="#10B981" /> <span>{f}</span></li>
               ))}
             </ul>
-            <motion.button className="pricing-cta" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              {t.pricing.cta}
-            </motion.button>
+            <a href="#cta" className="pricing-cta-link">
+              <motion.button className="pricing-cta" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                {t.pricing.cta}
+              </motion.button>
+            </a>
           </motion.div>
 
           <motion.div className={`pricing-card ${annual ? 'pricing-active' : ''}`} onClick={() => setAnnual(true)} whileHover={{ y: -4 }} transition={{ duration: 0.3 }}>
@@ -700,9 +702,11 @@ function Pricing({ t }) {
                 <li key={i}><CheckIcon color="#10B981" /> <span>{f}</span></li>
               ))}
             </ul>
-            <motion.button className="pricing-cta" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              {t.pricing.cta}
-            </motion.button>
+            <a href="#cta" className="pricing-cta-link">
+              <motion.button className="pricing-cta" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                {t.pricing.cta}
+              </motion.button>
+            </a>
           </motion.div>
         </div>
       </Reveal>
@@ -747,15 +751,15 @@ function Footer({ t }) {
   return (
     <footer className="footer">
       <div className="footer-content">
-        <p className="footer-copy">{t.footer.copy}</p>
+        <div className="footer-logo">
+          <Logo size={28} />
+          <span className="nav-logo-text">وايا</span>
+        </div>
         <div className="footer-links">
           <a href="#">{t.footer.links.privacy}</a>
           <a href="#">{t.footer.links.terms}</a>
         </div>
-        <div className="footer-logo">
-          <span className="nav-logo-text">وايا</span>
-          <Logo size={28} />
-        </div>
+        <p className="footer-copy">{t.footer.copy}</p>
       </div>
     </footer>
   )
