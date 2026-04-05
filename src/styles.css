@@ -299,6 +299,18 @@ body {
   max-width: 576px;
 }
 
+.hero-free-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--green-bright);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
 .hero-form {
   display: flex;
   flex-direction: column;
@@ -352,6 +364,31 @@ body {
   background: rgba(16, 185, 129, 0.65);
   transform: translateY(-1px);
   box-shadow: 0 4px 24px rgba(16, 185, 129, 0.25);
+}
+
+.hero-whatsapp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 32px;
+  border: none;
+  background: #25D366;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+}
+
+.hero-whatsapp-btn:hover {
+  background: #1ebe5a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 24px rgba(37, 211, 102, 0.3);
 }
 
 /* ─── Stats Bar Section ─── */
