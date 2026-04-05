@@ -357,11 +357,11 @@ export default function Home() {
   );
 
   return (
-    <div dir={t.dir} className="flex flex-col items-center w-full min-h-screen overflow-x-hidden" style={{ background: C.bg }}>
+    <div dir={t.dir} className="flex flex-col items-center w-full min-h-screen overflow-hidden" style={{ background: C.bg }}>
 
       {/* ══════════════ SECTION 1 — HERO ══════════════ */}
       <section className="w-full relative overflow-hidden" style={{ background: C.bg }}>
-        <div className="max-w-[1440px] mx-auto flex flex-col gap-12 items-center pt-6 pb-20 px-4 sm:px-8 md:px-16 relative">
+        <div className="max-w-[1280px] mx-auto flex flex-col gap-12 items-center pt-6 pb-20 px-4 sm:px-8 md:px-16 relative">
 
           {/* Ambient glow */}
           <div className="hidden md:block absolute w-[440px] h-[440px] rounded-full blur-[80px] animate-breathe pointer-events-none"
@@ -399,10 +399,10 @@ export default function Home() {
           </nav>
 
           {/* Hero body */}
-          <div className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-center justify-center max-w-[1280px] w-full relative z-10">
+          <div className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-center justify-center w-full relative z-10">
 
             {/* Text side */}
-            <div className={`flex flex-col gap-5 w-full lg:w-[560px] ${isAR ? 'items-end text-end' : 'items-start text-start'}`}>
+            <div className={`flex flex-col gap-5 w-full lg:w-1/2 lg:min-w-0 ${isAR ? 'items-end text-end' : 'items-start text-start'}`}>
               <div className="fade-up delay-100">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4"
                   style={{ background: 'rgba(16,186,131,0.08)', border: '1px solid rgba(16,186,131,0.2)' }}>
@@ -437,17 +437,17 @@ export default function Home() {
             </div>
 
             {/* Image side */}
-            <div className="w-full lg:w-[608px] shrink-0 relative fade-up delay-200">
+            <div className="w-full lg:w-1/2 lg:min-w-0 relative fade-up delay-200">
               <div ref={heroRef} className="aspect-[16/11] w-full rounded-[40px] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] relative">
                 <img alt="Waya loyalty dashboard" className="w-full h-full object-cover" src={imgHero} />
                 <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to top left, rgba(16,186,131,0.08), transparent)' }} />
               </div>
               {[
-                { pct: '64%', off: '-12px', img: imgShape },
+                { pct: '64%', off: '10px', img: imgShape },
                 { pct: '58%', off: '56px', img: imgShape1 },
                 { pct: '80%', off: '20px', img: imgShape2 },
               ].map((c, i) => (
-                <div key={i} className="hidden lg:flex absolute floating-stat items-center justify-center"
+                <div key={i} className="hidden xl:flex absolute floating-stat items-center justify-center"
                   style={{ top: c.pct, [isAR ? 'right' : 'left']: c.off }}>
                   <img src={c.img} alt="" className="w-6 h-6 object-contain" />
                 </div>
@@ -484,7 +484,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════ SECTION 3 — HOW IT WORKS ══════════════ */}
-      <section id="how-it-works" className="w-full py-24 px-4 sm:px-8 md:px-16" style={{ background: C.bg }}>
+      <section id="how-it-works" className="w-full py-24 px-4 sm:px-8 md:px-16 overflow-hidden" style={{ background: C.bg }}>
         <div className="max-w-[1200px] mx-auto flex flex-col gap-14 items-center">
           <div className="flex flex-col items-center gap-4 text-center reveal">
             <Pill font={nFont}>{t.how.pill}</Pill>
@@ -514,7 +514,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════ SECTION 4 — FEATURES ══════════════ */}
-      <section id="features" className="w-full py-24 px-4 sm:px-8 md:px-16" style={{ background: C.bg }}>
+      <section id="features" className="w-full py-24 px-4 sm:px-8 md:px-16 overflow-hidden" style={{ background: C.bg }}>
         <div className="max-w-[1200px] mx-auto flex flex-col gap-14 items-center">
           <div className="flex flex-col items-center gap-4 text-center reveal">
             <Pill font={nFont}>{t.feat.pill}</Pill>
@@ -536,7 +536,7 @@ export default function Home() {
               {t.feat.stats.map((stat, i) => (
                 <div key={i} className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: C.statBg, border: '1px solid #2e2c26' }}>
                   <p className="text-xs font-medium" style={{ color: C.faint, fontFamily: bFont }}>{stat.label}</p>
-                  <div className={`flex items-baseline gap-1.5 ${isAR ? 'flex-row-reverse justify-end' : 'justify-start'}`}>
+                  <div className="flex items-baseline gap-1.5">
                     <span className="text-xl md:text-2xl font-black" style={{ color: C.white, fontFamily: F.number }}>{stat.value}</span>
                     {stat.unit && <span className="text-xs" style={{ color: C.faint, fontFamily: bFont }}>{stat.unit}</span>}
                   </div>
@@ -564,7 +564,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════ SECTION 5 — COMPARISON ══════════════ */}
-      <section className="w-full py-24 px-4 sm:px-8 md:px-16" style={{ background: C.bgDark }}>
+      <section className="w-full py-24 px-4 sm:px-8 md:px-16 overflow-hidden" style={{ background: C.bgDark }}>
         <div className="max-w-[1100px] mx-auto flex flex-col gap-14 items-center">
           <div className="flex flex-col items-center gap-4 text-center reveal">
             <Pill font={nFont}>{t.comp.pill}</Pill>
@@ -616,7 +616,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════ SECTION 6 — PRICING ══════════════ */}
-      <section id="pricing" className="w-full py-24 px-4 sm:px-8 md:px-16" style={{ background: C.bg }}>
+      <section id="pricing" className="w-full py-24 px-4 sm:px-8 md:px-16 overflow-hidden" style={{ background: C.bg }}>
         <div className="max-w-[960px] mx-auto flex flex-col gap-14 items-center">
           <div className="flex flex-col items-center gap-4 text-center reveal">
             <Pill font={nFont}>{t.price.pill}</Pill>
@@ -626,7 +626,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
 
             {/* Annual — prominent */}
-            <div className="reveal-left rounded-3xl p-7 md:p-10 flex flex-col gap-7 relative overflow-hidden order-first"
+            <div className="reveal-left rounded-3xl p-7 md:p-10 flex flex-col gap-7 relative overflow-hidden order-first min-w-0"
               style={{ background: C.priceDk, border: `1px solid rgba(16,186,131,0.3)` }}>
               <div className="absolute top-7 px-3 py-1 rounded-full" style={{ background: C.green, [isAR ? 'left' : 'right']: '28px' }}>
                 <span className="font-bold text-xs" style={{ color: '#0a0a08', fontFamily: bFont }}>{t.price.annual.badge}</span>
@@ -634,7 +634,7 @@ export default function Home() {
               <div className={`flex flex-col gap-1.5 ${isAR ? 'items-end' : 'items-start'}`}>
                 <h3 className="font-bold text-xl" style={{ color: C.white, fontFamily: hFont }}>{t.price.annual.title}</h3>
                 <div className={`flex items-baseline gap-2 ${isAR ? 'flex-row-reverse' : ''}`}>
-                  <span className="font-black text-[60px] leading-none tracking-[-2px]" style={{ color: C.white, fontFamily: F.number }}>{t.price.annual.price}</span>
+                  <span className="font-black text-[48px] md:text-[60px] leading-none tracking-[-2px]" style={{ color: C.white, fontFamily: F.number }}>{t.price.annual.price}</span>
                   <span className="text-base" style={{ color: C.muted, fontFamily: bFont }}>{t.price.annual.unit}</span>
                 </div>
                 <p className="text-xs" style={{ color: C.subtle, fontFamily: bFont }}>{t.price.annual.note}</p>
@@ -650,12 +650,12 @@ export default function Home() {
             </div>
 
             {/* Monthly */}
-            <div className="reveal-right waya-card rounded-3xl p-7 md:p-10 flex flex-col gap-7"
+            <div className="reveal-right waya-card rounded-3xl p-7 md:p-10 flex flex-col gap-7 min-w-0"
               style={{ background: C.priceM, border: '1px solid rgba(255,255,255,0.06)' }}>
               <div className={`flex flex-col gap-1.5 ${isAR ? 'items-end' : 'items-start'}`}>
                 <h3 className="font-bold text-xl" style={{ color: C.white, fontFamily: hFont }}>{t.price.monthly.title}</h3>
                 <div className={`flex items-baseline gap-2 ${isAR ? 'flex-row-reverse' : ''}`}>
-                  <span className="font-black text-[60px] leading-none tracking-[-2px]" style={{ color: C.white, fontFamily: F.number }}>{t.price.monthly.price}</span>
+                  <span className="font-black text-[48px] md:text-[60px] leading-none tracking-[-2px]" style={{ color: C.white, fontFamily: F.number }}>{t.price.monthly.price}</span>
                   <span className="text-base" style={{ color: C.muted, fontFamily: bFont }}>{t.price.monthly.unit}</span>
                 </div>
                 <p className="text-xs" style={{ color: C.subtle, fontFamily: bFont }}>{t.price.monthly.note}</p>
@@ -674,9 +674,9 @@ export default function Home() {
       </section>
 
       {/* ══════════════ SECTION 7 — CTA ══════════════ */}
-      <section className="w-full py-28 px-4 sm:px-8 md:px-16" style={{ background: C.bg }}>
+      <section className="w-full py-28 px-4 sm:px-8 md:px-16 overflow-hidden" style={{ background: C.bg }}>
         <div className="max-w-[800px] mx-auto flex flex-col gap-7 items-center text-center">
-          <h2 className="reveal font-bold text-3xl md:text-[52px] md:leading-[1.1] tracking-[-1.5px]"
+          <h2 className="reveal font-bold text-2xl sm:text-3xl md:text-[44px] md:leading-[1.15] tracking-[-1.5px] max-w-[700px]"
             style={{ color: C.white, fontFamily: hFont }}>{t.cta.h2}</h2>
           <p className="reveal reveal-delay-1 text-base md:text-lg max-w-[560px]"
             style={{ color: C.muted, fontFamily: bFont }}>{t.cta.sub}</p>
