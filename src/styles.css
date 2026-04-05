@@ -54,7 +54,8 @@ body {
 .ltr-mode .dashboard-header,
 .ltr-mode .stat-card,
 .ltr-mode .feature-card,
-.ltr-mode .price-note {
+.ltr-mode .price-note,
+.ltr-mode .pricing-card {
   text-align: left;
 }
 
@@ -64,6 +65,7 @@ body {
 .ltr-mode .comparison-list li,
 .ltr-mode .pricing-features li {
   justify-content: flex-start;
+  flex-direction: row;
 }
 
 .ltr-mode .hero-input {
@@ -276,7 +278,7 @@ body {
   max-width: 608px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 24px;
   text-align: right;
 }
@@ -709,7 +711,7 @@ body {
   padding: 24px 32px 12px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 12px;
 }
 
@@ -740,7 +742,7 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  justify-content: flex-end;
+  justify-content: flex-start;
   font-size: 15px;
   color: var(--gray);
   line-height: 1.5;
@@ -860,7 +862,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: flex-end;
+  justify-content: flex-start;
   margin-bottom: 16px;
 }
 
@@ -880,7 +882,7 @@ body {
 .pricing-amount {
   display: flex;
   align-items: baseline;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
   margin-bottom: 8px;
 }
@@ -916,7 +918,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: flex-end;
+  justify-content: flex-start;
   font-size: 15px;
   color: var(--gray);
 }
