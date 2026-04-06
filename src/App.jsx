@@ -943,15 +943,15 @@ function Calculator({ t, lang }) {
               <input
                 type="range"
                 min="50"
-                max="2000"
-                step="10"
+                max="200000"
+                step="50"
                 value={customers}
                 onChange={(e) => setCustomers(Number(e.target.value))}
                 className="calc-range"
               />
               <div className="calc-range-labels">
                 <span>50</span>
-                <span>2,000</span>
+                <span>200,000</span>
               </div>
             </div>
 

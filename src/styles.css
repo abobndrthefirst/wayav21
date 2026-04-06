@@ -148,24 +148,86 @@
   background: #FFFFFF;
   border-color: #E5E2DC;
 }
+[data-theme="light"] .calc-slider-header label {
+  color: #1C1B18;
+}
 [data-theme="light"] .calc-range {
   background: #E8E6E1;
 }
 [data-theme="light"] .calc-range::-webkit-slider-thumb {
   border-color: #FFFFFF;
 }
-[data-theme="light"] .calc-summary {
-  background: #F5F5F3;
+[data-theme="light"] .calc-range::-moz-range-thumb {
+  border-color: #FFFFFF;
+}
+[data-theme="light"] .calc-range-labels {
+  color: #8A8A8A;
+}
+[data-theme="light"] .calc-col h4 {
+  color: #6B6B6B;
+}
+[data-theme="light"] .calc-amount {
+  color: #1C1B18;
+}
+[data-theme="light"] .calc-big-green .calc-amount {
+  color: #059669;
+}
+[data-theme="light"] .calc-unit {
+  color: #6B6B6B;
+}
+[data-theme="light"] .calc-detail {
+  color: #6B6B6B;
   border-color: #E5E2DC;
+}
+[data-theme="light"] .calc-highlight {
+  color: #059669;
 }
 [data-theme="light"] .calc-vs {
   background: #F0EFED;
   border-color: #E5E2DC;
+  color: #6B6B6B;
+}
+[data-theme="light"] .calc-summary {
+  background: #F5F5F3;
+  border-color: #E5E2DC;
+}
+[data-theme="light"] .calc-summary-label {
+  color: #6B6B6B;
+}
+[data-theme="light"] .calc-summary-value {
+  color: #1C1B18;
+}
+[data-theme="light"] .calc-green,
+[data-theme="light"] .calc-green-big {
+  color: #059669 !important;
+}
+[data-theme="light"] .calc-summary-divider {
+  background: #E5E2DC;
 }
 
 [data-theme="light"] .demo-step:hover,
 [data-theme="light"] .demo-step-active {
   background: #F0EFED;
+}
+[data-theme="light"] .demo-step-active {
+  border-color: #059669;
+}
+[data-theme="light"] .demo-step-label {
+  color: #1C1B18;
+}
+[data-theme="light"] .demo-step-desc {
+  color: #6B6B6B;
+}
+[data-theme="light"] .demo-step-num {
+  background: #E8F5E9;
+  color: #059669;
+}
+[data-theme="light"] .demo-step-active .demo-step-num {
+  background: #059669;
+  color: #FFFFFF;
+}
+[data-theme="light"] .demo-step-bar {
+  background: #059669;
 }
 [data-theme="light"] .demo-preview {
   background: #FFFFFF;
@@ -175,9 +237,34 @@
   background: #F5F5F3;
   border-color: #E5E2DC;
 }
+[data-theme="light"] .demo-preview-title {
+  color: #6B6B6B;
+}
 [data-theme="light"] .demo-metric-card {
   background: #F8F8F6;
   border-color: #E5E2DC;
+}
+[data-theme="light"] .demo-metric-value {
+  color: #1C1B18;
+}
+[data-theme="light"] .demo-metric-label {
+  color: #6B6B6B;
+}
+[data-theme="light"] .demo-metric-trend {
+  color: #059669;
+}
+[data-theme="light"] .demo-journey {
+  border-color: #E5E2DC;
+}
+[data-theme="light"] .demo-journey-title {
+  color: #6B6B6B;
+}
+[data-theme="light"] .demo-journey-label {
+  color: #1C1B18;
+}
+[data-theme="light"] .demo-journey-num {
+  background: #059669;
+  color: #FFFFFF;
 }
 
 [data-theme="light"] ::selection {
