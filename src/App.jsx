@@ -78,12 +78,12 @@ const content = {
       title: 'لكل محل يبي عملاءه يرجعون',
       subtitle: 'مهما كان نشاطك، وايا يناسبك.',
       items: [
-        { img: '/coffee.png', label: 'كافيهات' },
-        { img: '/restaurants.png', label: 'مطاعم' },
-        { img: '/salon.png', label: 'صالونات' },
-        { img: '/barbershop.png', label: 'حلاقين' },
-        { img: '/laundry.png', label: 'مغاسل' },
-        { img: '/retailer.png', label: 'محلات تجزئة' },
+        { label: 'كافيهات' },
+        { label: 'مطاعم' },
+        { label: 'صالونات' },
+        { label: 'حلاقين' },
+        { label: 'مغاسل' },
+        { label: 'محلات تجزئة' },
       ],
     },
     demo: {
@@ -262,12 +262,12 @@ const content = {
       title: 'For every store that wants customers to come back',
       subtitle: 'Whatever your business, Waya fits.',
       items: [
-        { img: '/coffee.png', label: 'Cafés' },
-        { img: '/restaurants.png', label: 'Restaurants' },
-        { img: '/salon.png', label: 'Salons' },
-        { img: '/barbershop.png', label: 'Barbershops' },
-        { img: '/laundry.png', label: 'Laundry' },
-        { img: '/retailer.png', label: 'Retail Stores' },
+        { label: 'Cafés' },
+        { label: 'Restaurants' },
+        { label: 'Salons' },
+        { label: 'Barbershops' },
+        { label: 'Laundry' },
+        { label: 'Retail Stores' },
       ],
     },
     demo: {
@@ -816,8 +816,68 @@ function Features({ t }) {
   )
 }
 
+/* ─── Audience Industry Icons ─── */
+const audienceIcons = {
+  coffee: (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="audience-icon">
+      <path d="M12 18h32v4a20 20 0 01-20 20h-2A10 10 0 0112 32V18z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M44 22h4a6 6 0 010 12h-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M16 50h26" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M22 10c0-2 2-4 0-6M28 10c0-2 2-4 0-6M34 10c0-2 2-4 0-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
+    </svg>
+  ),
+  restaurant: (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="audience-icon">
+      <path d="M18 8v16c0 4 4 8 8 8h2v24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M18 20h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M24 8v12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M42 8v48" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M42 8c0 12-6 14-6 24h12c0-10-6-12-6-24z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  salon: (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="audience-icon">
+      <path d="M20 12c8 6 6 16 14 20s16-2 16-2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M20 12c-4 14 2 22 14 20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+      <circle cx="16" cy="44" r="8" stroke="currentColor" strokeWidth="2.5"/>
+      <path d="M16 52v4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M44 28l6 6M44 34l6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.4"/>
+    </svg>
+  ),
+  barbershop: (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="audience-icon">
+      <rect x="22" y="6" width="20" height="52" rx="10" stroke="currentColor" strokeWidth="2.5"/>
+      <path d="M22 16c10 8 10 16 20 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.4"/>
+      <path d="M22 24c10 8 10 16 20 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.3"/>
+      <path d="M22 8c10 8 10 16 20 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.5"/>
+      <circle cx="32" cy="10" r="2" fill="currentColor" opacity="0.3"/>
+      <circle cx="32" cy="54" r="2" fill="currentColor" opacity="0.3"/>
+    </svg>
+  ),
+  laundry: (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="audience-icon">
+      <rect x="12" y="6" width="40" height="52" rx="4" stroke="currentColor" strokeWidth="2.5"/>
+      <circle cx="32" cy="36" r="12" stroke="currentColor" strokeWidth="2.5"/>
+      <path d="M26 34c2-3 6-3 8 0s6 3 8 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
+      <line x1="18" y1="18" x2="46" y2="18" stroke="currentColor" strokeWidth="2.5"/>
+      <circle cx="20" cy="12" r="2" fill="currentColor" opacity="0.4"/>
+      <circle cx="26" cy="12" r="2" fill="currentColor" opacity="0.4"/>
+    </svg>
+  ),
+  retailer: (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="audience-icon">
+      <path d="M8 24h48l-4-14H12L8 24z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 24v28h48V24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="24" y="38" width="16" height="14" rx="2" stroke="currentColor" strokeWidth="2.5"/>
+      <path d="M16 24c0 4 3.6 7 8 7s8-3 8-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.4"/>
+      <path d="M32 24c0 4 3.6 7 8 7s8-3 8-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.4"/>
+    </svg>
+  ),
+}
+
 /* ─── Who Is Waya For ─── */
 function Audience({ t }) {
+  const iconKeys = ['coffee', 'restaurant', 'salon', 'barbershop', 'laundry', 'retailer']
   return (
     <section className="section audience-section">
       <Reveal>
@@ -834,8 +894,8 @@ function Audience({ t }) {
               whileHover={{ y: -8, scale: 1.03 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="audience-img-wrap">
-                <img src={item.img} alt={item.label} className="audience-img" />
+              <div className="audience-icon-wrap">
+                {audienceIcons[iconKeys[i]]}
               </div>
               <span className="audience-label">{item.label}</span>
             </motion.div>
