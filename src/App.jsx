@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
-import { Analytics } from '@vercel/analytics/react'
+// Analytics loaded via script tag in index.html
 import './styles.css'
 
 /* ─── Supabase config ─── */
@@ -1379,7 +1379,6 @@ function PrivacyPage({ lang, setLang, theme, setTheme, t }) {
         </div>
       </section>
       <Footer t={t} />
-      <Analytics />
     </div>
   )
 }
@@ -1441,7 +1440,6 @@ function TermsPage({ lang, setLang, theme, setTheme, t }) {
         </div>
       </section>
       <Footer t={t} />
-      <Analytics />
     </div>
   )
 }
@@ -1503,7 +1501,6 @@ export default function App() {
       <Pricing t={t} />
       <CTA t={t} />
       <Footer t={t} />
-      <Analytics />
     </div>
   )
 }
