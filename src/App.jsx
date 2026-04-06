@@ -525,12 +525,25 @@ const featureIcons = { bell: <BellIcon />, chart: <ChartIcon />, share: <ShareIc
 /* ─── Navbar ─── */
 function Navbar({ lang, setLang, theme, setTheme, t }) {
   const [scrolled, setScrolled] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handler, { passive: true })
     return () => window.removeEventListener('scroll', handler)
   }, [])
+
+  // Close mobile menu on scroll or link click
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
+
+  const closeMenu = () => setMobileOpen(false)
 
   return (
     <motion.nav
@@ -557,9 +570,34 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
             <GlobeIcon />
             <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
           </button>
-          <a href="#cta" className="nav-cta">{t.nav.cta}</a>
+          <a href="#cta" className="nav-cta nav-cta-desktop">{t.nav.cta}</a>
+          <button className="mobile-menu-btn" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
+            {mobileOpen ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            className="mobile-drawer"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.25 }}
+          >
+            <a href="#how" onClick={closeMenu}>{t.nav.how}</a>
+            <a href="#features" onClick={closeMenu}>{t.nav.features}</a>
+            <a href="#pricing" onClick={closeMenu}>{t.nav.pricing}</a>
+            <a href="#cta" className="mobile-drawer-cta" onClick={closeMenu}>{t.nav.cta}</a>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   )
 }
