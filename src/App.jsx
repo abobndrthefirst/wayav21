@@ -73,6 +73,19 @@ const content = {
         { icon: 'calendar', title: 'حملات المواسم جاهزة', desc: 'رمضان، العيد، اليوم الوطني — قوالب جاهزة تفعّلها بضغطة واحدة.' },
       ],
     },
+    audience: {
+      badge: 'وايا لمين؟',
+      title: 'لكل محل يبي عملاءه يرجعون',
+      subtitle: 'مهما كان نشاطك، وايا يناسبك.',
+      items: [
+        { img: '/coffee.png', label: 'كافيهات' },
+        { img: '/restaurants.png', label: 'مطاعم' },
+        { img: '/salon.png', label: 'صالونات' },
+        { img: '/barbershop.png', label: 'حلاقين' },
+        { img: '/laundry.png', label: 'مغاسل' },
+        { img: '/retailer.png', label: 'محلات تجزئة' },
+      ],
+    },
     demo: {
       badge: 'شوف بنفسك',
       title: 'جولة سريعة داخل وايا',
@@ -242,6 +255,19 @@ const content = {
         { icon: 'chart', title: 'Clear & Simple Analytics', desc: 'Know your regulars, which rewards work, and when a customer starts drifting away.' },
         { icon: 'share', title: 'Built-in Referral Loop', desc: 'Your customer shares, their friend signs up, both earn. Organic growth, zero budget.' },
         { icon: 'calendar', title: 'Seasonal Campaigns Ready', desc: 'Ramadan, Eid, National Day — ready-made templates you activate with one click.' },
+      ],
+    },
+    audience: {
+      badge: 'Who Is Waya For?',
+      title: 'For every store that wants customers to come back',
+      subtitle: 'Whatever your business, Waya fits.',
+      items: [
+        { img: '/coffee.png', label: 'Cafés' },
+        { img: '/restaurants.png', label: 'Restaurants' },
+        { img: '/salon.png', label: 'Salons' },
+        { img: '/barbershop.png', label: 'Barbershops' },
+        { img: '/laundry.png', label: 'Laundry' },
+        { img: '/retailer.png', label: 'Retail Stores' },
       ],
     },
     demo: {
@@ -782,6 +808,36 @@ function Features({ t }) {
               <div className="feature-icon">{featureIcons[feat.icon]}</div>
               <h3 className="feature-title">{feat.title}</h3>
               <p className="feature-desc">{feat.desc}</p>
+            </motion.div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/* ─── Who Is Waya For ─── */
+function Audience({ t }) {
+  return (
+    <section className="section audience-section">
+      <Reveal>
+        <div className="section-badge">{t.audience.badge}</div>
+        <h2 className="section-title">{t.audience.title}</h2>
+        <p className="section-subtitle">{t.audience.subtitle}</p>
+      </Reveal>
+
+      <div className="audience-grid">
+        {t.audience.items.map((item, i) => (
+          <Reveal key={i} delay={i * 0.1}>
+            <motion.div
+              className="audience-card"
+              whileHover={{ y: -8, scale: 1.03 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="audience-img-wrap">
+                <img src={item.img} alt={item.label} className="audience-img" />
+              </div>
+              <span className="audience-label">{item.label}</span>
             </motion.div>
           </Reveal>
         ))}
@@ -1492,6 +1548,7 @@ export default function App() {
       <Hero t={t} />
       <StatsBar t={t} />
       <HowItWorks t={t} />
+      <Audience t={t} />
       <ProductDemo t={t} />
       <Features t={t} />
       <WalletCards t={t} />
