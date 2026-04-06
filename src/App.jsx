@@ -385,10 +385,26 @@ function GlobeIcon() {
   )
 }
 
+function SunIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  )
+}
+
 const featureIcons = { bell: <BellIcon />, chart: <ChartIcon />, share: <ShareIcon />, calendar: <CalendarIcon /> }
 
 /* ─── Navbar ─── */
-function Navbar({ lang, setLang, t }) {
+function Navbar({ lang, setLang, theme, setTheme, t }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -415,6 +431,9 @@ function Navbar({ lang, setLang, t }) {
           <a href="#pricing">{t.nav.pricing}</a>
         </div>
         <div className="nav-left-group">
+          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
           <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
             <GlobeIcon />
             <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
@@ -860,6 +879,7 @@ function useSmoothScroll() {
 /* ─── App ─── */
 export default function App() {
   const [lang, setLang] = useState('ar')
+  const [theme, setTheme] = useState('dark')
   const t = content[lang]
 
   useSmoothScroll()
@@ -869,9 +889,13 @@ export default function App() {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
   }, [lang])
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
   return (
     <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
-      <Navbar lang={lang} setLang={setLang} t={t} />
+      <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
       <Hero t={t} />
       <StatsBar t={t} />
       <HowItWorks t={t} />

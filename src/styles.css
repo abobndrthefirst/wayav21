@@ -25,6 +25,129 @@
   --max-w: 1280px;
 }
 
+/* ─── Light Theme ─── */
+[data-theme="light"] {
+  --bg: #FAFAF8;
+  --bg-card: #FFFFFF;
+  --bg-card-inner: #F5F3EF;
+  --border: #E5E2DC;
+  --green: #10B981;
+  --green-bright: #059669;
+  --green-glow: rgba(16, 185, 129, 0.10);
+  --green-btn: rgba(16, 185, 129, 0.85);
+  --white: #12110F;
+  --cream: #1C1B18;
+  --gray: #4A4A4A;
+  --gray-dim: #6B6B6B;
+  --icon-bg: #E8F5E9;
+}
+
+[data-theme="light"] .nav-pill {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .nav-links a {
+  color: #4A4A4A;
+}
+
+[data-theme="light"] .nav-links a:hover {
+  color: #12110F;
+}
+
+[data-theme="light"] .nav-logo-text {
+  color: #12110F;
+}
+
+[data-theme="light"] .nav-cta {
+  color: #fff;
+}
+
+[data-theme="light"] .hero-input {
+  background: #fff;
+  border-color: #E5E2DC;
+  color: #12110F;
+}
+
+[data-theme="light"] .hero-input:focus {
+  background: #fff;
+}
+
+[data-theme="light"] .hero-select option {
+  background: #fff;
+  color: #12110F;
+}
+
+[data-theme="light"] .hero-btn {
+  color: #fff;
+}
+
+[data-theme="light"] .hero-whatsapp-btn {
+  color: #fff;
+}
+
+[data-theme="light"] .floating-bubble {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .comparison-without {
+  background: #F0EFED;
+  opacity: 1;
+}
+
+[data-theme="light"] .comparison-with {
+  background: #fff;
+}
+
+[data-theme="light"] .section-badge {
+  background: #fff;
+  border-color: #E5E2DC;
+}
+
+[data-theme="light"] .stats-bar-section {
+  background: #fff;
+  border-color: #E5E2DC;
+}
+
+[data-theme="light"] .pricing-cta {
+  color: #fff;
+}
+
+[data-theme="light"] .form-success {
+  color: var(--green);
+}
+
+[data-theme="light"] .lang-toggle,
+[data-theme="light"] .theme-toggle {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.04);
+  color: #4A4A4A;
+}
+
+[data-theme="light"] .lang-toggle:hover,
+[data-theme="light"] .theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #12110F;
+}
+
+[data-theme="light"] .wallet-card-wrap {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .section-alt {
+  background: #F5F3EF;
+}
+
+[data-theme="light"] .footer {
+  border-color: #E5E2DC;
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(16, 185, 129, 0.2);
+  color: #12110F;
+}
+
 html {
   scroll-behavior: smooth;
   background: var(--bg);
@@ -160,7 +283,26 @@ body {
   transform: translateY(-1px);
 }
 
-/* ─── Language Toggle ─── */
+/* ─── Theme & Language Toggle ─── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--gray);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white);
+}
+
 .lang-toggle {
   display: flex;
   align-items: center;
