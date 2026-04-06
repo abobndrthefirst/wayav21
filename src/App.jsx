@@ -70,6 +70,26 @@ const content = {
         { icon: 'calendar', title: 'حملات المواسم جاهزة', desc: 'رمضان، العيد، اليوم الوطني — قوالب جاهزة تفعّلها بضغطة واحدة.' },
       ],
     },
+    demo: {
+      badge: 'شوف بنفسك',
+      title: 'جولة سريعة داخل وايا',
+      subtitle: 'من لوحة التحكم إلى تجربة العميل — كل شي واضح وبسيط.',
+      steps: [
+        { label: 'سجّل متجرك', desc: 'اختر نوع نشاطك، ارفع شعارك، وحدد المكافآت. جاهز خلال دقائق.' },
+        { label: 'شارك الكود', desc: 'اطبع QR أو شاركه رقمياً. العميل يمسح ويبدأ يجمع نقاط بدون تطبيق.' },
+        { label: 'تابع النتائج', desc: 'شوف مين رجع، مين قرب من مكافأة، ومين يحتاج إشعار تذكيري.' },
+        { label: 'كافئ وكرر', desc: 'المكافأة توصل تلقائياً، والعميل يرجع. حلقة ولاء ما توقف.' },
+      ],
+      dashboardTitle: 'لوحة تحكم وايا',
+      metrics: [
+        { icon: 'users', value: '١,٢٤٧', label: 'عميل نشط', trend: '+١٢٪' },
+        { icon: 'repeat', value: '٦٧٪', label: 'زيارات متكررة', trend: '+٨٪' },
+        { icon: 'gift', value: '٣,٨٩١', label: 'مكافأة مرسلة', trend: '+٣٤٪' },
+        { icon: 'sar', value: '١٤.٢ك', label: 'إيرادات إضافية', trend: '+٢٢٪' },
+      ],
+      customerJourney: 'رحلة العميل',
+      journeySteps: ['يمسح QR', 'يجمع نقاط', 'يوصله إشعار', 'يرجع ويستلم مكافأة'],
+    },
     walletCards: {
       title: 'بطاقات ولاء رقمية بتصميمك',
       subtitle: 'كل بطاقة تعكس هوية متجرك — قهوة، صالون، أو أي نشاط.',
@@ -194,6 +214,26 @@ const content = {
         { icon: 'share', title: 'Built-in Referral Loop', desc: 'Your customer shares, their friend signs up, both earn. Organic growth, zero budget.' },
         { icon: 'calendar', title: 'Seasonal Campaigns Ready', desc: 'Ramadan, Eid, National Day — ready-made templates you activate with one click.' },
       ],
+    },
+    demo: {
+      badge: 'See It In Action',
+      title: 'A Quick Tour Inside Waya',
+      subtitle: 'From your dashboard to the customer experience — everything is clear and simple.',
+      steps: [
+        { label: 'Register your store', desc: 'Choose your business type, upload your logo, and set rewards. Ready in minutes.' },
+        { label: 'Share the code', desc: 'Print the QR or share it digitally. Customers scan and start earning — no app needed.' },
+        { label: 'Track results', desc: 'See who returned, who is close to a reward, and who needs a reminder notification.' },
+        { label: 'Reward & repeat', desc: 'Rewards are delivered automatically, and customers come back. A loyalty loop that never stops.' },
+      ],
+      dashboardTitle: 'Waya Dashboard',
+      metrics: [
+        { icon: 'users', value: '1,247', label: 'Active Customers', trend: '+12%' },
+        { icon: 'repeat', value: '67%', label: 'Repeat Visits', trend: '+8%' },
+        { icon: 'gift', value: '3,891', label: 'Rewards Sent', trend: '+34%' },
+        { icon: 'sar', value: '14.2K', label: 'Added Revenue', trend: '+22%' },
+      ],
+      customerJourney: 'Customer Journey',
+      journeySteps: ['Scans QR', 'Earns Points', 'Gets Notified', 'Returns & Redeems'],
     },
     walletCards: {
       title: 'Digital loyalty cards with your branding',
@@ -658,6 +698,134 @@ function Features({ t }) {
   )
 }
 
+/* ─── Product Demo / Showcase ─── */
+function DemoMetricIcon({ type }) {
+  if (type === 'users') return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  )
+  if (type === 'repeat') return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+  )
+  if (type === 'gift') return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+  )
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+  )
+}
+
+function ProductDemo({ t }) {
+  const [activeStep, setActiveStep] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveStep(prev => (prev + 1) % t.demo.steps.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [t.demo.steps.length])
+
+  return (
+    <section className="section demo-section" id="demo">
+      <Reveal>
+        <div className="section-badge">{t.demo.badge}</div>
+        <h2 className="section-title">{t.demo.title}</h2>
+        <p className="section-subtitle">{t.demo.subtitle}</p>
+      </Reveal>
+
+      <div className="demo-layout">
+        {/* Interactive Steps */}
+        <Reveal delay={0.1} direction="right">
+          <div className="demo-steps-panel">
+            {t.demo.steps.map((step, i) => (
+              <motion.div
+                key={i}
+                className={`demo-step ${activeStep === i ? 'demo-step-active' : ''}`}
+                onClick={() => setActiveStep(i)}
+                whileHover={{ x: 4 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="demo-step-num">{i + 1}</div>
+                <div className="demo-step-content">
+                  <h4 className="demo-step-label">{step.label}</h4>
+                  <AnimatePresence mode="wait">
+                    {activeStep === i && (
+                      <motion.p
+                        className="demo-step-desc"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {step.desc}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+                {activeStep === i && <motion.div className="demo-step-bar" layoutId="demoBar" />}
+              </motion.div>
+            ))}
+          </div>
+        </Reveal>
+
+        {/* Dashboard Preview */}
+        <Reveal delay={0.2} direction="left">
+          <div className="demo-preview">
+            <div className="demo-preview-header">
+              <div className="demo-preview-dots">
+                <span /><span /><span />
+              </div>
+              <span className="demo-preview-title">{t.demo.dashboardTitle}</span>
+            </div>
+
+            <div className="demo-metrics-grid">
+              {t.demo.metrics.map((metric, i) => (
+                <motion.div
+                  key={i}
+                  className="demo-metric-card"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                >
+                  <div className="demo-metric-icon">
+                    <DemoMetricIcon type={metric.icon} />
+                  </div>
+                  <span className="demo-metric-value">{metric.value}</span>
+                  <span className="demo-metric-label">{metric.label}</span>
+                  <span className="demo-metric-trend">{metric.trend}</span>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Customer Journey Flow */}
+            <div className="demo-journey">
+              <span className="demo-journey-title">{t.demo.customerJourney}</span>
+              <div className="demo-journey-flow">
+                {t.demo.journeySteps.map((step, i) => (
+                  <motion.div
+                    key={i}
+                    className="demo-journey-step"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5 + i * 0.15 }}
+                  >
+                    <span className="demo-journey-num">{i + 1}</span>
+                    <span className="demo-journey-label">{step}</span>
+                    {i < t.demo.journeySteps.length - 1 && (
+                      <svg className="demo-journey-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
 /* ─── Wallet Cards Showcase ─── */
 function WalletCards({ t }) {
   const cards = [
@@ -900,6 +1068,7 @@ export default function App() {
       <StatsBar t={t} />
       <HowItWorks t={t} />
       <Features t={t} />
+      <ProductDemo t={t} />
       <WalletCards t={t} />
       <Comparison t={t} />
       <SocialProof t={t} />

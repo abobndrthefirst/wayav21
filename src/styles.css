@@ -143,6 +143,23 @@
   border-color: #E5E2DC;
 }
 
+[data-theme="light"] .demo-step:hover,
+[data-theme="light"] .demo-step-active {
+  background: #F0EFED;
+}
+[data-theme="light"] .demo-preview {
+  background: #FFFFFF;
+  border-color: #E5E2DC;
+}
+[data-theme="light"] .demo-preview-header {
+  background: #F5F5F3;
+  border-color: #E5E2DC;
+}
+[data-theme="light"] .demo-metric-card {
+  background: #F8F8F6;
+  border-color: #E5E2DC;
+}
+
 [data-theme="light"] ::selection {
   background: rgba(16, 185, 129, 0.2);
   color: #12110F;
@@ -835,6 +852,262 @@ body {
   font-size: 14px;
   color: var(--gray-dim);
   line-height: 1.6;
+}
+
+/* ─── Product Demo / Showcase ─── */
+.demo-section {
+  overflow: hidden;
+}
+
+.demo-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 40px;
+  max-width: var(--max-w);
+  margin: 48px auto 0;
+  align-items: start;
+}
+
+.demo-steps-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  border: 1px solid transparent;
+}
+
+.demo-step:hover {
+  background: var(--bg-card);
+}
+
+.demo-step-active {
+  background: var(--bg-card);
+  border-color: var(--green);
+}
+
+.demo-step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--icon-bg);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.demo-step-active .demo-step-num {
+  background: var(--green);
+  color: var(--bg);
+}
+
+.demo-step-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.demo-step-label {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--cream);
+  margin-bottom: 4px;
+}
+
+.demo-step-desc {
+  font-size: 13px;
+  color: var(--gray-dim);
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+.demo-step-bar {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: var(--green);
+  border-radius: 3px;
+}
+
+/* Demo Preview (Dashboard Mockup) */
+.demo-preview {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.demo-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--bg-card-inner);
+  border-bottom: 1px solid var(--border);
+}
+
+.demo-preview-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.demo-preview-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.demo-preview-dots span:nth-child(1) { background: #EF4444; }
+.demo-preview-dots span:nth-child(2) { background: #F59E0B; }
+.demo-preview-dots span:nth-child(3) { background: #10B981; }
+
+.demo-preview-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-dim);
+}
+
+.demo-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 20px;
+}
+
+.demo-metric-card {
+  background: var(--bg-card-inner);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.demo-metric-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--icon-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.demo-metric-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--cream);
+}
+
+.demo-metric-label {
+  font-size: 12px;
+  color: var(--gray-dim);
+}
+
+.demo-metric-trend {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+/* Customer Journey Flow */
+.demo-journey {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.demo-journey-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 14px;
+}
+
+.demo-journey-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.demo-journey-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.demo-journey-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--green);
+  color: var(--bg);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.demo-journey-label {
+  font-size: 12px;
+  color: var(--cream);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.demo-journey-arrow {
+  flex-shrink: 0;
+  margin-inline-start: 4px;
+}
+
+/* Demo responsive */
+@media (max-width: 900px) {
+  .demo-layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .demo-journey-flow {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .demo-journey-step {
+    flex: unset;
+  }
+}
+
+@media (max-width: 600px) {
+  .demo-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  .demo-journey-flow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .demo-journey-arrow {
+    display: none;
+  }
 }
 
 /* ─── Wallet Cards Showcase ─── */
