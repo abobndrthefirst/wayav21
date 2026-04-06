@@ -27,7 +27,7 @@ const content = {
     hero: {
       title1: 'عميلك اللي يرجع',
       title2: 'يسوى أكثر من عشرة جدد',
-      subtitle: 'وايا يحوّل زيارة وحدة إلى علاقة طويلة. برنامج ولاء جاهز، يشتغل من أول يوم — بدون تطبيق، بدون تعقيد، وبدون ما تحتاج فريق تقني.',
+      subtitle: 'وايا يحوّل زيارة وحدة إلى علاقة طويلة. برنامج ولاء جاهز، يشتغل من أول يوم — بدون جهاز مخصص، بدون تعقيد، وبدون ما تحتاج فريق تقني.',
       freeTrial: 'اول أسبوعين مجاناً — بدون أي التزام — جربها بنفسك',
       inputPlaceholder: 'إيميلك أو رقم جوالك',
       storeNamePlaceholder: 'اسم متجرك',
@@ -92,7 +92,7 @@ const content = {
       subtitle: 'من لوحة التحكم إلى تجربة العميل — كل شي واضح وبسيط.',
       steps: [
         { label: 'سجّل متجرك', desc: 'اختر نوع نشاطك، ارفع شعارك، وحدد المكافآت. جاهز خلال دقائق.' },
-        { label: 'شارك الكود', desc: 'اطبع QR أو شاركه رقمياً. العميل يمسح ويبدأ يجمع نقاط بدون تطبيق.' },
+        { label: 'شارك الكود', desc: 'اطبع QR أو شاركه رقمياً. العميل يمسح بجواله ويبدأ يجمع نقاط بدون ما يحمّل شي.' },
         { label: 'تابع النتائج', desc: 'شوف مين رجع، مين قرب من مكافأة، ومين يحتاج إشعار تذكيري.' },
         { label: 'كافئ وكرر', desc: 'المكافأة توصل تلقائياً، والعميل يرجع. حلقة ولاء ما توقف.' },
       ],
@@ -211,7 +211,7 @@ const content = {
     hero: {
       title1: 'A returning customer',
       title2: 'is worth more than ten new ones',
-      subtitle: 'Waya turns a single visit into a lasting relationship. A ready-made loyalty program that works from day one — no app, no complexity, and no tech team needed.',
+      subtitle: 'Waya turns a single visit into a lasting relationship. A ready-made loyalty program that works from day one — no extra device, no complexity, and no tech team needed.',
       freeTrial: 'First 2 weeks free — no commitment at all — try it yourself',
       inputPlaceholder: 'Your email or phone number',
       storeNamePlaceholder: 'Your store name',
@@ -234,7 +234,7 @@ const content = {
       subtitle: 'From signup to the first reward — everything is clear and simple.',
       steps: [
         { title: 'Sign up & set everything up', desc: 'Create your account, download the app, choose your reward style (stamps, points, or cashback), and customize the branding. Ready in minutes.' },
-        { title: 'Print QR code & place it in your store', desc: 'Print the code and place it on the counter or table. Customers scan it with their phone — no app download needed.' },
+        { title: 'Print QR code & place it in your store', desc: 'Print the code and place it on the counter or table. Customers scan it with their phone — no download needed on their end.' },
         { title: 'Customer signs up & starts collecting', desc: 'Once they scan the code, they register in seconds and start earning points or stamps from their very first visit.' },
         { title: 'Customer returns — cashier scans from the app', desc: 'When the customer comes back, the cashier opens the Waya app and scans the QR code from the customer\'s phone. Points are added automatically.' },
         { title: 'Reward arrives — customer keeps coming back', desc: 'Once they reach the goal, the reward drops automatically. The customer feels valued and returns — and you track everything from the dashboard.' },
@@ -276,7 +276,7 @@ const content = {
       subtitle: 'From your dashboard to the customer experience — everything is clear and simple.',
       steps: [
         { label: 'Register your store', desc: 'Choose your business type, upload your logo, and set rewards. Ready in minutes.' },
-        { label: 'Share the code', desc: 'Print the QR or share it digitally. Customers scan and start earning — no app needed.' },
+        { label: 'Share the code', desc: 'Print the QR or share it digitally. Customers scan with their phone and start earning — no download needed.' },
         { label: 'Track results', desc: 'See who returned, who is close to a reward, and who needs a reminder notification.' },
         { label: 'Reward & repeat', desc: 'Rewards are delivered automatically, and customers come back. A loyalty loop that never stops.' },
       ],
