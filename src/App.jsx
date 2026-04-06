@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { Analytics } from '@vercel/analytics/react'
 import './styles.css'
 
 /* ─── Supabase config ─── */
@@ -45,7 +46,7 @@ const content = {
     ],
     how: {
       badge: 'كيف يعمل',
-      title: 'خمس خطوات وتبدأ. بدون تطبيق. بدون انتظار.',
+      title: 'خمس خطوات وتبدأ. بدون جهاز مخصص. بدون انتظار.',
       subtitle: 'من التسجيل إلى أول مكافأة — كل شي واضح وبسيط.',
       steps: [
         { title: 'سجّل وجهّز كل شي', desc: 'سجّل حسابك، حمّل التطبيق، اختر ستايل المكافآت (ختم، نقاط، أو كاش باك)، وخصّص الهوية. جاهز خلال دقائق.' },
@@ -187,6 +188,9 @@ const content = {
     footer: {
       copy: '٢٠٢٦ وايا.',
       links: { privacy: 'الخصوصية', terms: 'الشروط' },
+      contact: 'تواصل معنا',
+      email: 'hello@trywaya.com',
+      whatsapp: 'واتساب',
     },
   },
   en: {
@@ -213,7 +217,7 @@ const content = {
     ],
     how: {
       badge: 'How It Works',
-      title: 'Five steps and you\'re live. No app for customers. No waiting.',
+      title: 'Five steps and you\'re live. No dedicated device. No waiting.',
       subtitle: 'From signup to the first reward — everything is clear and simple.',
       steps: [
         { title: 'Sign up & set everything up', desc: 'Create your account, download the app, choose your reward style (stamps, points, or cashback), and customize the branding. Ready in minutes.' },
@@ -355,6 +359,9 @@ const content = {
     footer: {
       copy: '2026 Waya.',
       links: { privacy: 'Privacy', terms: 'Terms' },
+      contact: 'Contact Us',
+      email: 'hello@trywaya.com',
+      whatsapp: 'WhatsApp',
     },
   },
 }
@@ -1255,6 +1262,24 @@ function CTA({ t }) {
   )
 }
 
+/* ─── WhatsApp Icon (small) ─── */
+function WhatsAppIconSmall() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+  )
+}
+
+/* ─── Email Icon ─── */
+function EmailIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/>
+    </svg>
+  )
+}
+
 /* ─── Footer ─── */
 function Footer({ t }) {
   return (
@@ -1264,10 +1289,24 @@ function Footer({ t }) {
           <Logo size={28} />
           <span className="nav-logo-text">وايا</span>
         </div>
-        <div className="footer-links">
-          <a href="#">{t.footer.links.privacy}</a>
-          <a href="#">{t.footer.links.terms}</a>
+
+        <div className="footer-center">
+          <div className="footer-links">
+            <a href="/privacy">{t.footer.links.privacy}</a>
+            <a href="/terms">{t.footer.links.terms}</a>
+          </div>
+          <div className="footer-contact">
+            <a href="https://wa.me/966509076104" target="_blank" rel="noopener noreferrer" className="footer-contact-link">
+              <WhatsAppIconSmall />
+              <span>{t.footer.whatsapp}</span>
+            </a>
+            <a href="mailto:hello@trywaya.com" className="footer-contact-link">
+              <EmailIcon />
+              <span>{t.footer.email}</span>
+            </a>
+          </div>
         </div>
+
         <p className="footer-copy">{t.footer.copy}</p>
       </div>
     </footer>
@@ -1289,13 +1328,149 @@ function useSmoothScroll() {
   }, [])
 }
 
+/* ─── Privacy Policy Page ─── */
+function PrivacyPage({ lang, setLang, theme, setTheme, t }) {
+  const isAr = lang === 'ar'
+  return (
+    <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+      <section className="legal-page">
+        <h1 className="legal-title">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</h1>
+        <p className="legal-date">{isAr ? 'آخر تحديث: أبريل ٢٠٢٦' : 'Last updated: April 2026'}</p>
+
+        <h2>{isAr ? 'مقدمة' : 'Introduction'}</h2>
+        <p>{isAr
+          ? 'وايا ("نحن"، "لنا") تلتزم بحماية خصوصية مستخدميها. توضح هذه السياسة كيف نجمع ونستخدم ونحمي بياناتك الشخصية عند استخدام خدماتنا.'
+          : 'Waya ("we", "us") is committed to protecting the privacy of its users. This policy explains how we collect, use, and protect your personal data when you use our services.'
+        }</p>
+
+        <h2>{isAr ? 'البيانات التي نجمعها' : 'Data We Collect'}</h2>
+        <p>{isAr
+          ? 'نجمع المعلومات التالية: اسم المتجر، رقم الجوال أو البريد الإلكتروني، نوع النشاط التجاري، وبيانات استخدام برنامج الولاء (عدد الزيارات، النقاط، المكافآت). لا نجمع أي بيانات مالية أو بيانات بطاقات ائتمان.'
+          : 'We collect the following information: store name, phone number or email, business type, and loyalty program usage data (visits, points, rewards). We do not collect any financial data or credit card information.'
+        }</p>
+
+        <h2>{isAr ? 'كيف نستخدم بياناتك' : 'How We Use Your Data'}</h2>
+        <p>{isAr
+          ? 'نستخدم بياناتك لتشغيل خدمة برنامج الولاء، إرسال الإشعارات المتعلقة بالمكافآت، تحسين خدماتنا، والتواصل معك بخصوص حسابك. لن نبيع أو نشارك بياناتك مع أطراف ثالثة لأغراض تسويقية.'
+          : 'We use your data to operate the loyalty program service, send reward-related notifications, improve our services, and communicate with you about your account. We will never sell or share your data with third parties for marketing purposes.'
+        }</p>
+
+        <h2>{isAr ? 'حماية البيانات' : 'Data Protection'}</h2>
+        <p>{isAr
+          ? 'نستخدم تشفير SSL لحماية جميع البيانات المنقولة. بياناتك مخزنة بشكل آمن على خوادم محمية. نلتزم بأفضل ممارسات أمن المعلومات لحماية بياناتك.'
+          : 'We use SSL encryption to protect all transmitted data. Your data is stored securely on protected servers. We follow information security best practices to protect your data.'
+        }</p>
+
+        <h2>{isAr ? 'حقوقك' : 'Your Rights'}</h2>
+        <p>{isAr
+          ? 'يحق لك طلب الوصول إلى بياناتك الشخصية، تصحيحها، أو حذفها في أي وقت. يمكنك التواصل معنا عبر hello@trywaya.com لممارسة هذه الحقوق.'
+          : 'You have the right to request access to, correction of, or deletion of your personal data at any time. You can contact us at hello@trywaya.com to exercise these rights.'
+        }</p>
+
+        <h2>{isAr ? 'التواصل' : 'Contact'}</h2>
+        <p>{isAr
+          ? 'لأي استفسارات حول سياسة الخصوصية، تواصل معنا على hello@trywaya.com أو عبر واتساب على الرقم +966509076104.'
+          : 'For any questions about this privacy policy, contact us at hello@trywaya.com or via WhatsApp at +966509076104.'
+        }</p>
+
+        <div className="legal-back">
+          <a href="/">{isAr ? '← الرجوع للرئيسية' : '← Back to Home'}</a>
+        </div>
+      </section>
+      <Footer t={t} />
+      <Analytics />
+    </div>
+  )
+}
+
+/* ─── Terms Page ─── */
+function TermsPage({ lang, setLang, theme, setTheme, t }) {
+  const isAr = lang === 'ar'
+  return (
+    <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+      <section className="legal-page">
+        <h1 className="legal-title">{isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}</h1>
+        <p className="legal-date">{isAr ? 'آخر تحديث: أبريل ٢٠٢٦' : 'Last updated: April 2026'}</p>
+
+        <h2>{isAr ? 'الخدمة' : 'The Service'}</h2>
+        <p>{isAr
+          ? 'وايا هي منصة برامج ولاء رقمية تتيح للمتاجر إنشاء وإدارة برامج مكافآت لعملائها. باستخدامك للخدمة، فإنك توافق على هذه الشروط.'
+          : 'Waya is a digital loyalty platform that enables stores to create and manage reward programs for their customers. By using the service, you agree to these terms.'
+        }</p>
+
+        <h2>{isAr ? 'الحساب والتسجيل' : 'Account & Registration'}</h2>
+        <p>{isAr
+          ? 'أنت مسؤول عن الحفاظ على سرية حسابك وكلمة المرور. يجب أن تكون المعلومات المقدمة عند التسجيل دقيقة وحديثة. يجب أن يكون عمرك 18 سنة أو أكثر لاستخدام الخدمة.'
+          : 'You are responsible for maintaining the confidentiality of your account and password. Information provided during registration must be accurate and current. You must be 18 years or older to use the service.'
+        }</p>
+
+        <h2>{isAr ? 'الاشتراك والدفع' : 'Subscription & Payment'}</h2>
+        <p>{isAr
+          ? 'الخطة الشهرية بسعر ٧٥ ر.س/شهر والخطة السنوية بسعر ٥٥ ر.س/شهر (تُفوتر سنوياً). أول أسبوعين مجاناً. يمكنك إلغاء اشتراكك في أي وقت. بعد الإلغاء، ستستمر الخدمة حتى نهاية فترة الفوترة الحالية.'
+          : 'The monthly plan is 75 SAR/month and the annual plan is 55 SAR/month (billed annually). First 2 weeks are free. You can cancel your subscription at any time. After cancellation, the service continues until the end of the current billing period.'
+        }</p>
+
+        <h2>{isAr ? 'الاستخدام المقبول' : 'Acceptable Use'}</h2>
+        <p>{isAr
+          ? 'يجب استخدام وايا لأغراض تجارية مشروعة فقط. يُمنع استخدام الخدمة لأي نشاط غير قانوني أو مضلل. نحتفظ بحق تعليق أو إنهاء الحسابات التي تنتهك هذه الشروط.'
+          : 'Waya must be used for legitimate business purposes only. Using the service for any illegal or misleading activity is prohibited. We reserve the right to suspend or terminate accounts that violate these terms.'
+        }</p>
+
+        <h2>{isAr ? 'الملكية الفكرية' : 'Intellectual Property'}</h2>
+        <p>{isAr
+          ? 'جميع محتويات وايا بما في ذلك العلامة التجارية والتصميم والبرمجيات هي ملكية خاصة لوايا. لا يجوز نسخ أو توزيع أي جزء من الخدمة بدون إذن كتابي مسبق.'
+          : 'All Waya content including branding, design, and software is proprietary to Waya. No part of the service may be copied or distributed without prior written permission.'
+        }</p>
+
+        <h2>{isAr ? 'تحديد المسؤولية' : 'Limitation of Liability'}</h2>
+        <p>{isAr
+          ? 'وايا تُقدم الخدمة "كما هي". لا نتحمل مسؤولية أي خسائر غير مباشرة ناتجة عن استخدام الخدمة. مسؤوليتنا الإجمالية لا تتجاوز المبلغ المدفوع خلال الاثني عشر شهراً السابقة.'
+          : 'Waya provides the service "as is". We are not liable for any indirect losses resulting from the use of the service. Our total liability does not exceed the amount paid during the preceding twelve months.'
+        }</p>
+
+        <h2>{isAr ? 'التواصل' : 'Contact'}</h2>
+        <p>{isAr
+          ? 'لأي استفسارات حول الشروط والأحكام، تواصل معنا على hello@trywaya.com أو عبر واتساب على الرقم +966509076104.'
+          : 'For any questions about these terms, contact us at hello@trywaya.com or via WhatsApp at +966509076104.'
+        }</p>
+
+        <div className="legal-back">
+          <a href="/">{isAr ? '← الرجوع للرئيسية' : '← Back to Home'}</a>
+        </div>
+      </section>
+      <Footer t={t} />
+      <Analytics />
+    </div>
+  )
+}
+
 /* ─── App ─── */
 export default function App() {
   const [lang, setLang] = useState('ar')
   const [theme, setTheme] = useState('dark')
+  const [page, setPage] = useState('home')
   const t = content[lang]
 
   useSmoothScroll()
+
+  // Simple path-based routing
+  useEffect(() => {
+    const path = window.location.pathname
+    if (path === '/privacy') setPage('privacy')
+    else if (path === '/terms') setPage('terms')
+    else setPage('home')
+
+    const handlePopState = () => {
+      const p = window.location.pathname
+      if (p === '/privacy') setPage('privacy')
+      else if (p === '/terms') setPage('terms')
+      else setPage('home')
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -1305,6 +1480,13 @@ export default function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [page])
+
+  if (page === 'privacy') return <PrivacyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+  if (page === 'terms') return <TermsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
 
   return (
     <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
@@ -1321,6 +1503,7 @@ export default function App() {
       <Pricing t={t} />
       <CTA t={t} />
       <Footer t={t} />
+      <Analytics />
     </div>
   )
 }
