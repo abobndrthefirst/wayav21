@@ -94,6 +94,25 @@ const content = {
       title: 'بطاقات ولاء رقمية بتصميمك',
       subtitle: 'كل بطاقة تعكس هوية متجرك — قهوة، صالون، أو أي نشاط.',
     },
+    calculator: {
+      badge: 'احسبها بنفسك',
+      title: 'كم وايا بتزيد إيراداتك؟',
+      subtitle: 'حرّك الأرقام وشوف الفرق — بناءً على بيانات حقيقية من تجار مثلك.',
+      customersLabel: 'عدد العملاء شهرياً',
+      avgOrderLabel: 'متوسط قيمة الطلب (ر.س)',
+      withoutTitle: 'بدون وايا',
+      withTitle: 'مع وايا',
+      monthlyRevenue: 'إيرادات شهرية',
+      repeatVisits: 'زيارات متكررة',
+      avgTicket: 'متوسط الفاتورة',
+      extraRevenue: 'إيرادات إضافية شهرياً',
+      roi: 'عائد الاستثمار',
+      currency: 'ر.س',
+      perMonth: '/ شهر',
+      xReturn: 'ضعف',
+      wayaCost: 'تكلفة وايا',
+      netProfit: 'صافي الربح الإضافي',
+    },
     comparison: {
       badge: 'ليش وايا؟',
       title: 'ماذا لو برامج الولاء ما كانت بس للكبار؟',
@@ -238,6 +257,25 @@ const content = {
     walletCards: {
       title: 'Digital loyalty cards with your branding',
       subtitle: 'Each card reflects your store identity — coffee, salon, or any business.',
+    },
+    calculator: {
+      badge: 'Calculate It Yourself',
+      title: 'How much will Waya increase your revenue?',
+      subtitle: 'Move the sliders and see the difference — based on real data from merchants like you.',
+      customersLabel: 'Monthly Customers',
+      avgOrderLabel: 'Average Order Value (SAR)',
+      withoutTitle: 'Without Waya',
+      withTitle: 'With Waya',
+      monthlyRevenue: 'Monthly Revenue',
+      repeatVisits: 'Repeat Visits',
+      avgTicket: 'Avg. Ticket',
+      extraRevenue: 'Extra Monthly Revenue',
+      roi: 'Return on Investment',
+      currency: 'SAR',
+      perMonth: '/ month',
+      xReturn: 'x return',
+      wayaCost: 'Waya Cost',
+      netProfit: 'Net Extra Profit',
     },
     comparison: {
       badge: 'Why Waya?',
@@ -858,6 +896,153 @@ function WalletCards({ t }) {
   )
 }
 
+/* ─── ROI Calculator ─── */
+function Calculator({ t, lang }) {
+  const [customers, setCustomers] = useState(300)
+  const [avgOrder, setAvgOrder] = useState(50)
+
+  // Based on Waya stats: +32% repeat visits, +18% avg ticket increase
+  const repeatRate = 0.25 // baseline: 25% of customers revisit
+  const wayaRepeatRate = 0.25 * 1.32 // +32% with Waya
+  const wayaAvgOrder = avgOrder * 1.18 // +18% avg ticket with Waya
+
+  const baseMonthlyRevenue = customers * avgOrder
+  const baseRepeatRevenue = Math.round(customers * repeatRate) * avgOrder
+  const withWayaRepeatRevenue = Math.round(customers * wayaRepeatRate) * wayaAvgOrder
+  const totalWithout = baseMonthlyRevenue + baseRepeatRevenue
+  const totalWith = baseMonthlyRevenue + withWayaRepeatRevenue
+  const extraRevenue = Math.round(totalWith - totalWithout)
+  const wayaCost = 75
+  const netProfit = extraRevenue - wayaCost
+  const roiMultiple = (extraRevenue / wayaCost).toFixed(1)
+
+  const fmt = (n) => {
+    if (lang === 'ar') {
+      return n.toLocaleString('ar-SA')
+    }
+    return n.toLocaleString('en-US')
+  }
+
+  return (
+    <section className="section calculator-section" id="calculator">
+      <Reveal>
+        <div className="section-badge">{t.calculator.badge}</div>
+        <h2 className="section-title">{t.calculator.title}</h2>
+        <p className="section-subtitle">{t.calculator.subtitle}</p>
+      </Reveal>
+
+      <Reveal delay={0.15}>
+        <div className="calc-container">
+          {/* Sliders */}
+          <div className="calc-sliders">
+            <div className="calc-slider-group">
+              <div className="calc-slider-header">
+                <label>{t.calculator.customersLabel}</label>
+                <span className="calc-slider-value">{fmt(customers)}</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="2000"
+                step="10"
+                value={customers}
+                onChange={(e) => setCustomers(Number(e.target.value))}
+                className="calc-range"
+              />
+              <div className="calc-range-labels">
+                <span>50</span>
+                <span>2,000</span>
+              </div>
+            </div>
+
+            <div className="calc-slider-group">
+              <div className="calc-slider-header">
+                <label>{t.calculator.avgOrderLabel}</label>
+                <span className="calc-slider-value">{fmt(avgOrder)} {t.calculator.currency}</span>
+              </div>
+              <input
+                type="range"
+                min="10"
+                max="500"
+                step="5"
+                value={avgOrder}
+                onChange={(e) => setAvgOrder(Number(e.target.value))}
+                className="calc-range"
+              />
+              <div className="calc-range-labels">
+                <span>10</span>
+                <span>500</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Results */}
+          <div className="calc-results">
+            <div className="calc-comparison">
+              <div className="calc-col calc-col-without">
+                <h4>{t.calculator.withoutTitle}</h4>
+                <div className="calc-big-number">
+                  <span className="calc-amount">{fmt(Math.round(totalWithout))}</span>
+                  <span className="calc-unit">{t.calculator.currency} {t.calculator.perMonth}</span>
+                </div>
+                <div className="calc-detail">
+                  <span>{t.calculator.repeatVisits}</span>
+                  <span>{Math.round(repeatRate * 100)}%</span>
+                </div>
+                <div className="calc-detail">
+                  <span>{t.calculator.avgTicket}</span>
+                  <span>{fmt(avgOrder)} {t.calculator.currency}</span>
+                </div>
+              </div>
+
+              <div className="calc-vs">VS</div>
+
+              <div className="calc-col calc-col-with">
+                <h4>{t.calculator.withTitle}</h4>
+                <div className="calc-big-number calc-big-green">
+                  <span className="calc-amount">{fmt(Math.round(totalWith))}</span>
+                  <span className="calc-unit">{t.calculator.currency} {t.calculator.perMonth}</span>
+                </div>
+                <div className="calc-detail">
+                  <span>{t.calculator.repeatVisits}</span>
+                  <span className="calc-highlight">{Math.round(wayaRepeatRate * 100)}%</span>
+                </div>
+                <div className="calc-detail">
+                  <span>{t.calculator.avgTicket}</span>
+                  <span className="calc-highlight">{fmt(Math.round(wayaAvgOrder))} {t.calculator.currency}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom summary bar */}
+            <div className="calc-summary">
+              <div className="calc-summary-item">
+                <span className="calc-summary-label">{t.calculator.extraRevenue}</span>
+                <span className="calc-summary-value calc-green">+{fmt(extraRevenue)} {t.calculator.currency}</span>
+              </div>
+              <div className="calc-summary-divider" />
+              <div className="calc-summary-item">
+                <span className="calc-summary-label">{t.calculator.wayaCost}</span>
+                <span className="calc-summary-value">-{fmt(wayaCost)} {t.calculator.currency}</span>
+              </div>
+              <div className="calc-summary-divider" />
+              <div className="calc-summary-item">
+                <span className="calc-summary-label">{t.calculator.netProfit}</span>
+                <span className="calc-summary-value calc-green-big">+{fmt(netProfit)} {t.calculator.currency}</span>
+              </div>
+              <div className="calc-summary-divider" />
+              <div className="calc-summary-item">
+                <span className="calc-summary-label">{t.calculator.roi}</span>
+                <span className="calc-summary-value calc-green-big">{roiMultiple}{t.calculator.xReturn}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    </section>
+  )
+}
+
 /* ─── Comparison ─── */
 function Comparison({ t }) {
   return (
@@ -1072,6 +1257,7 @@ export default function App() {
       <WalletCards t={t} />
       <Comparison t={t} />
       <SocialProof t={t} />
+      <Calculator t={t} lang={lang} />
       <Pricing t={t} />
       <CTA t={t} />
       <Footer t={t} />
