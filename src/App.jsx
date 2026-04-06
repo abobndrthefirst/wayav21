@@ -1601,7 +1601,7 @@ function TermsPage({ lang, setLang, theme, setTheme, t }) {
 /* ─── App ─── */
 export default function App() {
   const [lang, setLang] = useState('ar')
-  const [theme, setTheme] = useState('dark')
+  const [theme, setTheme] = useState('light')
   const [page, setPage] = useState('home')
   const t = content[lang]
 
