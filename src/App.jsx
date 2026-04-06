@@ -45,12 +45,14 @@ const content = {
     ],
     how: {
       badge: 'كيف يعمل',
-      title: 'ثلاث خطوات. بدون تطبيق. بدون انتظار.',
-      subtitle: 'جاهز يشتغل من أول يوم — عميلك يمسح، يجمع، ويرجع.',
+      title: 'خمس خطوات وتبدأ. بدون تطبيق. بدون انتظار.',
+      subtitle: 'من التسجيل إلى أول مكافأة — كل شي واضح وبسيط.',
       steps: [
-        { title: 'سجّل متجرك', desc: 'اختر نوع البرنامج، خصّص الهوية، وحدد المكافآت. كل شي جاهز خلال دقائق.' },
-        { title: 'العميل يمسح الكود', desc: 'بدون تحميل تطبيق. العميل يمسح QR من طاولته أو الكاونتر ويبدأ يجمع نقاط فوراً.' },
-        { title: 'تابع وكافئ', desc: 'شوف مين رجع، مين قرب من المكافأة، ومين يحتاج دفعة بسيطة — كله من لوحة تحكم وحدة.' },
+        { title: 'سجّل وجهّز كل شي', desc: 'سجّل حسابك، حمّل التطبيق، اختر ستايل المكافآت (ختم، نقاط، أو كاش باك)، وخصّص الهوية. جاهز خلال دقائق.' },
+        { title: 'اطبع كود QR وحطه بالمحل', desc: 'اطبع الكود وحطه على الكاونتر أو الطاولة. العميل يمسحه بجواله بدون ما يحمّل أي تطبيق.' },
+        { title: 'العميل يسجّل ويبدأ يجمع', desc: 'أول ما يمسح الكود، يسجّل بثواني ويبدأ يجمع نقاط أو أختام من أول زيارة.' },
+        { title: 'العميل يرجع — الكاشير يمسح من التطبيق', desc: 'لما العميل يرجع، الكاشير يفتح تطبيق وايا ويمسح كود العميل من جواله. النقاط تنضاف تلقائي.' },
+        { title: 'المكافأة توصل — والعميل يرجع أكثر', desc: 'أول ما يوصل للهدف، المكافأة تنزل تلقائي. العميل يحس بالتقدير ويرجع — وأنت تتابع كل شي من لوحة التحكم.' },
       ],
     },
     features: {
@@ -89,6 +91,7 @@ const content = {
       ],
       customerJourney: 'رحلة العميل',
       journeySteps: ['يمسح QR', 'يجمع نقاط', 'يوصله إشعار', 'يرجع ويستلم مكافأة'],
+      cta: 'جاهز تجرّب؟ ابدأ مجاناً',
     },
     walletCards: {
       title: 'بطاقات ولاء رقمية بتصميمك',
@@ -112,6 +115,7 @@ const content = {
       xReturn: 'ضعف',
       wayaCost: 'تكلفة وايا',
       netProfit: 'صافي الربح الإضافي',
+      cta: 'ابدأ الآن وشوف الفرق',
     },
     comparison: {
       badge: 'ليش وايا؟',
@@ -209,12 +213,14 @@ const content = {
     ],
     how: {
       badge: 'How It Works',
-      title: 'Three steps. No app. No waiting.',
-      subtitle: 'Ready from day one — your customer scans, collects, and returns.',
+      title: 'Five steps and you\'re live. No app for customers. No waiting.',
+      subtitle: 'From signup to the first reward — everything is clear and simple.',
       steps: [
-        { title: 'Register your store', desc: 'Choose your program type, customize the branding, and set your rewards. Everything is ready in minutes.' },
-        { title: 'Customer scans the code', desc: 'No app download needed. Customer scans a QR from the table or counter and starts collecting points instantly.' },
-        { title: 'Track & reward', desc: 'See who returned, who\'s close to a reward, and who needs a gentle nudge — all from one dashboard.' },
+        { title: 'Sign up & set everything up', desc: 'Create your account, download the app, choose your reward style (stamps, points, or cashback), and customize the branding. Ready in minutes.' },
+        { title: 'Print QR code & place it in your store', desc: 'Print the code and place it on the counter or table. Customers scan it with their phone — no app download needed.' },
+        { title: 'Customer signs up & starts collecting', desc: 'Once they scan the code, they register in seconds and start earning points or stamps from their very first visit.' },
+        { title: 'Customer returns — cashier scans from the app', desc: 'When the customer comes back, the cashier opens the Waya app and scans the QR code from the customer\'s phone. Points are added automatically.' },
+        { title: 'Reward arrives — customer keeps coming back', desc: 'Once they reach the goal, the reward drops automatically. The customer feels valued and returns — and you track everything from the dashboard.' },
       ],
     },
     features: {
@@ -253,6 +259,7 @@ const content = {
       ],
       customerJourney: 'Customer Journey',
       journeySteps: ['Scans QR', 'Earns Points', 'Gets Notified', 'Returns & Redeems'],
+      cta: 'Ready to try? Start free',
     },
     walletCards: {
       title: 'Digital loyalty cards with your branding',
@@ -276,6 +283,7 @@ const content = {
       xReturn: 'x return',
       wayaCost: 'Waya Cost',
       netProfit: 'Net Extra Profit',
+      cta: 'Start now and see the difference',
     },
     comparison: {
       badge: 'Why Waya?',
@@ -665,9 +673,48 @@ function StatsBar({ t }) {
   )
 }
 
+/* ─── Step Icons for How It Works ─── */
+function DownloadIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+  )
+}
+
+function PrintIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+    </svg>
+  )
+}
+
+function ScanIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 7V2h5"/><path d="M17 2h5v5"/><path d="M22 17v5h-5"/><path d="M7 22H2v-5"/><rect x="7" y="7" width="10" height="10" rx="1"/>
+    </svg>
+  )
+}
+
+function GiftIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+    </svg>
+  )
+}
+
 /* ─── How It Works ─── */
 function HowItWorks({ t }) {
-  const stepIcons = [<StoreIcon key={0} />, <QRIcon key={1} />, <HeartIcon key={2} />]
+  const stepIcons = [
+    <DownloadIcon key={0} />,
+    <PrintIcon key={1} />,
+    <QRIcon key={2} />,
+    <ScanIcon key={3} />,
+    <GiftIcon key={4} />,
+  ]
 
   return (
     <section className="section" id="how">
@@ -677,9 +724,9 @@ function HowItWorks({ t }) {
         <p className="section-subtitle">{t.how.subtitle}</p>
       </Reveal>
 
-      <div className="steps-grid">
+      <div className="steps-grid steps-grid-5">
         {t.how.steps.map((step, i) => (
-          <Reveal key={i} delay={i * 0.15}>
+          <Reveal key={i} delay={i * 0.12}>
             <motion.div className="step-card" whileHover={{ y: -8, boxShadow: '0 20px 60px rgba(16,185,129,0.06)' }} transition={{ duration: 0.3 }}>
               <div className="step-icon">{stepIcons[i]}</div>
               <h3 className="step-title">{step.title}</h3>
@@ -860,6 +907,12 @@ function ProductDemo({ t }) {
           </div>
         </Reveal>
       </div>
+
+      <Reveal delay={0.3}>
+        <div className="demo-cta-wrap">
+          <a href="#cta" className="demo-cta-btn">{t.demo.cta}</a>
+        </div>
+      </Reveal>
     </section>
   )
 }
@@ -979,7 +1032,7 @@ function Calculator({ t, lang }) {
           {/* Results */}
           <div className="calc-results">
             <div className="calc-comparison">
-              <div className="calc-col calc-col-without">
+              <div className="calc-col calc-col-without" style={{ background: 'var(--calc-without-bg)', borderRadius: 'var(--radius-sm)' }}>
                 <h4>{t.calculator.withoutTitle}</h4>
                 <div className="calc-big-number">
                   <span className="calc-amount">{fmt(Math.round(totalWithout))}</span>
@@ -997,7 +1050,7 @@ function Calculator({ t, lang }) {
 
               <div className="calc-vs">VS</div>
 
-              <div className="calc-col calc-col-with">
+              <div className="calc-col calc-col-with" style={{ background: 'var(--calc-with-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--green)', boxShadow: '0 0 30px var(--green-glow)' }}>
                 <h4>{t.calculator.withTitle}</h4>
                 <div className="calc-big-number calc-big-green">
                   <span className="calc-amount">{fmt(Math.round(totalWith))}</span>
@@ -1035,6 +1088,13 @@ function Calculator({ t, lang }) {
                 <span className="calc-summary-label">{t.calculator.roi}</span>
                 <span className="calc-summary-value calc-green-big">{roiMultiple}{t.calculator.xReturn}</span>
               </div>
+            </div>
+
+            {/* CTA after calculator */}
+            <div className="calc-cta-wrap">
+              <a href="#cta" className="calc-cta-btn">
+                {t.calculator.cta}
+              </a>
             </div>
           </div>
         </div>
@@ -1252,8 +1312,8 @@ export default function App() {
       <Hero t={t} />
       <StatsBar t={t} />
       <HowItWorks t={t} />
-      <Features t={t} />
       <ProductDemo t={t} />
+      <Features t={t} />
       <WalletCards t={t} />
       <Comparison t={t} />
       <SocialProof t={t} />
