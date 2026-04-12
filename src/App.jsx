@@ -2222,6 +2222,20 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   )
 }
 
+/* ─── Auth Redirect (redirects logged-in users away from landing/login/signup) ─── */
+function AuthRedirect() {
+  const { user, loading } = useAuth()
+  useEffect(() => {
+    if (loading || !user) return
+    const path = window.location.pathname
+    if (path === '/' || path === '/login' || path === '/signup') {
+      supabase.from('shops').select('id').eq('user_id', user.id).single()
+        .then(({ data }) => navigate(data ? '/dashboard' : '/setup'))
+    }
+  }, [user, loading])
+  return null
+}
+
 /* ─── App ─── */
 export default function App() {
   const [lang, setLang] = useState('ar')
@@ -2274,6 +2288,7 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <AuthRedirect />
       <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
         <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
         <Hero t={t} />
