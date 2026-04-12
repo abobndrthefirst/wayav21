@@ -111,6 +111,18 @@ const content = {
       pointsPerVisit: 'نقاط لكل زيارة', rewardAt: 'المكافأة عند', points: 'نقطة',
       rewardDesc: 'وصف المكافأة', rewardDescPh: 'مثلاً: قهوة مجانية',
       save: 'حفظ التغييرات', saving: 'جاري الحفظ...', saved: 'تم الحفظ ✓',
+      walletTitle: 'محفظة قوقل',
+      walletDesc: 'اسمح لعملائك بإضافة بطاقة الولاء إلى محفظة قوقل مباشرة',
+      walletTestBtn: 'جرّب إضافة بطاقة تجريبية',
+      walletGenerating: 'جاري الإنشاء...',
+      walletSuccess: 'تم إنشاء الرابط! اضغط الزر لإضافة البطاقة',
+      walletError: 'حدث خطأ',
+      walletNotConfigured: 'لم يتم إعداد محفظة قوقل بعد. تواصل مع الدعم لتفعيلها.',
+      walletCustomerLink: 'رابط العميل',
+      walletCopyLink: 'نسخ الرابط',
+      walletCopied: 'تم النسخ ✓',
+      customerName: 'اسم العميل',
+      customerPhone: 'رقم الجوال',
     },
     settingsPage: {
       title: 'الإعدادات',
@@ -355,6 +367,18 @@ const content = {
       pointsPerVisit: 'Points per visit', rewardAt: 'Reward at', points: 'points',
       rewardDesc: 'Reward description', rewardDescPh: 'e.g. Free coffee',
       save: 'Save Changes', saving: 'Saving...', saved: 'Saved ✓',
+      walletTitle: 'Google Wallet',
+      walletDesc: 'Let your customers add their loyalty card directly to Google Wallet',
+      walletTestBtn: 'Generate Test Pass',
+      walletGenerating: 'Generating...',
+      walletSuccess: 'Link created! Click the button to add the card',
+      walletError: 'An error occurred',
+      walletNotConfigured: 'Google Wallet is not configured yet. Contact support to activate.',
+      walletCustomerLink: 'Customer Link',
+      walletCopyLink: 'Copy Link',
+      walletCopied: 'Copied ✓',
+      customerName: 'Customer Name',
+      customerPhone: 'Phone Number',
     },
     settingsPage: {
       title: 'Settings',
@@ -2124,6 +2148,256 @@ function SetupPage({ t, lang, setLang, theme, setTheme }) {
 }
 
 /* ─── Dashboard (Demo View with Sidebar) ─── */
+/* ─── Google Wallet Icon ─── */
+function GoogleWalletIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M19.74 7.33L12 12.78l-7.74-5.45A1.98 1.98 0 016 6h12c.74 0 1.38.4 1.74 1.33z" fill="#4285F4"/>
+      <path d="M12 12.78l7.74-5.45c.16.42.26.88.26 1.34v6.66c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V8.67c0-.46.1-.92.26-1.34L12 12.78z" fill="#34A853"/>
+      <path d="M4.26 7.33L12 12.78V18H6c-1.1 0-2-.9-2-2V8.67c0-.46.1-.92.26-1.34z" fill="#FBBC04"/>
+      <path d="M19.74 7.33c.16.42.26.88.26 1.34V16c0 1.1-.9 2-2 2h-6v-5.22l7.74-5.45z" fill="#EA4335"/>
+    </svg>
+  )
+}
+
+/* ─── Loyalty Tab with Google Wallet ─── */
+function LoyaltyTab({ t, lang, shop, user }) {
+  const [walletUrl, setWalletUrl] = useState(null)
+  const [walletLoading, setWalletLoading] = useState(false)
+  const [walletError, setWalletError] = useState(null)
+  const [copied, setCopied] = useState(false)
+  const [testName, setTestName] = useState(lang === 'ar' ? 'أحمد علي' : 'Ahmed Ali')
+  const [testPhone, setTestPhone] = useState('0551234567')
+
+  const generateWalletPass = async () => {
+    setWalletLoading(true)
+    setWalletError(null)
+    setWalletUrl(null)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/google-wallet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          customer_name: testName,
+          customer_phone: testPhone,
+          points_balance: 5,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setWalletUrl(data.saveUrl)
+      } else {
+        setWalletError(data.error || t.loyaltyPage.walletError)
+      }
+    } catch (err) {
+      setWalletError(err.message)
+    }
+    setWalletLoading(false)
+  }
+
+  const copyCustomerLink = () => {
+    const link = `https://www.trywaya.com/wallet/${shop.id}`
+    navigator.clipboard.writeText(link)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <>
+      <h1 className="dash-title">{t.loyaltyPage.title}</h1>
+
+      {/* Program Settings */}
+      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        <h2>{t.loyaltyPage.programSettings}</h2>
+        <div className="auth-form" style={{ gap: 18 }}>
+          <div className="setup-row">
+            <div className="auth-field"><label>{t.loyaltyPage.pointsPerVisit}</label><input type="number" defaultValue={shop.points_per_visit || 1} /></div>
+            <div className="auth-field"><label>{t.loyaltyPage.rewardAt}</label><div className="setup-reward-input"><input type="number" defaultValue={shop.reward_threshold || 10} /><span>{t.loyaltyPage.points}</span></div></div>
+          </div>
+          <div className="auth-field"><label>{t.loyaltyPage.rewardDesc}</label><input type="text" defaultValue={shop.reward_description || ''} placeholder={t.loyaltyPage.rewardDescPh} /></div>
+          <button className="auth-submit-btn">{t.loyaltyPage.save}</button>
+        </div>
+      </motion.div>
+
+      {/* Google Wallet Section */}
+      <motion.div className="dash-card wallet-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <div className="wallet-header">
+          <GoogleWalletIcon />
+          <h2>{t.loyaltyPage.walletTitle}</h2>
+        </div>
+        <p className="wallet-desc">{t.loyaltyPage.walletDesc}</p>
+
+        {/* Customer link for QR/share */}
+        <div className="wallet-customer-link">
+          <label>{t.loyaltyPage.walletCustomerLink}</label>
+          <div className="wallet-link-row">
+            <input type="text" readOnly value={`trywaya.com/wallet/${shop.id}`} className="wallet-link-input" dir="ltr" />
+            <button className="wallet-copy-btn" onClick={copyCustomerLink}>
+              {copied ? t.loyaltyPage.walletCopied : t.loyaltyPage.walletCopyLink}
+            </button>
+          </div>
+        </div>
+
+        {/* Test pass generator */}
+        <div className="wallet-test-section">
+          <div className="setup-row">
+            <div className="auth-field">
+              <label>{t.loyaltyPage.customerName}</label>
+              <input type="text" value={testName} onChange={e => setTestName(e.target.value)} />
+            </div>
+            <div className="auth-field">
+              <label>{t.loyaltyPage.customerPhone}</label>
+              <input type="tel" value={testPhone} onChange={e => setTestPhone(e.target.value)} dir="ltr" />
+            </div>
+          </div>
+
+          <button className="wallet-test-btn" onClick={generateWalletPass} disabled={walletLoading}>
+            <GoogleWalletIcon />
+            {walletLoading ? t.loyaltyPage.walletGenerating : t.loyaltyPage.walletTestBtn}
+          </button>
+
+          {walletError && (
+            <div className="wallet-error">
+              {walletError.includes('not configured') ? t.loyaltyPage.walletNotConfigured : walletError}
+            </div>
+          )}
+
+          {walletUrl && (
+            <motion.div className="wallet-success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+              <p>{t.loyaltyPage.walletSuccess}</p>
+              <a href={walletUrl} target="_blank" rel="noopener noreferrer" className="wallet-add-btn">
+                <img src="https://developers.google.com/static/wallet/images/web/en_add_to_google_wallet_wallet-button.png" alt="Add to Google Wallet" style={{ height: 48 }} />
+              </a>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+    </>
+  )
+}
+
+/* ─── Customer-Facing Wallet Page ─── */
+function WalletPage({ lang, setLang, theme, setTheme }) {
+  const [shop, setShop] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [walletUrl, setWalletUrl] = useState(null)
+  const [generating, setGenerating] = useState(false)
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  const shopId = window.location.pathname.split('/wallet/')[1]
+
+  useEffect(() => {
+    if (!shopId) { setError('Invalid link'); setLoading(false); return }
+    supabase.from('shops').select('*').eq('id', shopId).single()
+      .then(({ data, error: err }) => {
+        if (err || !data) { setError(lang === 'ar' ? 'المتجر غير موجود' : 'Shop not found'); }
+        else { setShop(data) }
+        setLoading(false)
+      })
+  }, [shopId])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!name || !phone) return
+    setGenerating(true)
+    try {
+      // Call edge function without auth (we'll need to allow this for customers)
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shop_id: shopId,
+          customer_name: name,
+          customer_phone: phone,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setWalletUrl(data.saveUrl)
+        setSubmitted(true)
+      } else {
+        setError(data.error)
+      }
+    } catch (err) {
+      setError(err.message)
+    }
+    setGenerating(false)
+  }
+
+  if (loading) return <div className="auth-page"><div className="dash-loading"><Logo size={40} /></div></div>
+  if (error && !shop) return (
+    <div className="auth-page">
+      <div className="auth-card" style={{ textAlign: 'center' }}>
+        <Logo size={40} />
+        <p style={{ marginTop: 16, color: 'var(--text-secondary)' }}>{error}</p>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className={`auth-page ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      <motion.div className="auth-card wallet-customer-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="wallet-customer-header">
+          {shop.logo_url ? <img src={shop.logo_url} alt="" className="wallet-shop-logo" /> : <Logo size={44} />}
+          <h1 className="wallet-shop-name">{shop.name}</h1>
+          <p className="wallet-shop-type">{shop.type}</p>
+        </div>
+
+        {!submitted ? (
+          <form className="auth-form" onSubmit={handleSubmit} style={{ gap: 16 }}>
+            <p className="wallet-invite-text">
+              {lang === 'ar'
+                ? `انضم لبرنامج ولاء ${shop.name} وأضف بطاقتك إلى محفظة قوقل`
+                : `Join ${shop.name}'s loyalty program and add your card to Google Wallet`}
+            </p>
+            <div className="auth-field">
+              <label>{lang === 'ar' ? 'اسمك' : 'Your Name'}</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={lang === 'ar' ? 'أحمد علي' : 'Ahmed Ali'} required />
+            </div>
+            <div className="auth-field">
+              <label>{lang === 'ar' ? 'رقم جوالك' : 'Your Phone'}</label>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="05XXXXXXXX" dir="ltr" required />
+            </div>
+            <button type="submit" className="wallet-add-btn-full" disabled={generating}>
+              <GoogleWalletIcon />
+              {generating
+                ? (lang === 'ar' ? 'جاري الإنشاء...' : 'Generating...')
+                : (lang === 'ar' ? 'أضف إلى محفظة قوقل' : 'Add to Google Wallet')}
+            </button>
+            {error && <p className="auth-error">{error}</p>}
+          </form>
+        ) : (
+          <motion.div className="wallet-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+            <div className="wallet-done-check">✓</div>
+            <p>{lang === 'ar' ? 'تم إنشاء بطاقتك!' : 'Your card is ready!'}</p>
+            <a href={walletUrl} target="_blank" rel="noopener noreferrer" className="wallet-add-btn-google">
+              <img src="https://developers.google.com/static/wallet/images/web/en_add_to_google_wallet_wallet-button.png" alt="Add to Google Wallet" style={{ height: 52 }} />
+            </a>
+            <p className="wallet-reward-info">
+              {lang === 'ar'
+                ? `اجمع ${shop.reward_threshold || 10} نقاط واحصل على مكافأة`
+                : `Collect ${shop.reward_threshold || 10} points and earn a reward`}
+            </p>
+          </motion.div>
+        )}
+
+        <div className="wallet-powered-by">
+          <span>{lang === 'ar' ? 'مدعوم من' : 'Powered by'}</span>
+          <Logo size={16} />
+          <span>Waya</span>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
 function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const { user, signOut } = useAuth()
   const d = t.dashboard
@@ -2302,20 +2576,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         )}
 
         {activeTab === 'loyalty' && (
-          <>
-            <h1 className="dash-title">{t.loyaltyPage.title}</h1>
-            <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-              <h2>{t.loyaltyPage.programSettings}</h2>
-              <div className="auth-form" style={{ gap: 18 }}>
-                <div className="setup-row">
-                  <div className="auth-field"><label>{t.loyaltyPage.pointsPerVisit}</label><input type="number" defaultValue={shop.points_per_visit || 1} /></div>
-                  <div className="auth-field"><label>{t.loyaltyPage.rewardAt}</label><div className="setup-reward-input"><input type="number" defaultValue={shop.reward_threshold || 10} /><span>{t.loyaltyPage.points}</span></div></div>
-                </div>
-                <div className="auth-field"><label>{t.loyaltyPage.rewardDesc}</label><input type="text" defaultValue={shop.reward_description || ''} placeholder={t.loyaltyPage.rewardDescPh} /></div>
-                <button className="auth-submit-btn">{t.loyaltyPage.save}</button>
-              </div>
-            </motion.div>
-          </>
+          <LoyaltyTab t={t} lang={lang} shop={shop} user={user} />
         )}
 
         {activeTab === 'settings' && (
@@ -2388,6 +2649,7 @@ export default function App() {
       if (p === '/data') return 'data'
       if (p === '/loyalty') return 'loyalty'
       if (p === '/settings') return 'settings'
+      if (p.startsWith('/wallet/')) return 'wallet'
       return 'home'
     }
     setPage(routePath(path))
@@ -2421,6 +2683,7 @@ export default function App() {
   if (page === 'data') return <AuthProvider><DataPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'loyalty') return <AuthProvider><LoyaltyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'settings') return <AuthProvider><SettingsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'wallet') return <WalletPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
 
   return (
     <AuthProvider>
