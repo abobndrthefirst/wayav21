@@ -1,11 +1,45 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, createContext, useContext } from 'react'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { createClient } from '@supabase/supabase-js'
 // Analytics loaded via script tag in index.html
 import './styles.css'
 
 /* ─── Supabase config ─── */
 const SUPABASE_URL = 'https://unnheqshkxpbflozechm.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubmhlcXNoa3hwYmZsb3plY2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTkwNjksImV4cCI6MjA5MDQzNTA2OX0.XHAbOOdPtuwD0pJErxhBw9C3RJPouPeUhMS9hSThON0'
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+/* ─── Auth Context ─── */
+const AuthContext = createContext({ user: null, loading: true, signOut: async () => {} })
+
+function AuthProvider({ children }) {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const signOut = async () => { await supabase.auth.signOut() }
+
+  return <AuthContext.Provider value={{ user, loading, signOut }}>{children}</AuthContext.Provider>
+}
+
+function useAuth() { return useContext(AuthContext) }
+
+function navigate(path) {
+  window.history.pushState({}, '', path)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+}
 
 async function submitLead({ contact, store_name, industry }) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
@@ -23,7 +57,21 @@ async function submitLead({ contact, store_name, industry }) {
 /* ─── i18n content ─── */
 const content = {
   ar: {
-    nav: { cta: 'ابدأ مجاناً', pricing: 'الأسعار', features: 'المميزات', how: 'كيف يعمل' },
+    nav: { cta: 'ابدأ مجاناً', pricing: 'الأسعار', features: 'المميزات', how: 'كيف يعمل', login: 'دخول', signup: 'سجّل', logout: 'خروج', hi: 'مرحباً' },
+    auth: {
+      loginTitle: 'تسجيل الدخول', loginSub: 'ادخل لحسابك وابدأ تدير برنامج الولاء',
+      signupTitle: 'إنشاء حساب', signupSub: 'سجّل الحين وابدأ أسبوعك المجاني',
+      email: 'الإيميل', password: 'كلمة المرور', name: 'الاسم الكامل',
+      emailPh: 'name@example.com', passwordPh: 'ادخل كلمة المرور', namePh: 'مثلاً: سلطان حيدر',
+      loginBtn: 'دخول', signupBtn: 'أنشئ حسابي', googleBtn: 'الدخول عبر Google', googleSignup: 'التسجيل عبر Google',
+      or: 'أو', forgot: 'نسيت كلمة المرور؟', back: 'الرئيسية',
+      noAccount: 'ما عندك حساب؟', hasAccount: 'عندك حساب؟', goSignup: 'سجّل الحين', goLogin: 'سجّل دخول',
+      errInvalid: 'الإيميل أو كلمة المرور غلط', errEmpty: 'ادخل الإيميل وكلمة المرور',
+      errName: 'ادخل اسمك', errEmail: 'ادخل إيميل صحيح', errPassword: 'كلمة المرور لازم ٦ أحرف على الأقل',
+      logging: 'جاري الدخول...', signing: 'جاري التسجيل...',
+      successTitle: 'تم التسجيل!', successMsg: 'تفقد إيميلك وفعّل حسابك عشان تقدر تدخل.',
+      errEmailFirst: 'ادخل إيميلك أولاً', resetSent: 'تم إرسال رابط إعادة التعيين على إيميلك',
+    },
     hero: {
       title1: 'عميلك اللي يرجع',
       title2: 'يسوى أكثر من عشرة جدد',
@@ -207,7 +255,21 @@ const content = {
     },
   },
   en: {
-    nav: { cta: 'Start Free', pricing: 'Pricing', features: 'Features', how: 'How It Works' },
+    nav: { cta: 'Start Free', pricing: 'Pricing', features: 'Features', how: 'How It Works', login: 'Log In', signup: 'Sign Up', logout: 'Log Out', hi: 'Hi' },
+    auth: {
+      loginTitle: 'Log In', loginSub: 'Sign in to manage your loyalty program',
+      signupTitle: 'Create Account', signupSub: 'Sign up and start your free trial',
+      email: 'Email', password: 'Password', name: 'Full name',
+      emailPh: 'name@example.com', passwordPh: 'Enter your password', namePh: 'e.g. Sultan Haidar',
+      loginBtn: 'Log In', signupBtn: 'Create My Account', googleBtn: 'Continue with Google', googleSignup: 'Sign up with Google',
+      or: 'or', forgot: 'Forgot password?', back: 'Home',
+      noAccount: "Don't have an account?", hasAccount: 'Already have an account?', goSignup: 'Sign up', goLogin: 'Log in',
+      errInvalid: 'Invalid email or password', errEmpty: 'Please enter email and password',
+      errName: 'Enter your name', errEmail: 'Enter a valid email', errPassword: 'Password must be at least 6 characters',
+      logging: 'Logging in...', signing: 'Creating account...',
+      successTitle: 'Account created!', successMsg: 'Check your email and confirm your account to get started.',
+      errEmailFirst: 'Enter your email first', resetSent: 'Password reset link sent to your email',
+    },
     hero: {
       title1: 'A returning customer',
       title2: 'is worth more than ten new ones',
@@ -522,6 +584,45 @@ function MoonIcon() {
 
 const featureIcons = { bell: <BellIcon />, chart: <ChartIcon />, share: <ShareIcon />, calendar: <CalendarIcon /> }
 
+/* ─── Nav Auth Buttons ─── */
+function NavAuthButtons({ t }) {
+  const { user, logout } = useAuth()
+  if (user) {
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || ''
+    return (
+      <div className="nav-auth">
+        <span className="nav-greeting">{t.nav.hi}, {name}</span>
+        <button onClick={logout} className="nav-auth-btn nav-logout-btn">{t.nav.logout}</button>
+      </div>
+    )
+  }
+  return (
+    <div className="nav-auth">
+      <button onClick={() => navigate('/login')} className="nav-auth-btn nav-login-btn">{t.nav.login}</button>
+      <button onClick={() => navigate('/signup')} className="nav-auth-btn nav-signup-btn">{t.nav.signup}</button>
+    </div>
+  )
+}
+
+function MobileAuthButtons({ t, closeMenu }) {
+  const { user, logout } = useAuth()
+  if (user) {
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || ''
+    return (
+      <>
+        <span className="mobile-drawer-greeting">{t.nav.hi}, {name}</span>
+        <button onClick={() => { logout(); closeMenu() }} className="mobile-drawer-cta">{t.nav.logout}</button>
+      </>
+    )
+  }
+  return (
+    <>
+      <button onClick={() => { navigate('/login'); closeMenu() }} className="mobile-drawer-auth">{t.nav.login}</button>
+      <button onClick={() => { navigate('/signup'); closeMenu() }} className="mobile-drawer-cta">{t.nav.signup}</button>
+    </>
+  )
+}
+
 /* ─── Navbar ─── */
 function Navbar({ lang, setLang, theme, setTheme, t }) {
   const [scrolled, setScrolled] = useState(false)
@@ -570,7 +671,7 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
             <GlobeIcon />
             <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
           </button>
-          <a href="#cta" className="nav-cta nav-cta-desktop">{t.nav.cta}</a>
+          <NavAuthButtons t={t} />
           <button className="mobile-menu-btn" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
             {mobileOpen ? (
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -594,7 +695,7 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
             <a href="#how" onClick={closeMenu}>{t.nav.how}</a>
             <a href="#features" onClick={closeMenu}>{t.nav.features}</a>
             <a href="#pricing" onClick={closeMenu}>{t.nav.pricing}</a>
-            <a href="#cta" className="mobile-drawer-cta" onClick={closeMenu}>{t.nav.cta}</a>
+            <MobileAuthButtons t={t} closeMenu={closeMenu} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -1598,6 +1699,201 @@ function TermsPage({ lang, setLang, theme, setTheme, t }) {
   )
 }
 
+/* ─── Google Icon ─── */
+function GoogleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+  )
+}
+
+/* ─── Login Page ─── */
+function LoginPage({ t, lang, setLang, theme, setTheme }) {
+  const { user } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const a = t.auth
+
+  useEffect(() => { if (user) navigate('/') }, [user])
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    if (!email.trim() || !password.trim()) { setError(a.errEmpty); return }
+    setLoading(true); setError('')
+    const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+    if (err) { setError(a.errInvalid); setLoading(false) }
+  }
+
+  const handleGoogle = async () => {
+    setError('')
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })
+  }
+
+  const handleForgot = async () => {
+    if (!email.trim()) { setError(a.errEmailFirst); return }
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin + '/login' })
+    if (!err) { setError(''); alert(a.resetSent) } else setError(err.message)
+  }
+
+  return (
+    <div className="auth-page">
+      <div className="auth-top-bar">
+        <button onClick={() => navigate('/')} className="auth-back-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d={lang === 'ar' ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'}/></svg>
+          {a.back}
+        </button>
+        <div className="auth-top-actions">
+          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
+          <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
+            <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
+          </button>
+        </div>
+      </div>
+
+      <motion.div className="auth-card" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="auth-brand"><Logo size={32} /><span>وايا</span></div>
+        <h1 className="auth-title">{a.loginTitle}</h1>
+        <p className="auth-subtitle">{a.loginSub}</p>
+
+        <button onClick={handleGoogle} className="auth-google-btn">
+          <GoogleIcon /><span>{a.googleBtn}</span>
+        </button>
+
+        <div className="auth-divider"><span>{a.or}</span></div>
+
+        <form onSubmit={handleLogin} className="auth-form">
+          <div className="auth-field">
+            <label>{a.email}</label>
+            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError('') }}
+              placeholder={a.emailPh} dir="ltr" />
+          </div>
+          <div className="auth-field">
+            <label>{a.password}</label>
+            <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError('') }}
+              placeholder={a.passwordPh} dir="ltr" />
+          </div>
+          <button type="button" onClick={handleForgot} className="auth-forgot">{a.forgot}</button>
+          {error && <p className="auth-error">{error}</p>}
+          <button type="submit" disabled={loading} className="auth-submit-btn">
+            {loading ? a.logging : a.loginBtn}
+          </button>
+        </form>
+
+        <p className="auth-switch">{a.noAccount} <button onClick={() => navigate('/signup')}>{a.goSignup}</button></p>
+      </motion.div>
+    </div>
+  )
+}
+
+/* ─── Signup Page ─── */
+function SignupPage({ t, lang, setLang, theme, setTheme }) {
+  const { user } = useAuth()
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const a = t.auth
+
+  useEffect(() => { if (user) navigate('/') }, [user])
+
+  const handleSignup = async (e) => {
+    e.preventDefault()
+    if (!fullName.trim()) { setError(a.errName); return }
+    if (!email.trim() || !email.includes('@')) { setError(a.errEmail); return }
+    if (password.length < 6) { setError(a.errPassword); return }
+    setLoading(true); setError('')
+    const { error: err } = await supabase.auth.signUp({
+      email: email.trim(), password,
+      options: { data: { full_name: fullName.trim() }, emailRedirectTo: window.location.origin + '/login' },
+    })
+    if (err) { setError(err.message); setLoading(false) }
+    else { setSuccess(true); setLoading(false) }
+  }
+
+  const handleGoogle = async () => {
+    setError('')
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })
+  }
+
+  if (success) {
+    return (
+      <div className="auth-page">
+        <motion.div className="auth-card" style={{ textAlign: 'center' }} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
+          <h1 className="auth-title">{a.successTitle}</h1>
+          <p className="auth-subtitle">{a.successMsg}</p>
+          <button onClick={() => navigate('/login')} className="auth-submit-btn" style={{ marginTop: 24 }}>{a.goLogin}</button>
+        </motion.div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="auth-page">
+      <div className="auth-top-bar">
+        <button onClick={() => navigate('/')} className="auth-back-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d={lang === 'ar' ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'}/></svg>
+          {a.back}
+        </button>
+        <div className="auth-top-actions">
+          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
+          <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
+            <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
+          </button>
+        </div>
+      </div>
+
+      <motion.div className="auth-card" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="auth-brand"><Logo size={32} /><span>وايا</span></div>
+        <h1 className="auth-title">{a.signupTitle}</h1>
+        <p className="auth-subtitle">{a.signupSub}</p>
+
+        <button onClick={handleGoogle} className="auth-google-btn">
+          <GoogleIcon /><span>{a.googleSignup}</span>
+        </button>
+
+        <div className="auth-divider"><span>{a.or}</span></div>
+
+        <form onSubmit={handleSignup} className="auth-form">
+          <div className="auth-field">
+            <label>{a.name}</label>
+            <input type="text" value={fullName} onChange={e => { setFullName(e.target.value); setError('') }}
+              placeholder={a.namePh} />
+          </div>
+          <div className="auth-field">
+            <label>{a.email}</label>
+            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError('') }}
+              placeholder={a.emailPh} dir="ltr" />
+          </div>
+          <div className="auth-field">
+            <label>{a.password}</label>
+            <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError('') }}
+              placeholder={a.passwordPh} dir="ltr" />
+          </div>
+          {error && <p className="auth-error">{error}</p>}
+          <button type="submit" disabled={loading} className="auth-submit-btn">
+            {loading ? a.signing : a.signupBtn}
+          </button>
+        </form>
+
+        <p className="auth-switch">{a.hasAccount} <button onClick={() => navigate('/login')}>{a.goLogin}</button></p>
+      </motion.div>
+    </div>
+  )
+}
+
 /* ─── App ─── */
 export default function App() {
   const [lang, setLang] = useState('ar')
@@ -1612,12 +1908,16 @@ export default function App() {
     const path = window.location.pathname
     if (path === '/privacy') setPage('privacy')
     else if (path === '/terms') setPage('terms')
+    else if (path === '/login') setPage('login')
+    else if (path === '/signup') setPage('signup')
     else setPage('home')
 
     const handlePopState = () => {
       const p = window.location.pathname
       if (p === '/privacy') setPage('privacy')
       else if (p === '/terms') setPage('terms')
+      else if (p === '/login') setPage('login')
+      else if (p === '/signup') setPage('signup')
       else setPage('home')
     }
     window.addEventListener('popstate', handlePopState)
@@ -1637,25 +1937,29 @@ export default function App() {
     window.scrollTo(0, 0)
   }, [page])
 
-  if (page === 'privacy') return <PrivacyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
-  if (page === 'terms') return <TermsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+  if (page === 'privacy') return <AuthProvider><PrivacyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'terms') return <AuthProvider><TermsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'login') return <AuthProvider><LoginPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'signup') return <AuthProvider><SignupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
 
   return (
-    <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
-      <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
-      <Hero t={t} />
-      <StatsBar t={t} />
-      <HowItWorks t={t} />
-      <Audience t={t} />
-      <ProductDemo t={t} />
-      <Features t={t} />
-      <WalletCards t={t} />
-      <Comparison t={t} />
-      <SocialProof t={t} />
-      <Calculator t={t} lang={lang} />
-      <Pricing t={t} />
-      <CTA t={t} />
-      <Footer t={t} />
-    </div>
+    <AuthProvider>
+      <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
+        <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+        <Hero t={t} />
+        <StatsBar t={t} />
+        <HowItWorks t={t} />
+        <Audience t={t} />
+        <ProductDemo t={t} />
+        <Features t={t} />
+        <WalletCards t={t} />
+        <Comparison t={t} />
+        <SocialProof t={t} />
+        <Calculator t={t} lang={lang} />
+        <Pricing t={t} />
+        <CTA t={t} />
+        <Footer t={t} />
+      </div>
+    </AuthProvider>
   )
 }
