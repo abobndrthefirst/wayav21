@@ -2894,6 +2894,88 @@ body {
 [data-theme="light"] .dash-logout-btn:hover { background: rgba(0,0,0,0.04); }
 [data-theme="light"] .dash-activity-item { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.06); }
 
+/* ─── Dashboard Tabs ─── */
+.dash-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg);
+  position: sticky;
+  top: 56px;
+  z-index: 99;
+}
+.dash-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #999);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dash-tab:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+.dash-tab.active { background: var(--green); color: #fff; }
+.dash-tab-icon { font-size: 1rem; }
+.dash-tab-label {}
+
+/* ─── Data Page ─── */
+.data-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 24px 0;
+}
+.data-stat-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+}
+.data-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  font-size: 1.3rem;
+}
+.data-stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+.data-stat-label {
+  color: var(--text-secondary, #999);
+  font-size: 0.85rem;
+}
+
+/* ─── Settings Page ─── */
+.settings-account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--text-secondary, #999);
+  font-size: 0.9rem;
+}
+.settings-account-info strong { color: var(--white); }
+
+/* ─── Light Theme for new components ─── */
+[data-theme="light"] .dash-tabs { border-bottom-color: rgba(0,0,0,0.08); }
+[data-theme="light"] .dash-tab:hover { background: rgba(0,0,0,0.04); }
+[data-theme="light"] .data-stat-card { border-color: rgba(0,0,0,0.08); }
+
 /* Dashboard Responsive */
 @media (max-width: 600px) {
   .dash-nav { padding: 14px 16px; }
@@ -2902,4 +2984,10 @@ body {
   .dash-journey { gap: 4px; }
   .dash-journey-step { min-width: 64px; }
   .dash-qr-img { width: 160px; height: 160px; }
+  .dash-tabs { gap: 2px; padding: 10px 12px; top: 52px; }
+  .dash-tab { padding: 8px 12px; font-size: 0.8rem; }
+  .dash-tab-icon { font-size: 0.9rem; }
+  .data-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .data-stat-card { padding: 18px 14px; }
+  .data-stat-value { font-size: 1.5rem; }
 }

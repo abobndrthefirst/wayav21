@@ -94,7 +94,25 @@ const content = {
       step1: 'يمسح QR', step2: 'يجمع نقاط', step3: 'يوصله إشعار', step4: 'يرجع ويستلم مكافأة',
       activity: 'آخر النشاطات', noActivity: 'ما في نشاطات بعد — شارك كود QR مع عملائك!',
       scan: 'مسح', reward: 'مكافأة', pointsEarned: 'نقطة',
-      settings: 'الإعدادات', logout: 'خروج',
+      home: 'الرئيسية', data: 'البيانات', loyalty: 'الولاء', settings: 'الإعدادات', logout: 'خروج',
+    },
+    dataPage: {
+      title: 'البيانات والتحليلات',
+      customers: 'عملاء', totalScans: 'مسحات', rewardsRedeemed: 'مكافآت', totalPoints: 'إجمالي النقاط',
+      moreComingSoon: 'تحليلات أكثر قريباً — رسوم بيانية، تقارير أسبوعية، وأكثر!',
+    },
+    loyaltyPage: {
+      title: 'برنامج الولاء',
+      programSettings: 'إعدادات البرنامج',
+      pointsPerVisit: 'نقاط لكل زيارة', rewardAt: 'المكافأة عند', points: 'نقطة',
+      rewardDesc: 'وصف المكافأة', rewardDescPh: 'مثلاً: قهوة مجانية',
+      save: 'حفظ التغييرات', saving: 'جاري الحفظ...', saved: 'تم الحفظ ✓',
+    },
+    settingsPage: {
+      title: 'الإعدادات',
+      shopInfo: 'معلومات المتجر',
+      account: 'الحساب', email: 'الإيميل', joined: 'تاريخ التسجيل',
+      save: 'حفظ التغييرات', saving: 'جاري الحفظ...', saved: 'تم الحفظ ✓',
     },
     hero: {
       title1: 'عميلك اللي يرجع',
@@ -316,7 +334,25 @@ const content = {
       step1: 'Scan QR', step2: 'Collect Points', step3: 'Get Notified', step4: 'Return & Redeem',
       activity: 'Recent Activity', noActivity: 'No activity yet — share your QR code with customers!',
       scan: 'Scan', reward: 'Reward', pointsEarned: 'points',
-      settings: 'Settings', logout: 'Log Out',
+      home: 'Home', data: 'Data', loyalty: 'Loyalty', settings: 'Settings', logout: 'Log Out',
+    },
+    dataPage: {
+      title: 'Data & Analytics',
+      customers: 'Customers', totalScans: 'Total Scans', rewardsRedeemed: 'Rewards Redeemed', totalPoints: 'Total Points',
+      moreComingSoon: 'More analytics coming soon — charts, weekly reports, and more!',
+    },
+    loyaltyPage: {
+      title: 'Loyalty Program',
+      programSettings: 'Program Settings',
+      pointsPerVisit: 'Points per visit', rewardAt: 'Reward at', points: 'points',
+      rewardDesc: 'Reward description', rewardDescPh: 'e.g. Free coffee',
+      save: 'Save Changes', saving: 'Saving...', saved: 'Saved ✓',
+    },
+    settingsPage: {
+      title: 'Settings',
+      shopInfo: 'Shop Information',
+      account: 'Account', email: 'Email', joined: 'Joined',
+      save: 'Save Changes', saving: 'Saving...', saved: 'Saved ✓',
     },
     hero: {
       title1: 'A returning customer',
@@ -1950,7 +1986,7 @@ function SignupPage({ t, lang, setLang, theme, setTheme }) {
   )
 }
 
-/* ─── Shop Setup Page ─── */
+/* ─── Shop Setup Page (onboarding — no loyalty) ─── */
 function SetupPage({ t, lang, setLang, theme, setTheme }) {
   const { user } = useAuth()
   const s = t.setup
@@ -1962,9 +1998,6 @@ function SetupPage({ t, lang, setLang, theme, setTheme }) {
   const [twitter, setTwitter] = useState('')
   const [logoFile, setLogoFile] = useState(null)
   const [logoPreview, setLogoPreview] = useState(null)
-  const [pointsPerVisit, setPointsPerVisit] = useState(1)
-  const [rewardAt, setRewardAt] = useState(10)
-  const [rewardDesc, setRewardDesc] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -1994,17 +2027,10 @@ function SetupPage({ t, lang, setLang, theme, setTheme }) {
     }
 
     const { error: dbErr } = await supabase.from('shops').insert({
-      user_id: user.id,
-      name: name.trim(),
-      type,
-      phone: phone.trim() || null,
-      address: address.trim() || null,
-      social_instagram: instagram.trim() || null,
-      social_twitter: twitter.trim() || null,
+      user_id: user.id, name: name.trim(), type,
+      phone: phone.trim() || null, address: address.trim() || null,
+      social_instagram: instagram.trim() || null, social_twitter: twitter.trim() || null,
       logo_url,
-      points_per_visit: pointsPerVisit,
-      reward_threshold: rewardAt,
-      reward_description: rewardDesc.trim() || null,
     })
 
     if (dbErr) { setError(dbErr.message); setLoading(false) }
@@ -2038,7 +2064,7 @@ function SetupPage({ t, lang, setLang, theme, setTheme }) {
             <label>{s.shopType}</label>
             <select value={type} onChange={e => { setType(e.target.value); setError('') }} className="setup-select">
               <option value="">{s.shopTypePh}</option>
-              {s.types.map(t => <option key={t} value={t}>{t}</option>)}
+              {s.types.map(tp => <option key={tp} value={tp}>{tp}</option>)}
             </select>
           </div>
 
@@ -2047,72 +2073,77 @@ function SetupPage({ t, lang, setLang, theme, setTheme }) {
             <div className="setup-logo-row">
               {logoPreview ? <img src={logoPreview} alt="" className="setup-logo-preview" /> : <div className="setup-logo-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>}
               <div>
-                <label className="setup-logo-btn">
-                  {s.logoUpload}
-                  <input type="file" accept="image/png,image/jpeg" onChange={handleLogo} hidden />
-                </label>
+                <label className="setup-logo-btn">{s.logoUpload}<input type="file" accept="image/png,image/jpeg" onChange={handleLogo} hidden /></label>
                 <p className="setup-logo-hint">{s.logoHint}</p>
               </div>
             </div>
           </div>
 
           <div className="setup-row">
-            <div className="auth-field">
-              <label>{s.phone}</label>
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={s.phonePh} dir="ltr" />
-            </div>
-            <div className="auth-field">
-              <label>{s.address}</label>
-              <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder={s.addressPh} />
-            </div>
+            <div className="auth-field"><label>{s.phone}</label><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder={s.phonePh} dir="ltr" /></div>
+            <div className="auth-field"><label>{s.address}</label><input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder={s.addressPh} /></div>
           </div>
 
           <div className="setup-row">
-            <div className="auth-field">
-              <label>{s.instagram}</label>
-              <input type="text" value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="@username" dir="ltr" />
-            </div>
-            <div className="auth-field">
-              <label>{s.twitter}</label>
-              <input type="text" value={twitter} onChange={e => setTwitter(e.target.value)} placeholder="@username" dir="ltr" />
-            </div>
-          </div>
-
-          <div className="setup-divider"></div>
-          <h2 className="setup-section-title">{s.loyaltyTitle}</h2>
-
-          <div className="setup-row">
-            <div className="auth-field">
-              <label>{s.pointsPerVisit}</label>
-              <input type="number" min="1" max="100" value={pointsPerVisit} onChange={e => setPointsPerVisit(Number(e.target.value))} />
-            </div>
-            <div className="auth-field">
-              <label>{s.rewardAt}</label>
-              <div className="setup-reward-input">
-                <input type="number" min="1" max="1000" value={rewardAt} onChange={e => setRewardAt(Number(e.target.value))} />
-                <span>{s.points}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="auth-field">
-            <label>{s.rewardDesc}</label>
-            <input type="text" value={rewardDesc} onChange={e => setRewardDesc(e.target.value)} placeholder={s.rewardDescPh} />
+            <div className="auth-field"><label>{s.instagram}</label><input type="text" value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="@username" dir="ltr" /></div>
+            <div className="auth-field"><label>{s.twitter}</label><input type="text" value={twitter} onChange={e => setTwitter(e.target.value)} placeholder="@username" dir="ltr" /></div>
           </div>
 
           {error && <p className="auth-error">{error}</p>}
-          <button type="submit" disabled={loading} className="auth-submit-btn">
-            {loading ? s.saving : s.submit}
-          </button>
+          <button type="submit" disabled={loading} className="auth-submit-btn">{loading ? s.saving : s.submit}</button>
         </form>
       </motion.div>
     </div>
   )
 }
 
-/* ─── Dashboard Page ─── */
+/* ─── Dashboard Shell (shared nav + sidebar for all app pages) ─── */
+function DashShell({ t, lang, setLang, theme, setTheme, shop, tab, children }) {
+  const { signOut } = useAuth()
+  const d = t.dashboard
+  const handleLogout = async () => { await signOut(); navigate('/') }
+
+  const tabs = [
+    { id: 'dashboard', label: d.home, icon: '🏠', path: '/dashboard' },
+    { id: 'data', label: d.data, icon: '📊', path: '/data' },
+    { id: 'loyalty', label: d.loyalty, icon: '⭐', path: '/loyalty' },
+    { id: 'settings', label: d.settings, icon: '⚙️', path: '/settings' },
+  ]
+
+  return (
+    <div className={`dash-page ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      <nav className="dash-nav">
+        <div className="dash-nav-brand"><Logo size={28} /><span>وايا</span></div>
+        <div className="dash-nav-right">
+          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
+          <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
+            <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
+          </button>
+          <button onClick={handleLogout} className="dash-logout-btn">{d.logout}</button>
+        </div>
+      </nav>
+
+      <div className="dash-tabs">
+        {tabs.map(tb => (
+          <button key={tb.id} className={`dash-tab ${tab === tb.id ? 'active' : ''}`} onClick={() => navigate(tb.path)}>
+            <span className="dash-tab-icon">{tb.icon}</span>
+            <span className="dash-tab-label">{tb.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="dash-content">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+/* ─── Dashboard Home Page ─── */
 function DashboardPage({ t, lang, setLang, theme, setTheme }) {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const d = t.dashboard
   const [shop, setShop] = useState(null)
   const [activity, setActivity] = useState([])
@@ -2143,82 +2174,266 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     { num: 4, label: d.step4, icon: '🎁' },
   ]
 
-  const handleLogout = async () => { await signOut(); navigate('/') }
-
   return (
-    <div className={`dash-page ${lang === 'en' ? 'ltr-mode' : ''}`}>
-      <nav className="dash-nav">
-        <div className="dash-nav-brand"><Logo size={28} /><span>وايا</span></div>
-        <div className="dash-nav-right">
-          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-          </button>
-          <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
-            <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
-          </button>
-          <button onClick={handleLogout} className="dash-logout-btn">{d.logout}</button>
+    <DashShell t={t} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} shop={shop} tab="dashboard">
+      <div className="dash-header">
+        <div><h1 className="dash-title">{d.welcome}، {shop.name}</h1></div>
+        {shop.logo_url && <img src={shop.logo_url} alt="" className="dash-shop-logo" />}
+      </div>
+
+      <motion.section className="dash-card dash-qr-section" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        <h2>{d.yourQR}</h2>
+        <p className="dash-qr-hint">{d.qrHint}</p>
+        <div className="dash-qr-wrapper"><img src={qrUrl} alt="QR Code" className="dash-qr-img" /></div>
+      </motion.section>
+
+      <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <h2>{d.journey}</h2>
+        <div className="dash-journey">
+          {journeySteps.map((step, i) => (
+            <div key={i} className="dash-journey-step">
+              <div className="dash-journey-num">{step.num}</div>
+              <span className="dash-journey-icon">{step.icon}</span>
+              <span className="dash-journey-label">{step.label}</span>
+              {i < 3 && <div className="dash-journey-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2"><path d={lang === 'ar' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}/></svg></div>}
+            </div>
+          ))}
         </div>
-      </nav>
+      </motion.section>
 
-      <div className="dash-content">
-        <div className="dash-header">
-          <div>
-            <h1 className="dash-title">{d.welcome}، {shop.name}</h1>
-          </div>
-          {shop.logo_url && <img src={shop.logo_url} alt="" className="dash-shop-logo" />}
-        </div>
-
-        {/* QR Code */}
-        <motion.section className="dash-card dash-qr-section" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <h2>{d.yourQR}</h2>
-          <p className="dash-qr-hint">{d.qrHint}</p>
-          <div className="dash-qr-wrapper">
-            <img src={qrUrl} alt="QR Code" className="dash-qr-img" />
-          </div>
-        </motion.section>
-
-        {/* Customer Journey */}
-        <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <h2>{d.journey}</h2>
-          <div className="dash-journey">
-            {journeySteps.map((step, i) => (
-              <div key={i} className="dash-journey-step">
-                <div className="dash-journey-num">{step.num}</div>
-                <span className="dash-journey-icon">{step.icon}</span>
-                <span className="dash-journey-label">{step.label}</span>
-                {i < 3 && <div className="dash-journey-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2"><path d={lang === 'ar' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}/></svg></div>}
+      <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <h2>{d.activity}</h2>
+        {activity.length === 0 ? (
+          <div className="dash-empty"><div style={{ fontSize: 40, marginBottom: 12 }}>📋</div><p>{d.noActivity}</p></div>
+        ) : (
+          <div className="dash-activity-list">
+            {activity.map(a => (
+              <div key={a.id} className="dash-activity-item">
+                <div className="dash-activity-badge">{a.action === 'reward' ? '🎁' : '📱'}</div>
+                <div className="dash-activity-info">
+                  <span className="dash-activity-name">{a.customer_name || 'Customer'}</span>
+                  <span className="dash-activity-action">{a.action === 'reward' ? d.reward : d.scan} · {a.points} {d.pointsEarned}</span>
+                </div>
+                <span className="dash-activity-time">{new Date(a.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             ))}
           </div>
-        </motion.section>
+        )}
+      </motion.section>
+    </DashShell>
+  )
+}
 
-        {/* Recent Activity */}
-        <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <h2>{d.activity}</h2>
-          {activity.length === 0 ? (
-            <div className="dash-empty">
-              <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
-              <p>{d.noActivity}</p>
-            </div>
-          ) : (
-            <div className="dash-activity-list">
-              {activity.map(a => (
-                <div key={a.id} className="dash-activity-item">
-                  <div className={`dash-activity-badge ${a.action === 'reward' ? 'reward' : 'scan'}`}>
-                    {a.action === 'reward' ? '🎁' : '📱'}
-                  </div>
-                  <div className="dash-activity-info">
-                    <span className="dash-activity-name">{a.customer_name || 'Customer'}</span>
-                    <span className="dash-activity-action">{a.action === 'reward' ? d.reward : d.scan} · {a.points} {d.pointsEarned}</span>
-                  </div>
-                  <span className="dash-activity-time">{new Date(a.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.section>
+/* ─── Data / Analytics Page ─── */
+function DataPage({ t, lang, setLang, theme, setTheme }) {
+  const { user } = useAuth()
+  const d = t.dataPage
+  const [shop, setShop] = useState(null)
+  const [stats, setStats] = useState({ customers: 0, scans: 0, rewards: 0, totalPoints: 0 })
+  const [loadingShop, setLoadingShop] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    supabase.from('shops').select('*').eq('user_id', user.id).single()
+      .then(async ({ data }) => {
+        if (!data) { navigate('/setup'); return }
+        setShop(data)
+        const { count: scans } = await supabase.from('activity_log').select('*', { count: 'exact', head: true }).eq('shop_id', data.id).eq('action', 'scan')
+        const { count: rewards } = await supabase.from('activity_log').select('*', { count: 'exact', head: true }).eq('shop_id', data.id).eq('action', 'reward')
+        const { data: pts } = await supabase.from('activity_log').select('points').eq('shop_id', data.id)
+        const totalPoints = (pts || []).reduce((s, r) => s + (r.points || 0), 0)
+        const { data: custData } = await supabase.from('activity_log').select('customer_name').eq('shop_id', data.id)
+        const uniqueCustomers = new Set((custData || []).map(c => c.customer_name).filter(Boolean)).size
+        setStats({ customers: uniqueCustomers, scans: scans || 0, rewards: rewards || 0, totalPoints })
+        setLoadingShop(false)
+      })
+  }, [user])
+
+  if (loadingShop) return <div className="auth-page"><div className="dash-loading">Loading...</div></div>
+  if (!shop) return null
+
+  const statCards = [
+    { label: d.customers, value: stats.customers, icon: '👥', color: '#10B981' },
+    { label: d.totalScans, value: stats.scans, icon: '📱', color: '#3B82F6' },
+    { label: d.rewardsRedeemed, value: stats.rewards, icon: '🎁', color: '#F59E0B' },
+    { label: d.totalPoints, value: stats.totalPoints.toLocaleString(), icon: '⭐', color: '#8B5CF6' },
+  ]
+
+  return (
+    <DashShell t={t} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} shop={shop} tab="data">
+      <h1 className="dash-title">{d.title}</h1>
+      <div className="data-stats-grid">
+        {statCards.map((sc, i) => (
+          <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+            <div className="data-stat-icon" style={{ background: sc.color + '18', color: sc.color }}>{sc.icon}</div>
+            <div className="data-stat-value">{sc.value}</div>
+            <div className="data-stat-label">{sc.label}</div>
+          </motion.div>
+        ))}
       </div>
-    </div>
+      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <div className="dash-empty">
+          <div style={{ fontSize: 40, marginBottom: 12 }}>📈</div>
+          <p>{d.moreComingSoon}</p>
+        </div>
+      </motion.div>
+    </DashShell>
+  )
+}
+
+/* ─── Loyalty Program Page ─── */
+function LoyaltyPage({ t, lang, setLang, theme, setTheme }) {
+  const { user } = useAuth()
+  const l = t.loyaltyPage
+  const [shop, setShop] = useState(null)
+  const [pointsPerVisit, setPointsPerVisit] = useState(1)
+  const [rewardAt, setRewardAt] = useState(10)
+  const [rewardDesc, setRewardDesc] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [loadingShop, setLoadingShop] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    supabase.from('shops').select('*').eq('user_id', user.id).single()
+      .then(({ data }) => {
+        if (!data) { navigate('/setup'); return }
+        setShop(data)
+        setPointsPerVisit(data.points_per_visit || 1)
+        setRewardAt(data.reward_threshold || 10)
+        setRewardDesc(data.reward_description || '')
+        setLoadingShop(false)
+      })
+  }, [user])
+
+  const handleSave = async () => {
+    setLoading(true); setSaved(false)
+    await supabase.from('shops').update({
+      points_per_visit: pointsPerVisit,
+      reward_threshold: rewardAt,
+      reward_description: rewardDesc.trim() || null,
+    }).eq('id', shop.id)
+    setLoading(false); setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+  }
+
+  if (loadingShop) return <div className="auth-page"><div className="dash-loading">Loading...</div></div>
+  if (!shop) return null
+
+  return (
+    <DashShell t={t} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} shop={shop} tab="loyalty">
+      <h1 className="dash-title">{l.title}</h1>
+      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        <h2>{l.programSettings}</h2>
+        <div className="auth-form" style={{ gap: 18 }}>
+          <div className="setup-row">
+            <div className="auth-field">
+              <label>{l.pointsPerVisit}</label>
+              <input type="number" min="1" max="100" value={pointsPerVisit} onChange={e => setPointsPerVisit(Number(e.target.value))} />
+            </div>
+            <div className="auth-field">
+              <label>{l.rewardAt}</label>
+              <div className="setup-reward-input">
+                <input type="number" min="1" max="1000" value={rewardAt} onChange={e => setRewardAt(Number(e.target.value))} />
+                <span>{l.points}</span>
+              </div>
+            </div>
+          </div>
+          <div className="auth-field">
+            <label>{l.rewardDesc}</label>
+            <input type="text" value={rewardDesc} onChange={e => setRewardDesc(e.target.value)} placeholder={l.rewardDescPh} />
+          </div>
+          <button onClick={handleSave} disabled={loading} className="auth-submit-btn">
+            {loading ? l.saving : saved ? l.saved : l.save}
+          </button>
+        </div>
+      </motion.div>
+    </DashShell>
+  )
+}
+
+/* ─── Settings Page ─── */
+function SettingsPage({ t, lang, setLang, theme, setTheme }) {
+  const { user } = useAuth()
+  const st = t.settingsPage
+  const [shop, setShop] = useState(null)
+  const [name, setName] = useState('')
+  const [type, setType] = useState('')
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [instagram, setInstagram] = useState('')
+  const [twitter, setTwitter] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [loadingShop, setLoadingShop] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    supabase.from('shops').select('*').eq('user_id', user.id).single()
+      .then(({ data }) => {
+        if (!data) { navigate('/setup'); return }
+        setShop(data)
+        setName(data.name || '')
+        setType(data.type || '')
+        setPhone(data.phone || '')
+        setAddress(data.address || '')
+        setInstagram(data.social_instagram || '')
+        setTwitter(data.social_twitter || '')
+        setLoadingShop(false)
+      })
+  }, [user])
+
+  const handleSave = async () => {
+    setLoading(true); setSaved(false)
+    await supabase.from('shops').update({
+      name: name.trim(), type,
+      phone: phone.trim() || null, address: address.trim() || null,
+      social_instagram: instagram.trim() || null, social_twitter: twitter.trim() || null,
+      updated_at: new Date().toISOString(),
+    }).eq('id', shop.id)
+    setLoading(false); setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+  }
+
+  if (loadingShop) return <div className="auth-page"><div className="dash-loading">Loading...</div></div>
+  if (!shop) return null
+
+  return (
+    <DashShell t={t} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} shop={shop} tab="settings">
+      <h1 className="dash-title">{st.title}</h1>
+
+      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        <h2>{st.shopInfo}</h2>
+        <div className="auth-form" style={{ gap: 18 }}>
+          <div className="auth-field"><label>{t.setup.shopName}</label><input type="text" value={name} onChange={e => setName(e.target.value)} /></div>
+          <div className="auth-field">
+            <label>{t.setup.shopType}</label>
+            <select value={type} onChange={e => setType(e.target.value)} className="setup-select">
+              {t.setup.types.map(tp => <option key={tp} value={tp}>{tp}</option>)}
+            </select>
+          </div>
+          <div className="setup-row">
+            <div className="auth-field"><label>{t.setup.phone}</label><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} dir="ltr" /></div>
+            <div className="auth-field"><label>{t.setup.address}</label><input type="text" value={address} onChange={e => setAddress(e.target.value)} /></div>
+          </div>
+          <div className="setup-row">
+            <div className="auth-field"><label>{t.setup.instagram}</label><input type="text" value={instagram} onChange={e => setInstagram(e.target.value)} dir="ltr" /></div>
+            <div className="auth-field"><label>{t.setup.twitter}</label><input type="text" value={twitter} onChange={e => setTwitter(e.target.value)} dir="ltr" /></div>
+          </div>
+          <button onClick={handleSave} disabled={loading} className="auth-submit-btn">
+            {loading ? st.saving : saved ? st.saved : st.save}
+          </button>
+        </div>
+      </motion.div>
+
+      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <h2>{st.account}</h2>
+        <div className="settings-account-info">
+          <p><strong>{st.email}:</strong> {user?.email}</p>
+          <p><strong>{st.joined}:</strong> {new Date(user?.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+      </motion.div>
+    </DashShell>
   )
 }
 
@@ -2255,6 +2470,9 @@ export default function App() {
       if (p === '/signup') return 'signup'
       if (p === '/setup') return 'setup'
       if (p === '/dashboard') return 'dashboard'
+      if (p === '/data') return 'data'
+      if (p === '/loyalty') return 'loyalty'
+      if (p === '/settings') return 'settings'
       return 'home'
     }
     setPage(routePath(path))
@@ -2285,6 +2503,9 @@ export default function App() {
   if (page === 'signup') return <AuthProvider><SignupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'setup') return <AuthProvider><SetupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'dashboard') return <AuthProvider><DashboardPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'data') return <AuthProvider><DataPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'loyalty') return <AuthProvider><LoyaltyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'settings') return <AuthProvider><SettingsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
 
   return (
     <AuthProvider>
