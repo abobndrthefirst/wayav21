@@ -634,13 +634,13 @@ const featureIcons = { bell: <BellIcon />, chart: <ChartIcon />, share: <ShareIc
 
 /* ─── Nav Auth Buttons ─── */
 function NavAuthButtons({ t }) {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   if (user) {
     const name = user.user_metadata?.full_name || user.email?.split('@')[0] || ''
     return (
       <div className="nav-auth">
         <span className="nav-greeting">{t.nav.hi}, {name}</span>
-        <button onClick={logout} className="nav-auth-btn nav-logout-btn">{t.nav.logout}</button>
+        <button onClick={async () => { await signOut(); navigate('/') }} className="nav-auth-btn nav-logout-btn">{t.nav.logout}</button>
       </div>
     )
   }
@@ -653,13 +653,13 @@ function NavAuthButtons({ t }) {
 }
 
 function MobileAuthButtons({ t, closeMenu }) {
-  const { user, logout } = useAuth()
+  const { user, signOut } = useAuth()
   if (user) {
     const name = user.user_metadata?.full_name || user.email?.split('@')[0] || ''
     return (
       <>
         <span className="mobile-drawer-greeting">{t.nav.hi}, {name}</span>
-        <button onClick={() => { logout(); closeMenu() }} className="mobile-drawer-cta">{t.nav.logout}</button>
+        <button onClick={async () => { await signOut(); navigate('/'); closeMenu() }} className="mobile-drawer-cta">{t.nav.logout}</button>
       </>
     )
   }
