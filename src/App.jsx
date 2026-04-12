@@ -95,6 +95,10 @@ const content = {
       activity: 'آخر النشاطات', noActivity: 'ما في نشاطات بعد — شارك كود QR مع عملائك!',
       scan: 'مسح', reward: 'مكافأة', pointsEarned: 'نقطة',
       home: 'الرئيسية', data: 'البيانات', loyalty: 'الولاء', settings: 'الإعدادات', logout: 'خروج',
+      navHome: 'الرئيسية', navData: 'البيانات', navLoyalty: 'برنامج الولاء', navSettings: 'الإعدادات',
+      visitSite: 'زيارة الموقع',
+      demoBanner: 'هذا عرض تجريبي — سنتواصل معك قريباً لتفعيل حسابك. في هذه الأثناء، استكشف لوحة التحكم!',
+      statLabels: { customers: 'عميل نشط', visits: 'زيارات متكررة', revenue: 'إيرادات إضافية', rewards: 'مكافأة مرسلة' },
     },
     dataPage: {
       title: 'البيانات والتحليلات',
@@ -335,6 +339,10 @@ const content = {
       activity: 'Recent Activity', noActivity: 'No activity yet — share your QR code with customers!',
       scan: 'Scan', reward: 'Reward', pointsEarned: 'points',
       home: 'Home', data: 'Data', loyalty: 'Loyalty', settings: 'Settings', logout: 'Log Out',
+      navHome: 'Home', navData: 'Analytics', navLoyalty: 'Loyalty Program', navSettings: 'Settings',
+      visitSite: 'Visit Website',
+      demoBanner: "This is a demo view — we'll contact you soon to activate your account. Meanwhile, explore the dashboard!",
+      statLabels: { customers: 'Active Customers', visits: 'Repeat Visits', revenue: 'Extra Revenue', rewards: 'Rewards Sent' },
     },
     dataPage: {
       title: 'Data & Analytics',
@@ -1986,6 +1994,24 @@ function SignupPage({ t, lang, setLang, theme, setTheme }) {
   )
 }
 
+/* ─── Demo Fake Data ─── */
+const demoData = {
+  stats: [
+    { key: 'customers', value: '1,247', change: '+12%' },
+    { key: 'visits', value: '67%', change: '+8%' },
+    { key: 'revenue', value: '14.2K', change: '+22%' },
+    { key: 'rewards', value: '3,891', change: '+34%' },
+  ],
+  activity: [
+    { id: 1, name: 'أحمد محمد', action: 'scan', points: 3, time: '2 min' },
+    { id: 2, name: 'سارة علي', action: 'reward', points: 10, time: '15 min' },
+    { id: 3, name: 'خالد عبدالله', action: 'scan', points: 3, time: '32 min' },
+    { id: 4, name: 'نورة سعود', action: 'scan', points: 3, time: '1 hr' },
+    { id: 5, name: 'فهد ناصر', action: 'reward', points: 10, time: '2 hr' },
+    { id: 6, name: 'ريم خالد', action: 'scan', points: 3, time: '3 hr' },
+  ],
+}
+
 /* ─── Shop Setup Page (onboarding — no loyalty) ─── */
 function SetupPage({ t, lang, setLang, theme, setTheme }) {
   const { user } = useAuth()
@@ -2097,22 +2123,58 @@ function SetupPage({ t, lang, setLang, theme, setTheme }) {
   )
 }
 
-/* ─── Dashboard Shell (shared nav + sidebar for all app pages) ─── */
-function DashShell({ t, lang, setLang, theme, setTheme, shop, tab, children }) {
-  const { signOut } = useAuth()
+/* ─── Dashboard (Demo View with Sidebar) ─── */
+function DashboardPage({ t, lang, setLang, theme, setTheme }) {
+  const { user, signOut } = useAuth()
   const d = t.dashboard
-  const handleLogout = async () => { await signOut(); navigate('/') }
+  const [shop, setShop] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('home')
+  const [loadingShop, setLoadingShop] = useState(true)
 
-  const tabs = [
-    { id: 'dashboard', label: d.home, icon: '🏠', path: '/dashboard' },
-    { id: 'data', label: d.data, icon: '📊', path: '/data' },
-    { id: 'loyalty', label: d.loyalty, icon: '⭐', path: '/loyalty' },
-    { id: 'settings', label: d.settings, icon: '⚙️', path: '/settings' },
+  useEffect(() => {
+    if (!user) return
+    supabase.from('shops').select('*').eq('user_id', user.id).single()
+      .then(({ data }) => {
+        if (!data) { navigate('/setup'); return }
+        setShop(data)
+        setLoadingShop(false)
+      })
+  }, [user])
+
+  useEffect(() => {
+    if (sidebarOpen) { document.body.style.overflow = 'hidden' }
+    else { document.body.style.overflow = '' }
+    return () => { document.body.style.overflow = '' }
+  }, [sidebarOpen])
+
+  if (loadingShop) return <div className="auth-page"><div className="dash-loading"><Logo size={40} /></div></div>
+  if (!shop) return null
+
+  const handleLogout = async () => { await signOut(); navigate('/') }
+  const shopName = shop.name || 'متجرك'
+
+  const menuItems = [
+    { id: 'home', label: d.navHome, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> },
+    { id: 'data', label: d.navData, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+    { id: 'loyalty', label: d.navLoyalty, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> },
+    { id: 'settings', label: d.navSettings, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
+  ]
+
+  const statIcons = [
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.5"><path d="M23 6l-9.5 9.5-5-5L1 18"/></svg>,
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>,
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
   ]
 
   return (
     <div className={`dash-page ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      {/* Top nav */}
       <nav className="dash-nav">
+        <button className="dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <div className="dash-nav-brand"><Logo size={28} /><span>وايا</span></div>
         <div className="dash-nav-right">
           <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
@@ -2121,321 +2183,174 @@ function DashShell({ t, lang, setLang, theme, setTheme, shop, tab, children }) {
           <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
             <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
           </button>
-          <button onClick={handleLogout} className="dash-logout-btn">{d.logout}</button>
         </div>
       </nav>
 
-      <div className="dash-tabs">
-        {tabs.map(tb => (
-          <button key={tb.id} className={`dash-tab ${tab === tb.id ? 'active' : ''}`} onClick={() => navigate(tb.path)}>
-            <span className="dash-tab-icon">{tb.icon}</span>
-            <span className="dash-tab-label">{tb.label}</span>
-          </button>
-        ))}
+      {/* Sidebar overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            <motion.div className="sidebar-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} />
+            <motion.aside className="sidebar" initial={{ x: lang === 'ar' ? 300 : -300 }} animate={{ x: 0 }} exit={{ x: lang === 'ar' ? 300 : -300 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}>
+              <div className="sidebar-header">
+                <div className="sidebar-shop">
+                  {shop.logo_url ? <img src={shop.logo_url} alt="" className="sidebar-logo" /> : <div className="sidebar-logo-ph"><Logo size={20} /></div>}
+                  <div><div className="sidebar-shop-name">{shopName}</div><div className="sidebar-shop-type">{shop.type}</div></div>
+                </div>
+                <button className="sidebar-close" onClick={() => setSidebarOpen(false)}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div className="sidebar-menu">
+                {menuItems.map(item => (
+                  <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { setActiveTab(item.id); setSidebarOpen(false) }}>
+                    {item.icon}<span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="sidebar-footer">
+                <button className="sidebar-item sidebar-home-link" onClick={() => { navigate('/'); setSidebarOpen(false) }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  <span>{d.visitSite}</span>
+                </button>
+                <button className="sidebar-item sidebar-logout" onClick={handleLogout}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  <span>{d.logout}</span>
+                </button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Demo banner */}
+      <div className="demo-banner">
+        <span>{d.demoBanner}</span>
       </div>
 
+      {/* Content */}
       <div className="dash-content">
-        {children}
+        {activeTab === 'home' && (
+          <>
+            <div className="dash-header">
+              <h1 className="dash-title">{d.welcome}، {shopName}</h1>
+            </div>
+
+            <div className="data-stats-grid">
+              {demoData.stats.map((s, i) => (
+                <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+                  <div className="data-stat-icon-wrap">{statIcons[i]}</div>
+                  <div className="data-stat-value">{s.value}</div>
+                  <div className="data-stat-label">{d.statLabels[s.key]}</div>
+                  <div className="data-stat-change">{s.change}</div>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <h2>{d.journey}</h2>
+              <div className="dash-journey">
+                {[d.step1, d.step2, d.step3, d.step4].map((label, i) => (
+                  <div key={i} className="dash-journey-step">
+                    <div className="dash-journey-num">{i + 1}</div>
+                    <span className="dash-journey-label">{label}</span>
+                    {i < 3 && <div className="dash-journey-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2"><path d={lang === 'ar' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}/></svg></div>}
+                  </div>
+                ))}
+              </div>
+            </motion.section>
+
+            <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <h2>{d.activity}</h2>
+              <div className="dash-activity-list">
+                {demoData.activity.map(a => (
+                  <div key={a.id} className="dash-activity-item">
+                    <div className="dash-activity-badge">{a.action === 'reward' ? '🎁' : '📱'}</div>
+                    <div className="dash-activity-info">
+                      <span className="dash-activity-name">{a.name}</span>
+                      <span className="dash-activity-action">{a.action === 'reward' ? d.reward : d.scan} · {a.points} {d.pointsEarned}</span>
+                    </div>
+                    <span className="dash-activity-time">{a.time}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
+          </>
+        )}
+
+        {activeTab === 'data' && (
+          <>
+            <h1 className="dash-title">{t.dataPage.title}</h1>
+            <div className="data-stats-grid">
+              {[
+                { label: t.dataPage.customers, value: '1,247', icon: '👥', color: '#10B981' },
+                { label: t.dataPage.totalScans, value: '8,432', icon: '📱', color: '#3B82F6' },
+                { label: t.dataPage.rewardsRedeemed, value: '3,891', icon: '🎁', color: '#F59E0B' },
+                { label: t.dataPage.totalPoints, value: '25,296', icon: '⭐', color: '#8B5CF6' },
+              ].map((sc, i) => (
+                <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+                  <div className="data-stat-icon" style={{ background: sc.color + '18', color: sc.color }}>{sc.icon}</div>
+                  <div className="data-stat-value">{sc.value}</div>
+                  <div className="data-stat-label">{sc.label}</div>
+                </motion.div>
+              ))}
+            </div>
+            <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+              <div className="dash-empty"><p>{t.dataPage.moreComingSoon}</p></div>
+            </motion.div>
+          </>
+        )}
+
+        {activeTab === 'loyalty' && (
+          <>
+            <h1 className="dash-title">{t.loyaltyPage.title}</h1>
+            <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+              <h2>{t.loyaltyPage.programSettings}</h2>
+              <div className="auth-form" style={{ gap: 18 }}>
+                <div className="setup-row">
+                  <div className="auth-field"><label>{t.loyaltyPage.pointsPerVisit}</label><input type="number" defaultValue={shop.points_per_visit || 1} /></div>
+                  <div className="auth-field"><label>{t.loyaltyPage.rewardAt}</label><div className="setup-reward-input"><input type="number" defaultValue={shop.reward_threshold || 10} /><span>{t.loyaltyPage.points}</span></div></div>
+                </div>
+                <div className="auth-field"><label>{t.loyaltyPage.rewardDesc}</label><input type="text" defaultValue={shop.reward_description || ''} placeholder={t.loyaltyPage.rewardDescPh} /></div>
+                <button className="auth-submit-btn">{t.loyaltyPage.save}</button>
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {activeTab === 'settings' && (
+          <>
+            <h1 className="dash-title">{t.settingsPage.title}</h1>
+            <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+              <h2>{t.settingsPage.shopInfo}</h2>
+              <div className="auth-form" style={{ gap: 18 }}>
+                <div className="auth-field"><label>{t.setup.shopName}</label><input type="text" defaultValue={shop.name} /></div>
+                <div className="auth-field"><label>{t.setup.shopType}</label><select defaultValue={shop.type} className="setup-select">{t.setup.types.map(tp => <option key={tp} value={tp}>{tp}</option>)}</select></div>
+                <div className="setup-row">
+                  <div className="auth-field"><label>{t.setup.phone}</label><input type="tel" defaultValue={shop.phone || ''} dir="ltr" /></div>
+                  <div className="auth-field"><label>{t.setup.address}</label><input type="text" defaultValue={shop.address || ''} /></div>
+                </div>
+                <button className="auth-submit-btn">{t.settingsPage.save}</button>
+              </div>
+            </motion.div>
+            <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <h2>{t.settingsPage.account}</h2>
+              <div className="settings-account-info">
+                <p><strong>{t.settingsPage.email}:</strong> {user?.email}</p>
+                <p><strong>{t.settingsPage.joined}:</strong> {new Date(user?.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              </div>
+            </motion.div>
+          </>
+        )}
       </div>
     </div>
   )
 }
 
-/* ─── Dashboard Home Page ─── */
-function DashboardPage({ t, lang, setLang, theme, setTheme }) {
-  const { user } = useAuth()
-  const d = t.dashboard
-  const [shop, setShop] = useState(null)
-  const [activity, setActivity] = useState([])
-  const [loadingShop, setLoadingShop] = useState(true)
-
-  useEffect(() => {
-    if (!user) return
-    supabase.from('shops').select('*').eq('user_id', user.id).single()
-      .then(({ data }) => {
-        if (!data) { navigate('/setup'); return }
-        setShop(data)
-        setLoadingShop(false)
-        supabase.from('activity_log').select('*').eq('shop_id', data.id).order('created_at', { ascending: false }).limit(20)
-          .then(({ data: acts }) => setActivity(acts || []))
-      })
-  }, [user])
-
-  if (loadingShop) return <div className="auth-page"><div className="dash-loading">Loading...</div></div>
-  if (!shop) return null
-
-  const shopUrl = `https://www.trywaya.com/s/${shop.id}`
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(shopUrl)}&color=10B981&bgcolor=1C1B18`
-
-  const journeySteps = [
-    { num: 1, label: d.step1, icon: '📱' },
-    { num: 2, label: d.step2, icon: '⭐' },
-    { num: 3, label: d.step3, icon: '🔔' },
-    { num: 4, label: d.step4, icon: '🎁' },
-  ]
-
-  return (
-    <DashShell t={t} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} shop={shop} tab="dashboard">
-      <div className="dash-header">
-        <div><h1 className="dash-title">{d.welcome}، {shop.name}</h1></div>
-        {shop.logo_url && <img src={shop.logo_url} alt="" className="dash-shop-logo" />}
-      </div>
-
-      <motion.section className="dash-card dash-qr-section" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <h2>{d.yourQR}</h2>
-        <p className="dash-qr-hint">{d.qrHint}</p>
-        <div className="dash-qr-wrapper"><img src={qrUrl} alt="QR Code" className="dash-qr-img" /></div>
-      </motion.section>
-
-      <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <h2>{d.journey}</h2>
-        <div className="dash-journey">
-          {journeySteps.map((step, i) => (
-            <div key={i} className="dash-journey-step">
-              <div className="dash-journey-num">{step.num}</div>
-              <span className="dash-journey-icon">{step.icon}</span>
-              <span className="dash-journey-label">{step.label}</span>
-              {i < 3 && <div className="dash-journey-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2"><path d={lang === 'ar' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}/></svg></div>}
-            </div>
-          ))}
-        </div>
-      </motion.section>
-
-      <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <h2>{d.activity}</h2>
-        {activity.length === 0 ? (
-          <div className="dash-empty"><div style={{ fontSize: 40, marginBottom: 12 }}>📋</div><p>{d.noActivity}</p></div>
-        ) : (
-          <div className="dash-activity-list">
-            {activity.map(a => (
-              <div key={a.id} className="dash-activity-item">
-                <div className="dash-activity-badge">{a.action === 'reward' ? '🎁' : '📱'}</div>
-                <div className="dash-activity-info">
-                  <span className="dash-activity-name">{a.customer_name || 'Customer'}</span>
-                  <span className="dash-activity-action">{a.action === 'reward' ? d.reward : d.scan} · {a.points} {d.pointsEarned}</span>
-                </div>
-                <span className="dash-activity-time">{new Date(a.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </motion.section>
-    </DashShell>
-  )
-}
-
-/* ─── Data / Analytics Page ─── */
-function DataPage({ t, lang, setLang, theme, setTheme }) {
-  const { user } = useAuth()
-  const d = t.dataPage
-  const [shop, setShop] = useState(null)
-  const [stats, setStats] = useState({ customers: 0, scans: 0, rewards: 0, totalPoints: 0 })
-  const [loadingShop, setLoadingShop] = useState(true)
-
-  useEffect(() => {
-    if (!user) return
-    supabase.from('shops').select('*').eq('user_id', user.id).single()
-      .then(async ({ data }) => {
-        if (!data) { navigate('/setup'); return }
-        setShop(data)
-        const { count: scans } = await supabase.from('activity_log').select('*', { count: 'exact', head: true }).eq('shop_id', data.id).eq('action', 'scan')
-        const { count: rewards } = await supabase.from('activity_log').select('*', { count: 'exact', head: true }).eq('shop_id', data.id).eq('action', 'reward')
-        const { data: pts } = await supabase.from('activity_log').select('points').eq('shop_id', data.id)
-        const totalPoints = (pts || []).reduce((s, r) => s + (r.points || 0), 0)
-        const { data: custData } = await supabase.from('activity_log').select('customer_name').eq('shop_id', data.id)
-        const uniqueCustomers = new Set((custData || []).map(c => c.customer_name).filter(Boolean)).size
-        setStats({ customers: uniqueCustomers, scans: scans || 0, rewards: rewards || 0, totalPoints })
-        setLoadingShop(false)
-      })
-  }, [user])
-
-  if (loadingShop) return <div className="auth-page"><div className="dash-loading">Loading...</div></div>
-  if (!shop) return null
-
-  const statCards = [
-    { label: d.customers, value: stats.customers, icon: '👥', color: '#10B981' },
-    { label: d.totalScans, value: stats.scans, icon: '📱', color: '#3B82F6' },
-    { label: d.rewardsRedeemed, value: stats.rewards, icon: '🎁', color: '#F59E0B' },
-    { label: d.totalPoints, value: stats.totalPoints.toLocaleString(), icon: '⭐', color: '#8B5CF6' },
-  ]
-
-  return (
-    <DashShell t={t} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} shop={shop} tab="data">
-      <h1 className="dash-title">{d.title}</h1>
-      <div className="data-stats-grid">
-        {statCards.map((sc, i) => (
-          <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-            <div className="data-stat-icon" style={{ background: sc.color + '18', color: sc.color }}>{sc.icon}</div>
-            <div className="data-stat-value">{sc.value}</div>
-            <div className="data-stat-label">{sc.label}</div>
-          </motion.div>
-        ))}
-      </div>
-      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-        <div className="dash-empty">
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📈</div>
-          <p>{d.moreComingSoon}</p>
-        </div>
-      </motion.div>
-    </DashShell>
-  )
-}
-
-/* ─── Loyalty Program Page ─── */
-function LoyaltyPage({ t, lang, setLang, theme, setTheme }) {
-  const { user } = useAuth()
-  const l = t.loyaltyPage
-  const [shop, setShop] = useState(null)
-  const [pointsPerVisit, setPointsPerVisit] = useState(1)
-  const [rewardAt, setRewardAt] = useState(10)
-  const [rewardDesc, setRewardDesc] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [loadingShop, setLoadingShop] = useState(true)
-
-  useEffect(() => {
-    if (!user) return
-    supabase.from('shops').select('*').eq('user_id', user.id).single()
-      .then(({ data }) => {
-        if (!data) { navigate('/setup'); return }
-        setShop(data)
-        setPointsPerVisit(data.points_per_visit || 1)
-        setRewardAt(data.reward_threshold || 10)
-        setRewardDesc(data.reward_description || '')
-        setLoadingShop(false)
-      })
-  }, [user])
-
-  const handleSave = async () => {
-    setLoading(true); setSaved(false)
-    await supabase.from('shops').update({
-      points_per_visit: pointsPerVisit,
-      reward_threshold: rewardAt,
-      reward_description: rewardDesc.trim() || null,
-    }).eq('id', shop.id)
-    setLoading(false); setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
-  }
-
-  if (loadingShop) return <div className="auth-page"><div className="dash-loading">Loading...</div></div>
-  if (!shop) return null
-
-  return (
-    <DashShell t={t} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} shop={shop} tab="loyalty">
-      <h1 className="dash-title">{l.title}</h1>
-      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <h2>{l.programSettings}</h2>
-        <div className="auth-form" style={{ gap: 18 }}>
-          <div className="setup-row">
-            <div className="auth-field">
-              <label>{l.pointsPerVisit}</label>
-              <input type="number" min="1" max="100" value={pointsPerVisit} onChange={e => setPointsPerVisit(Number(e.target.value))} />
-            </div>
-            <div className="auth-field">
-              <label>{l.rewardAt}</label>
-              <div className="setup-reward-input">
-                <input type="number" min="1" max="1000" value={rewardAt} onChange={e => setRewardAt(Number(e.target.value))} />
-                <span>{l.points}</span>
-              </div>
-            </div>
-          </div>
-          <div className="auth-field">
-            <label>{l.rewardDesc}</label>
-            <input type="text" value={rewardDesc} onChange={e => setRewardDesc(e.target.value)} placeholder={l.rewardDescPh} />
-          </div>
-          <button onClick={handleSave} disabled={loading} className="auth-submit-btn">
-            {loading ? l.saving : saved ? l.saved : l.save}
-          </button>
-        </div>
-      </motion.div>
-    </DashShell>
-  )
-}
-
-/* ─── Settings Page ─── */
-function SettingsPage({ t, lang, setLang, theme, setTheme }) {
-  const { user } = useAuth()
-  const st = t.settingsPage
-  const [shop, setShop] = useState(null)
-  const [name, setName] = useState('')
-  const [type, setType] = useState('')
-  const [phone, setPhone] = useState('')
-  const [address, setAddress] = useState('')
-  const [instagram, setInstagram] = useState('')
-  const [twitter, setTwitter] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [loadingShop, setLoadingShop] = useState(true)
-
-  useEffect(() => {
-    if (!user) return
-    supabase.from('shops').select('*').eq('user_id', user.id).single()
-      .then(({ data }) => {
-        if (!data) { navigate('/setup'); return }
-        setShop(data)
-        setName(data.name || '')
-        setType(data.type || '')
-        setPhone(data.phone || '')
-        setAddress(data.address || '')
-        setInstagram(data.social_instagram || '')
-        setTwitter(data.social_twitter || '')
-        setLoadingShop(false)
-      })
-  }, [user])
-
-  const handleSave = async () => {
-    setLoading(true); setSaved(false)
-    await supabase.from('shops').update({
-      name: name.trim(), type,
-      phone: phone.trim() || null, address: address.trim() || null,
-      social_instagram: instagram.trim() || null, social_twitter: twitter.trim() || null,
-      updated_at: new Date().toISOString(),
-    }).eq('id', shop.id)
-    setLoading(false); setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
-  }
-
-  if (loadingShop) return <div className="auth-page"><div className="dash-loading">Loading...</div></div>
-  if (!shop) return null
-
-  return (
-    <DashShell t={t} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} shop={shop} tab="settings">
-      <h1 className="dash-title">{st.title}</h1>
-
-      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <h2>{st.shopInfo}</h2>
-        <div className="auth-form" style={{ gap: 18 }}>
-          <div className="auth-field"><label>{t.setup.shopName}</label><input type="text" value={name} onChange={e => setName(e.target.value)} /></div>
-          <div className="auth-field">
-            <label>{t.setup.shopType}</label>
-            <select value={type} onChange={e => setType(e.target.value)} className="setup-select">
-              {t.setup.types.map(tp => <option key={tp} value={tp}>{tp}</option>)}
-            </select>
-          </div>
-          <div className="setup-row">
-            <div className="auth-field"><label>{t.setup.phone}</label><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} dir="ltr" /></div>
-            <div className="auth-field"><label>{t.setup.address}</label><input type="text" value={address} onChange={e => setAddress(e.target.value)} /></div>
-          </div>
-          <div className="setup-row">
-            <div className="auth-field"><label>{t.setup.instagram}</label><input type="text" value={instagram} onChange={e => setInstagram(e.target.value)} dir="ltr" /></div>
-            <div className="auth-field"><label>{t.setup.twitter}</label><input type="text" value={twitter} onChange={e => setTwitter(e.target.value)} dir="ltr" /></div>
-          </div>
-          <button onClick={handleSave} disabled={loading} className="auth-submit-btn">
-            {loading ? st.saving : saved ? st.saved : st.save}
-          </button>
-        </div>
-      </motion.div>
-
-      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <h2>{st.account}</h2>
-        <div className="settings-account-info">
-          <p><strong>{st.email}:</strong> {user?.email}</p>
-          <p><strong>{st.joined}:</strong> {new Date(user?.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-        </div>
-      </motion.div>
-    </DashShell>
-  )
-}
+/* ─── DataPage, LoyaltyPage, SettingsPage now handled inside DashboardPage tabs ─── */
+function DataPage(props) { return <DashboardPage {...props} /> }
+function LoyaltyPage(props) { return <DashboardPage {...props} /> }
+function SettingsPage(props) { return <DashboardPage {...props} /> }
 
 /* ─── Auth Redirect (redirects logged-in users away from landing/login/signup) ─── */
 function AuthRedirect() {
