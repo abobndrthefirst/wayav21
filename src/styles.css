@@ -3108,6 +3108,34 @@ body {
 [data-theme="light"] .logo-upload-placeholder { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.12); }
 [data-theme="light"] .logo-upload-btn { background: rgba(0,0,0,0.06); color: #333; }
 
+/* ─── Loyalty Step Flow ─── */
+.loyalty-step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.loyalty-step-num {
+  width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--green); color: #fff; font-weight: 700; font-size: 0.95rem; flex-shrink: 0;
+}
+.loyalty-step-header h2 { margin: 0; font-size: 1.15rem; }
+.loyalty-generate-btn {
+  margin-top: 12px; width: 100%; background: var(--green) !important;
+  font-size: 1rem !important; font-weight: 700 !important; padding: 14px !important;
+  border-radius: 12px !important; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.loyalty-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ─── Wallet Actions ─── */
+.wallet-actions { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.wallet-download-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px 24px; border-radius: 12px; border: 2px solid rgba(16,185,129,0.3);
+  background: rgba(16,185,129,0.08); color: var(--green); font-weight: 600;
+  font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+  font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+}
+.wallet-download-btn:hover { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.5); transform: translateY(-1px); }
+
+[data-theme="light"] .loyalty-step-num { box-shadow: 0 2px 8px rgba(16,185,129,0.25); }
+[data-theme="light"] .wallet-download-btn { color: #059669; }
+
 /* ─── Google Wallet Section ─── */
 .wallet-card { position: relative; overflow: hidden; }
 .wallet-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }

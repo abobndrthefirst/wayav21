@@ -2178,8 +2178,6 @@ function LoyaltyTab({ t, lang, shop, user }) {
   const [walletLoading, setWalletLoading] = useState(false)
   const [walletError, setWalletError] = useState(null)
   const [copied, setCopied] = useState(false)
-  const [testName, setTestName] = useState(lang === 'ar' ? 'أحمد علي' : 'Ahmed Ali')
-  const [testPhone, setTestPhone] = useState('0551234567')
 
   // Editable settings
   const [pointsPerVisit, setPointsPerVisit] = useState(shop.points_per_visit || 1)
@@ -2190,8 +2188,11 @@ function LoyaltyTab({ t, lang, shop, user }) {
   const [logoUploading, setLogoUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState(null)
+  const [generated, setGenerated] = useState(false)
 
   const colorPresets = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6', '#1a1a2e', '#6366F1', '#D97706']
+  const walletLink = `https://www.trywaya.com/wallet/${shop.id}`
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(walletLink)}&color=${cardColor.replace('#', '')}&bgcolor=ffffff&margin=10`
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0]
@@ -2208,14 +2209,12 @@ function LoyaltyTab({ t, lang, shop, user }) {
 
     const { data: { publicUrl } } = supabase.storage.from('shop-logos').getPublicUrl(path)
     setLogoUrl(publicUrl)
-
-    // Update shop record
     await supabase.from('shops').update({ logo_url: publicUrl }).eq('id', shop.id)
     shop.logo_url = publicUrl
     setLogoUploading(false)
   }
 
-  const handleSave = async () => {
+  const handleSaveAndGenerate = async () => {
     setSaving(true)
     setSaveStatus(null)
     const { error } = await supabase.from('shops').update({
@@ -2231,12 +2230,13 @@ function LoyaltyTab({ t, lang, shop, user }) {
       shop.reward_description = rewardDesc
       shop.card_color = cardColor
       setSaveStatus('saved')
+      setGenerated(true)
       setTimeout(() => setSaveStatus(null), 2000)
     }
     setSaving(false)
   }
 
-  const generateWalletPass = async () => {
+  const generateTestPass = async () => {
     setWalletLoading(true)
     setWalletError(null)
     setWalletUrl(null)
@@ -2244,38 +2244,111 @@ function LoyaltyTab({ t, lang, shop, user }) {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shop_id: shop.id,
-          customer_name: testName,
-          customer_phone: testPhone,
-        }),
+        body: JSON.stringify({ shop_id: shop.id, customer_name: user?.email?.split('@')[0] || 'Test', customer_phone: '0500000000' }),
       })
       const data = await res.json()
-      if (data.success) {
-        setWalletUrl(data.saveUrl)
-      } else {
-        setWalletError(data.error || t.loyaltyPage.walletError)
-      }
-    } catch (err) {
-      setWalletError(err.message)
-    }
+      if (data.success) { setWalletUrl(data.saveUrl) }
+      else { setWalletError(data.error || t.loyaltyPage.walletError) }
+    } catch (err) { setWalletError(err.message) }
     setWalletLoading(false)
   }
 
   const copyCustomerLink = () => {
-    const link = `https://www.trywaya.com/wallet/${shop.id}`
-    navigator.clipboard.writeText(link)
+    navigator.clipboard.writeText(walletLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const downloadPDF = () => {
+    const rewardText = rewardDesc || `Collect ${rewardThreshold} points for a reward`
+    const rewardTextAr = rewardDesc || `اجمع ${rewardThreshold} نقطة واحصل على مكافأة`
+    const logoImg = logoUrl ? `<img src="${logoUrl}" style="width:80px;height:80px;border-radius:20px;object-fit:cover;margin-bottom:12px;" crossorigin="anonymous"/>` : ''
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${shop.name} - Loyalty Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter','Noto Sans Arabic',sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:40px}
+.poster{width:600px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 4px 30px rgba(0,0,0,0.08)}
+.poster-header{background:${cardColor};padding:48px 40px 40px;text-align:center;color:#fff;position:relative;overflow:hidden}
+.poster-header::after{content:'';position:absolute;top:-60%;right:-15%;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,0.08)}
+.poster-logo{position:relative;z-index:1}
+.poster-name{font-size:2rem;font-weight:800;margin-top:8px;position:relative;z-index:1}
+.poster-issuer{font-size:0.9rem;opacity:0.8;margin-top:4px;position:relative;z-index:1}
+.poster-body{padding:40px}
+.poster-qr{text-align:center;margin-bottom:32px}
+.poster-qr img{width:240px;height:240px;border-radius:12px;border:3px solid ${cardColor}20}
+.poster-instructions{display:flex;flex-direction:column;gap:24px}
+.poster-lang{text-align:center}
+.poster-lang h3{font-size:1.1rem;color:#333;margin-bottom:8px}
+.poster-steps{list-style:none;display:flex;justify-content:center;gap:16px;margin-top:12px}
+.poster-step{display:flex;flex-direction:column;align-items:center;gap:6px;width:120px;text-align:center}
+.poster-step-num{width:32px;height:32px;border-radius:50%;background:${cardColor};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem}
+.poster-step-text{font-size:0.8rem;color:#666;line-height:1.4}
+.poster-reward{text-align:center;margin-top:24px;padding:16px 20px;background:${cardColor}10;border-radius:14px;border:1.5px solid ${cardColor}25}
+.poster-reward p{color:${cardColor};font-weight:700;font-size:1rem}
+.poster-divider{width:60%;margin:24px auto;border:none;border-top:1px solid #eee}
+.poster-footer{text-align:center;padding:0 40px 32px;color:#aaa;font-size:0.75rem}
+.poster-footer span{color:${cardColor};font-weight:600}
+.ar{direction:rtl;font-family:'Noto Sans Arabic','Inter',sans-serif}
+@media print{body{background:#fff;padding:0}.poster{box-shadow:none;width:100%;border-radius:0}}
+</style></head><body>
+<div class="poster">
+  <div class="poster-header">
+    <div class="poster-logo">${logoImg}</div>
+    <div class="poster-name">${shop.name}</div>
+    <div class="poster-issuer">Loyalty Program | برنامج الولاء</div>
+  </div>
+  <div class="poster-body">
+    <div class="poster-qr"><img src="${qrUrl}" alt="QR Code"/></div>
+
+    <div class="poster-instructions">
+      <div class="poster-lang ar">
+        <h3>امسح الكود وأضف بطاقة الولاء</h3>
+        <ol class="poster-steps">
+          <li class="poster-step"><div class="poster-step-num">١</div><div class="poster-step-text">امسح الكود بكاميرا جوالك</div></li>
+          <li class="poster-step"><div class="poster-step-num">٢</div><div class="poster-step-text">أدخل اسمك ورقم جوالك</div></li>
+          <li class="poster-step"><div class="poster-step-num">٣</div><div class="poster-step-text">أضف البطاقة لمحفظة قوقل</div></li>
+        </ol>
+      </div>
+
+      <hr class="poster-divider"/>
+
+      <div class="poster-lang">
+        <h3>Scan & Add Your Loyalty Card</h3>
+        <ol class="poster-steps">
+          <li class="poster-step"><div class="poster-step-num">1</div><div class="poster-step-text">Scan the QR code with your phone</div></li>
+          <li class="poster-step"><div class="poster-step-num">2</div><div class="poster-step-text">Enter your name & phone number</div></li>
+          <li class="poster-step"><div class="poster-step-num">3</div><div class="poster-step-text">Add card to Google Wallet</div></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="poster-reward">
+      <p class="ar">${rewardTextAr}</p>
+      <p style="margin-top:4px;font-size:0.85rem;color:#666">${rewardText}</p>
+    </div>
+  </div>
+  <div class="poster-footer">Powered by <span>Waya</span> — trywaya.com</div>
+</div>
+<script>setTimeout(()=>window.print(),500)<\/script>
+</body></html>`
+
+    const blob = new Blob([html], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
   }
 
   return (
     <>
       <h1 className="dash-title">{t.loyaltyPage.title}</h1>
 
-      {/* Card Design + Preview */}
+      {/* Step 1: Card Design + Preview */}
       <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <h2>{t.loyaltyPage.cardDesign}</h2>
+        <div className="loyalty-step-header">
+          <div className="loyalty-step-num">1</div>
+          <h2>{t.loyaltyPage.cardDesign}</h2>
+        </div>
 
         {/* Live Preview */}
         <div className="card-preview-wrap">
@@ -2324,89 +2397,71 @@ function LoyaltyTab({ t, lang, shop, user }) {
               </label>
             </div>
           </div>
-        </div>
-      </motion.div>
 
-      {/* Program Settings */}
-      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <h2>{t.loyaltyPage.programSettings}</h2>
-        <div className="auth-form" style={{ gap: 18 }}>
+          {/* Reward Settings inline */}
           <div className="setup-row">
             <div className="auth-field"><label>{t.loyaltyPage.pointsPerVisit}</label><input type="number" value={pointsPerVisit} onChange={e => setPointsPerVisit(Number(e.target.value))} /></div>
             <div className="auth-field"><label>{t.loyaltyPage.rewardAt}</label><div className="setup-reward-input"><input type="number" value={rewardThreshold} onChange={e => setRewardThreshold(Number(e.target.value))} /><span>{t.loyaltyPage.points}</span></div></div>
           </div>
           <div className="auth-field"><label>{t.loyaltyPage.rewardDesc}</label><input type="text" value={rewardDesc} onChange={e => setRewardDesc(e.target.value)} placeholder={t.loyaltyPage.rewardDescPh} /></div>
-          <button className="auth-submit-btn" onClick={handleSave} disabled={saving}>
-            {saving ? t.loyaltyPage.saving : saveStatus === 'saved' ? t.loyaltyPage.saved : t.loyaltyPage.save}
+
+          <button className="auth-submit-btn loyalty-generate-btn" onClick={handleSaveAndGenerate} disabled={saving}>
+            {saving ? t.loyaltyPage.saving : saveStatus === 'saved' ? t.loyaltyPage.saved : (lang === 'ar' ? 'حفظ وإنشاء الكود' : 'Save & Generate QR Code')}
           </button>
         </div>
       </motion.div>
 
-      {/* Google Wallet Section */}
-      <motion.div className="dash-card wallet-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <div className="wallet-header">
-          <GoogleWalletIcon />
-          <h2>{t.loyaltyPage.walletTitle}</h2>
-        </div>
-        <p className="wallet-desc">{t.loyaltyPage.walletDesc}</p>
-
-        {/* QR Code for customers to scan */}
-        <div className="wallet-qr-section">
-          <div className="wallet-qr-wrapper">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`https://www.trywaya.com/wallet/${shop.id}`)}&color=${cardColor.replace('#', '')}&bgcolor=ffffff&margin=8`}
-              alt="QR Code"
-              className="wallet-qr-img"
-            />
+      {/* Step 2: QR Code + Download (appears after generating) */}
+      {generated && (
+        <motion.div className="dash-card wallet-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="loyalty-step-header">
+            <div className="loyalty-step-num">2</div>
+            <h2>{lang === 'ar' ? 'كود العملاء' : 'Customer QR Code'}</h2>
           </div>
-          <p className="wallet-qr-hint">{lang === 'ar' ? 'اطبع الكود وضعه في متجرك — العميل يمسحه ويضيف بطاقة الولاء' : 'Print this QR code for your shop — customers scan to add loyalty card'}</p>
-        </div>
 
-        {/* Customer link */}
-        <div className="wallet-customer-link">
-          <label>{t.loyaltyPage.walletCustomerLink}</label>
-          <div className="wallet-link-row">
-            <input type="text" readOnly value={`trywaya.com/wallet/${shop.id}`} className="wallet-link-input" dir="ltr" />
-            <button className="wallet-copy-btn" onClick={copyCustomerLink}>
-              {copied ? t.loyaltyPage.walletCopied : t.loyaltyPage.walletCopyLink}
+          {/* QR Code */}
+          <div className="wallet-qr-section">
+            <div className="wallet-qr-wrapper">
+              <img src={qrUrl} alt="QR Code" className="wallet-qr-img" />
+            </div>
+            <p className="wallet-qr-hint">{lang === 'ar' ? 'العميل يمسح الكود ← يدخل بياناته ← يضيف البطاقة لمحفظة قوقل' : 'Customer scans → enters info → adds card to Google Wallet'}</p>
+          </div>
+
+          {/* Action buttons */}
+          <div className="wallet-actions">
+            <button className="wallet-download-btn" onClick={downloadPDF}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              {lang === 'ar' ? 'تحميل ملصق للطباعة' : 'Download Printable Poster'}
+            </button>
+
+            <button className="wallet-test-btn" onClick={generateTestPass} disabled={walletLoading}>
+              <GoogleWalletIcon />
+              {walletLoading ? t.loyaltyPage.walletGenerating : (lang === 'ar' ? 'جرّب بنفسك' : 'Try it Yourself')}
             </button>
           </div>
-        </div>
-
-        {/* Test pass generator */}
-        <div className="wallet-test-section">
-          <div className="setup-row">
-            <div className="auth-field">
-              <label>{t.loyaltyPage.customerName}</label>
-              <input type="text" value={testName} onChange={e => setTestName(e.target.value)} />
-            </div>
-            <div className="auth-field">
-              <label>{t.loyaltyPage.customerPhone}</label>
-              <input type="tel" value={testPhone} onChange={e => setTestPhone(e.target.value)} dir="ltr" />
-            </div>
-          </div>
-
-          <button className="wallet-test-btn" onClick={generateWalletPass} disabled={walletLoading}>
-            <GoogleWalletIcon />
-            {walletLoading ? t.loyaltyPage.walletGenerating : t.loyaltyPage.walletTestBtn}
-          </button>
-
-          {walletError && (
-            <div className="wallet-error">
-              {walletError.includes('not configured') ? t.loyaltyPage.walletNotConfigured : walletError}
-            </div>
-          )}
 
           {walletUrl && (
             <motion.div className="wallet-success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-              <p>{t.loyaltyPage.walletSuccess}</p>
               <a href={walletUrl} target="_blank" rel="noopener noreferrer" className="wallet-add-btn">
                 <img src="https://developers.google.com/static/wallet/images/web/en_add_to_google_wallet_wallet-button.png" alt="Add to Google Wallet" style={{ height: 48 }} />
               </a>
             </motion.div>
           )}
-        </div>
-      </motion.div>
+
+          {walletError && <div className="wallet-error">{walletError}</div>}
+
+          {/* Share link */}
+          <div className="wallet-customer-link">
+            <label>{t.loyaltyPage.walletCustomerLink}</label>
+            <div className="wallet-link-row">
+              <input type="text" readOnly value={`trywaya.com/wallet/${shop.id}`} className="wallet-link-input" dir="ltr" />
+              <button className="wallet-copy-btn" onClick={copyCustomerLink}>
+                {copied ? t.loyaltyPage.walletCopied : t.loyaltyPage.walletCopyLink}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </>
   )
 }
