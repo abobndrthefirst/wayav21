@@ -8,36 +8,7 @@ import './styles.css'
 const SUPABASE_URL = 'https://unnheqshkxpbflozechm.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubmhlcXNoa3hwYmZsb3plY2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTkwNjksImV4cCI6MjA5MDQzNTA2OX0.XHAbOOdPtuwD0pJErxhBw9C3RJPouPeUhMS9hSThON0'
 
-const GOOGLE_CLIENT_ID = '52857901643-2v3i0mn6g9mv5f4ni0h8pddgnf6n2jg.apps.googleusercontent.com'
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-/* ─── Google Sign-In (client-side token flow) ─── */
-let gsiLoaded = false
-function loadGSI() {
-  if (gsiLoaded) return Promise.resolve()
-  return new Promise((resolve) => {
-    const s = document.createElement('script')
-    s.src = 'https://accounts.google.com/gsi/client'
-    s.onload = () => { gsiLoaded = true; resolve() }
-    document.head.appendChild(s)
-  })
-}
-
-async function googleSignIn(setError) {
-  await loadGSI()
-  window.google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: async (resp) => {
-      const { error } = await supabase.auth.signInWithIdToken({
-        provider: 'google',
-        token: resp.credential,
-      })
-      if (error && setError) setError(error.message)
-    },
-  })
-  window.google.accounts.id.prompt()
-}
 
 /* ─── Auth Context ─── */
 const AuthContext = createContext({ user: null, loading: true, signOut: async () => {} })
@@ -1759,9 +1730,9 @@ function LoginPage({ t, lang, setLang, theme, setTheme }) {
     if (err) { setError(a.errInvalid); setLoading(false) }
   }
 
-  const handleGoogle = () => {
+  const handleGoogle = async () => {
     setError('')
-    googleSignIn(setError)
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })
   }
 
   const handleForgot = async () => {
@@ -1849,9 +1820,9 @@ function SignupPage({ t, lang, setLang, theme, setTheme }) {
     else { setSuccess(true); setLoading(false) }
   }
 
-  const handleGoogle = () => {
+  const handleGoogle = async () => {
     setError('')
-    googleSignIn(setError)
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })
   }
 
   if (success) {
