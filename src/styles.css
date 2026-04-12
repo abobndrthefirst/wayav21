@@ -3114,6 +3114,18 @@ body {
 .wallet-header h2 { margin: 0; }
 .wallet-desc { color: var(--text-secondary, #999); font-size: 0.9rem; margin-bottom: 20px; }
 
+/* QR Code */
+.wallet-qr-section { text-align: center; margin-bottom: 24px; }
+.wallet-qr-wrapper {
+  display: inline-block; padding: 16px; border-radius: 16px;
+  background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.wallet-qr-img { width: 220px; height: 220px; display: block; border-radius: 4px; }
+.wallet-qr-hint {
+  font-size: 0.85rem; color: var(--text-secondary, #999);
+  margin-top: 12px; max-width: 300px; margin-inline: auto; line-height: 1.5;
+}
+
 .wallet-customer-link { margin-bottom: 20px; }
 .wallet-customer-link label { font-size: 0.85rem; color: var(--text-secondary, #999); margin-bottom: 6px; display: block; }
 .wallet-link-row { display: flex; gap: 8px; }

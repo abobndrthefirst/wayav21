@@ -2350,7 +2350,19 @@ function LoyaltyTab({ t, lang, shop, user }) {
         </div>
         <p className="wallet-desc">{t.loyaltyPage.walletDesc}</p>
 
-        {/* Customer link for QR/share */}
+        {/* QR Code for customers to scan */}
+        <div className="wallet-qr-section">
+          <div className="wallet-qr-wrapper">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`https://www.trywaya.com/wallet/${shop.id}`)}&color=${cardColor.replace('#', '')}&bgcolor=ffffff&margin=8`}
+              alt="QR Code"
+              className="wallet-qr-img"
+            />
+          </div>
+          <p className="wallet-qr-hint">{lang === 'ar' ? 'اطبع الكود وضعه في متجرك — العميل يمسحه ويضيف بطاقة الولاء' : 'Print this QR code for your shop — customers scan to add loyalty card'}</p>
+        </div>
+
+        {/* Customer link */}
         <div className="wallet-customer-link">
           <label>{t.loyaltyPage.walletCustomerLink}</label>
           <div className="wallet-link-row">
