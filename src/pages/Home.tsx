@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../lib/AuthContext';
+import { navigate } from '../App';
 
 /* ─── Assets ──────────────────────────────────────────────────────────────── */
 const imgHero       = "/images/gemini-overlay.png";
@@ -74,6 +76,7 @@ const T = {
     nav: {
       join: 'انضم مجاناً', pricing: 'الأسعار', features: 'المميزات',
       howItWorks: 'كيف يعمل', brand: 'وايا', toggle: 'EN',
+      login: 'دخول', signup: 'سجّل', logout: 'خروج', hi: 'مرحباً',
     },
     hero: {
       h1a: 'برامج ولاء تشتغل ', h1b: 'بسهولة',
@@ -145,6 +148,7 @@ const T = {
     nav: {
       join: 'Join Free', pricing: 'Pricing', features: 'Features',
       howItWorks: 'How It Works', brand: 'Waya', toggle: 'عربي',
+      login: 'Log In', signup: 'Sign Up', logout: 'Log Out', hi: 'Hi',
     },
     hero: {
       h1a: 'Loyalty programs that ', h1b: 'just work',
@@ -287,6 +291,7 @@ function Hamburger({ open }: { open: boolean }) {
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function Home() {
+  const { user, signOut } = useAuth();
   const [lang, setLang] = useState<Lang>(() => {
     try { return (localStorage.getItem('waya-lang') as Lang) || 'ar'; } catch { return 'ar'; }
   });
@@ -296,6 +301,7 @@ export default function Home() {
 
   const t    = T[lang];
   const isAR = lang === 'ar';
+  const displayName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || '';
   const hFont = t.fonts.heading;
   const bFont = t.fonts.body;
   const nFont = t.fonts.nav;
@@ -326,11 +332,22 @@ export default function Home() {
   const ctaWa     = waUrl(ctaEmail, lang);
 
   /* ── Nav pieces ── */
-  const NavCTA = (
-    <a href={wa} className="waya-btn flex items-center px-5 py-2.5 rounded-full min-h-[44px]"
-      style={{ background: `rgba(16,186,131,0.5)` }}>
-      <span className="font-semibold text-[15px] text-white whitespace-nowrap" style={{ fontFamily: nFont }}>{t.nav.join}</span>
-    </a>
+  const NavCTA = user ? (
+    <div className="flex items-center gap-3">
+      <span className="text-sm font-semibold whitespace-nowrap" style={{ color: C.cream, fontFamily: nFont }}>{t.nav.hi}, {displayName}</span>
+      <button onClick={() => signOut()} className="flex items-center px-4 py-2 rounded-full min-h-[36px] border transition-colors hover:border-[rgba(16,186,131,0.3)] cursor-pointer" style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'transparent' }}>
+        <span className="font-medium text-sm whitespace-nowrap" style={{ color: C.muted, fontFamily: nFont }}>{t.nav.logout}</span>
+      </button>
+    </div>
+  ) : (
+    <div className="flex items-center gap-2">
+      <button onClick={() => navigate('/login')} className="flex items-center px-4 py-2 rounded-full min-h-[36px] transition-colors hover:opacity-80 cursor-pointer" style={{ background: 'transparent' }}>
+        <span className="font-medium text-sm whitespace-nowrap" style={{ color: C.cream, fontFamily: nFont }}>{t.nav.login}</span>
+      </button>
+      <button onClick={() => navigate('/signup')} className="waya-btn flex items-center px-5 py-2.5 rounded-full min-h-[44px] cursor-pointer" style={{ background: 'rgba(16,186,131,0.5)' }}>
+        <span className="font-semibold text-[15px] text-white whitespace-nowrap" style={{ fontFamily: nFont }}>{t.nav.signup}</span>
+      </button>
+    </div>
   );
 
   const NavLinks = (
@@ -387,12 +404,30 @@ export default function Home() {
                     className="font-medium text-lg text-[#e2e2e2] hover:text-[#10BA83] transition-colors py-1"
                     style={{ fontFamily: bFont }}>{link.label}</a>
                 ))}
-                <div className="border-t border-[rgba(255,255,255,0.06)] pt-4">
-                  <a href={wa} onClick={() => setMenuOpen(false)}
-                    className="waya-btn flex items-center justify-center px-6 py-3 rounded-full w-full"
-                    style={{ background: 'rgba(16,186,131,0.5)' }}>
-                    <span className="font-semibold text-base text-white" style={{ fontFamily: bFont }}>{t.nav.join}</span>
-                  </a>
+                <div className="border-t border-[rgba(255,255,255,0.06)] pt-4 flex flex-col gap-3">
+                  {user ? (
+                    <>
+                      <p className="text-sm font-semibold text-center" style={{ color: C.cream, fontFamily: bFont }}>{t.nav.hi}, {displayName}</p>
+                      <button onClick={() => { setMenuOpen(false); signOut(); }}
+                        className="flex items-center justify-center px-6 py-3 rounded-full w-full border cursor-pointer"
+                        style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'transparent' }}>
+                        <span className="font-semibold text-base" style={{ color: C.muted, fontFamily: bFont }}>{t.nav.logout}</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => { setMenuOpen(false); navigate('/login'); }}
+                        className="flex items-center justify-center px-6 py-3 rounded-full w-full border cursor-pointer"
+                        style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'transparent' }}>
+                        <span className="font-semibold text-base" style={{ color: C.cream, fontFamily: bFont }}>{t.nav.login}</span>
+                      </button>
+                      <button onClick={() => { setMenuOpen(false); navigate('/signup'); }}
+                        className="waya-btn flex items-center justify-center px-6 py-3 rounded-full w-full cursor-pointer"
+                        style={{ background: 'rgba(16,186,131,0.5)' }}>
+                        <span className="font-semibold text-base text-white" style={{ fontFamily: bFont }}>{t.nav.signup}</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )}
