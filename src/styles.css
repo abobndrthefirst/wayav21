@@ -3042,6 +3042,72 @@ body {
 }
 .settings-account-info strong { color: var(--white); }
 
+/* ─── Card Preview ─── */
+.card-preview-wrap { display: flex; justify-content: center; padding: 8px 0; }
+.card-preview {
+  width: 320px; border-radius: 16px; padding: 22px 20px 18px;
+  color: #fff; position: relative; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  transition: background 0.3s;
+}
+.card-preview::after {
+  content: ''; position: absolute; top: -40%; right: -20%; width: 200px; height: 200px;
+  border-radius: 50%; background: rgba(255,255,255,0.08);
+}
+.card-preview-top { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; position: relative; z-index: 1; }
+.card-preview-logo { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; background: rgba(255,255,255,0.2); }
+.card-preview-logo-ph {
+  width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+}
+.card-preview-name { font-weight: 700; font-size: 1.1rem; }
+.card-preview-issuer { font-size: 0.75rem; opacity: 0.7; }
+.card-preview-points { text-align: center; margin-bottom: 14px; position: relative; z-index: 1; }
+.card-preview-pts-value { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+.card-preview-pts-label { font-size: 0.8rem; opacity: 0.8; margin-top: 2px; }
+.card-preview-reward {
+  font-size: 0.8rem; opacity: 0.85; text-align: center; padding: 8px 12px;
+  background: rgba(255,255,255,0.12); border-radius: 10px; position: relative; z-index: 1;
+}
+
+/* ─── Color Picker ─── */
+.color-picker-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.color-swatch {
+  width: 34px; height: 34px; border-radius: 10px; border: 3px solid transparent;
+  cursor: pointer; transition: all 0.2s; position: relative;
+}
+.color-swatch:hover { transform: scale(1.1); }
+.color-swatch.active { border-color: var(--white); box-shadow: 0 0 0 2px var(--green); transform: scale(1.1); }
+.color-custom {
+  width: 34px; height: 34px; border-radius: 10px; position: relative;
+  cursor: pointer; overflow: hidden; border: 2px dashed rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.05);
+}
+.color-custom input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.color-custom svg { color: var(--text-secondary); pointer-events: none; }
+
+/* ─── Logo Upload ─── */
+.logo-upload-row { display: flex; align-items: center; gap: 14px; }
+.logo-upload-preview { width: 56px; height: 56px; border-radius: 14px; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); }
+.logo-upload-placeholder {
+  width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.15); color: var(--text-secondary);
+}
+.logo-upload-btn {
+  display: inline-block; padding: 8px 16px; border-radius: 10px;
+  background: rgba(255,255,255,0.08); color: var(--white); font-weight: 600;
+  font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+}
+.logo-upload-btn:hover { background: rgba(255,255,255,0.12); }
+.logo-upload-hint { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+
+/* Light theme */
+[data-theme="light"] .color-swatch.active { border-color: #333; }
+[data-theme="light"] .color-custom { border-color: rgba(0,0,0,0.15); background: rgba(0,0,0,0.03); }
+[data-theme="light"] .logo-upload-placeholder { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.12); }
+[data-theme="light"] .logo-upload-btn { background: rgba(0,0,0,0.06); color: #333; }
+
 /* ─── Google Wallet Section ─── */
 .wallet-card { position: relative; overflow: hidden; }
 .wallet-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }

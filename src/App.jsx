@@ -111,6 +111,12 @@ const content = {
       pointsPerVisit: 'نقاط لكل زيارة', rewardAt: 'المكافأة عند', points: 'نقطة',
       rewardDesc: 'وصف المكافأة', rewardDescPh: 'مثلاً: قهوة مجانية',
       save: 'حفظ التغييرات', saving: 'جاري الحفظ...', saved: 'تم الحفظ ✓',
+      cardDesign: 'تصميم البطاقة',
+      cardColor: 'لون البطاقة',
+      cardLogo: 'شعار المتجر',
+      cardLogoUpload: 'رفع شعار',
+      cardLogoHint: 'PNG أو JPG (مربع، أقل من 1MB)',
+      cardPreview: 'معاينة البطاقة',
       walletTitle: 'محفظة قوقل',
       walletDesc: 'اسمح لعملائك بإضافة بطاقة الولاء إلى محفظة قوقل مباشرة',
       walletTestBtn: 'جرّب إضافة بطاقة تجريبية',
@@ -367,6 +373,12 @@ const content = {
       pointsPerVisit: 'Points per visit', rewardAt: 'Reward at', points: 'points',
       rewardDesc: 'Reward description', rewardDescPh: 'e.g. Free coffee',
       save: 'Save Changes', saving: 'Saving...', saved: 'Saved ✓',
+      cardDesign: 'Card Design',
+      cardColor: 'Card Color',
+      cardLogo: 'Shop Logo',
+      cardLogoUpload: 'Upload Logo',
+      cardLogoHint: 'PNG or JPG (square, under 1MB)',
+      cardPreview: 'Card Preview',
       walletTitle: 'Google Wallet',
       walletDesc: 'Let your customers add their loyalty card directly to Google Wallet',
       walletTestBtn: 'Generate Test Pass',
@@ -2169,22 +2181,73 @@ function LoyaltyTab({ t, lang, shop, user }) {
   const [testName, setTestName] = useState(lang === 'ar' ? 'أحمد علي' : 'Ahmed Ali')
   const [testPhone, setTestPhone] = useState('0551234567')
 
+  // Editable settings
+  const [pointsPerVisit, setPointsPerVisit] = useState(shop.points_per_visit || 1)
+  const [rewardThreshold, setRewardThreshold] = useState(shop.reward_threshold || 10)
+  const [rewardDesc, setRewardDesc] = useState(shop.reward_description || '')
+  const [cardColor, setCardColor] = useState(shop.card_color || '#10B981')
+  const [logoUrl, setLogoUrl] = useState(shop.logo_url || null)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState(null)
+
+  const colorPresets = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6', '#1a1a2e', '#6366F1', '#D97706']
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (file.size > 1024 * 1024) { alert(lang === 'ar' ? 'الحجم أكبر من 1MB' : 'File too large (max 1MB)'); return }
+    if (!file.type.startsWith('image/')) return
+
+    setLogoUploading(true)
+    const ext = file.name.split('.').pop()
+    const path = `${shop.id}/logo.${ext}`
+
+    const { error: uploadErr } = await supabase.storage.from('shop-logos').upload(path, file, { upsert: true })
+    if (uploadErr) { console.error(uploadErr); setLogoUploading(false); return }
+
+    const { data: { publicUrl } } = supabase.storage.from('shop-logos').getPublicUrl(path)
+    setLogoUrl(publicUrl)
+
+    // Update shop record
+    await supabase.from('shops').update({ logo_url: publicUrl }).eq('id', shop.id)
+    shop.logo_url = publicUrl
+    setLogoUploading(false)
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveStatus(null)
+    const { error } = await supabase.from('shops').update({
+      points_per_visit: pointsPerVisit,
+      reward_threshold: rewardThreshold,
+      reward_description: rewardDesc,
+      card_color: cardColor,
+    }).eq('id', shop.id)
+
+    if (!error) {
+      shop.points_per_visit = pointsPerVisit
+      shop.reward_threshold = rewardThreshold
+      shop.reward_description = rewardDesc
+      shop.card_color = cardColor
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus(null), 2000)
+    }
+    setSaving(false)
+  }
+
   const generateWalletPass = async () => {
     setWalletLoading(true)
     setWalletError(null)
     setWalletUrl(null)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/google-wallet`, {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          shop_id: shop.id,
           customer_name: testName,
           customer_phone: testPhone,
-          points_balance: 5,
         }),
       })
       const data = await res.json()
@@ -2210,21 +2273,77 @@ function LoyaltyTab({ t, lang, shop, user }) {
     <>
       <h1 className="dash-title">{t.loyaltyPage.title}</h1>
 
-      {/* Program Settings */}
+      {/* Card Design + Preview */}
       <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+        <h2>{t.loyaltyPage.cardDesign}</h2>
+
+        {/* Live Preview */}
+        <div className="card-preview-wrap">
+          <div className="card-preview" style={{ background: cardColor }}>
+            <div className="card-preview-top">
+              {logoUrl ? <img src={logoUrl} alt="" className="card-preview-logo" /> : <div className="card-preview-logo-ph"><Logo size={20} /></div>}
+              <div className="card-preview-info">
+                <div className="card-preview-name">{shop.name}</div>
+                <div className="card-preview-issuer">Waya</div>
+              </div>
+            </div>
+            <div className="card-preview-points">
+              <div className="card-preview-pts-value">0</div>
+              <div className="card-preview-pts-label">Points</div>
+            </div>
+            <div className="card-preview-reward">{rewardDesc || (lang === 'ar' ? `اجمع ${rewardThreshold} نقاط واحصل على مكافأة` : `Collect ${rewardThreshold} points for a reward`)}</div>
+          </div>
+        </div>
+
+        <div className="auth-form" style={{ gap: 18, marginTop: 20 }}>
+          {/* Logo Upload */}
+          <div className="auth-field">
+            <label>{t.loyaltyPage.cardLogo}</label>
+            <div className="logo-upload-row">
+              {logoUrl ? <img src={logoUrl} alt="" className="logo-upload-preview" /> : <div className="logo-upload-placeholder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>}
+              <div>
+                <label className="logo-upload-btn">
+                  {logoUploading ? '...' : t.loyaltyPage.cardLogoUpload}
+                  <input type="file" accept="image/png,image/jpeg" onChange={handleLogoUpload} hidden disabled={logoUploading} />
+                </label>
+                <p className="logo-upload-hint">{t.loyaltyPage.cardLogoHint}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Color Picker */}
+          <div className="auth-field">
+            <label>{t.loyaltyPage.cardColor}</label>
+            <div className="color-picker-row">
+              {colorPresets.map(c => (
+                <button key={c} className={`color-swatch ${cardColor === c ? 'active' : ''}`} style={{ background: c }} onClick={() => setCardColor(c)} />
+              ))}
+              <label className="color-custom">
+                <input type="color" value={cardColor} onChange={e => setCardColor(e.target.value)} />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              </label>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Program Settings */}
+      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <h2>{t.loyaltyPage.programSettings}</h2>
         <div className="auth-form" style={{ gap: 18 }}>
           <div className="setup-row">
-            <div className="auth-field"><label>{t.loyaltyPage.pointsPerVisit}</label><input type="number" defaultValue={shop.points_per_visit || 1} /></div>
-            <div className="auth-field"><label>{t.loyaltyPage.rewardAt}</label><div className="setup-reward-input"><input type="number" defaultValue={shop.reward_threshold || 10} /><span>{t.loyaltyPage.points}</span></div></div>
+            <div className="auth-field"><label>{t.loyaltyPage.pointsPerVisit}</label><input type="number" value={pointsPerVisit} onChange={e => setPointsPerVisit(Number(e.target.value))} /></div>
+            <div className="auth-field"><label>{t.loyaltyPage.rewardAt}</label><div className="setup-reward-input"><input type="number" value={rewardThreshold} onChange={e => setRewardThreshold(Number(e.target.value))} /><span>{t.loyaltyPage.points}</span></div></div>
           </div>
-          <div className="auth-field"><label>{t.loyaltyPage.rewardDesc}</label><input type="text" defaultValue={shop.reward_description || ''} placeholder={t.loyaltyPage.rewardDescPh} /></div>
-          <button className="auth-submit-btn">{t.loyaltyPage.save}</button>
+          <div className="auth-field"><label>{t.loyaltyPage.rewardDesc}</label><input type="text" value={rewardDesc} onChange={e => setRewardDesc(e.target.value)} placeholder={t.loyaltyPage.rewardDescPh} /></div>
+          <button className="auth-submit-btn" onClick={handleSave} disabled={saving}>
+            {saving ? t.loyaltyPage.saving : saveStatus === 'saved' ? t.loyaltyPage.saved : t.loyaltyPage.save}
+          </button>
         </div>
       </motion.div>
 
       {/* Google Wallet Section */}
-      <motion.div className="dash-card wallet-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      <motion.div className="dash-card wallet-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <div className="wallet-header">
           <GoogleWalletIcon />
           <h2>{t.loyaltyPage.walletTitle}</h2>
