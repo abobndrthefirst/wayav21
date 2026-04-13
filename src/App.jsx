@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, createContext, useContext } from 'react'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { createClient } from '@supabase/supabase-js'
+import CardBuilder from './pages/CardBuilder.jsx'
 // Analytics loaded via script tag in index.html
 import './styles.css'
 
@@ -2618,6 +2619,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     { id: 'home', label: d.navHome, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> },
     { id: 'data', label: d.navData, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
     { id: 'loyalty', label: d.navLoyalty, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> },
+    { id: 'card-builder', label: lang === 'ar' ? 'إنشاء بطاقة' : 'Card Builder', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 8h2"/><path d="M7 11h4"/></svg>, isLink: true },
     { id: 'settings', label: d.navSettings, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
   ]
 
@@ -2663,7 +2665,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               </div>
               <div className="sidebar-menu">
                 {menuItems.map(item => (
-                  <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { setActiveTab(item.id); setSidebarOpen(false) }}>
+                  <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { if (item.isLink) { navigate('/dashboard/card-builder'); setSidebarOpen(false); } else { setActiveTab(item.id); setSidebarOpen(false); } }}>
                     {item.icon}<span>{item.label}</span>
                   </button>
                 ))}
@@ -2832,6 +2834,7 @@ export default function App() {
       if (p === '/signup') return 'signup'
       if (p === '/setup') return 'setup'
       if (p === '/dashboard') return 'dashboard'
+      if (p === '/dashboard/card-builder') return 'card-builder'
       if (p === '/data') return 'data'
       if (p === '/loyalty') return 'loyalty'
       if (p === '/settings') return 'settings'
@@ -2866,6 +2869,7 @@ export default function App() {
   if (page === 'signup') return <AuthProvider><SignupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'setup') return <AuthProvider><SetupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'dashboard') return <AuthProvider><DashboardPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'card-builder') return <AuthProvider><CardBuilder /></AuthProvider>
   if (page === 'data') return <AuthProvider><DataPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'loyalty') return <AuthProvider><LoyaltyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'settings') return <AuthProvider><SettingsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
