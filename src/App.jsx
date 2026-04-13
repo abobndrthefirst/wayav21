@@ -2632,64 +2632,66 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   ]
 
   return (
-    <div className={`dash-page dash-page--with-sidebar ${lang === 'en' ? 'ltr-mode' : ''}`}>
-      {/* ── Persistent Sidebar (desktop) ── */}
-      <aside className={`sidebar sidebar--persistent ${sidebarCollapsed ? 'sidebar--collapsed' : ''}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-shop" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            {shop.logo_url ? <img src={shop.logo_url} alt="" className="sidebar-logo" /> : <div className="sidebar-logo-ph"><Logo size={20} /></div>}
-            {!sidebarCollapsed && <div><div className="sidebar-shop-name">{shopName}</div><div className="sidebar-shop-type">{shop.type}</div></div>}
-          </div>
+    <div className={`dash-page dash-layout ${lang === 'en' ? 'ltr-mode' : ''}`} style={{ fontFamily: "'Noto Sans Arabic', 'Inter', sans-serif" }}>
+
+      {/* ── Sidebar — always visible like Stamp Me ── */}
+      <aside className="dash-sidebar">
+        {/* Brand top */}
+        <div className="dash-sidebar-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <img src="/favicon.svg" alt="وايا" className="dash-sidebar-logo" />
+          <span className="dash-sidebar-brand-name">{shopName}</span>
         </div>
-        <div className="sidebar-menu">
+
+        {/* Nav items */}
+        <nav className="dash-sidebar-nav">
           {menuItems.map(item => (
-            <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { if (item.isLink) { navigate('/dashboard/card-builder'); } else { setActiveTab(item.id); } }}>
-              {item.icon}{!sidebarCollapsed && <span>{item.label}</span>}
+            <button
+              key={item.id}
+              className={`dash-sidebar-item ${activeTab === item.id ? 'dash-sidebar-item--active' : ''}`}
+              onClick={() => { if (item.isLink) { navigate('/dashboard/card-builder'); } else { setActiveTab(item.id); } }}
+            >
+              <span className="dash-sidebar-icon">{item.icon}</span>
+              <span className="dash-sidebar-label">{item.label}</span>
             </button>
           ))}
-        </div>
-        <div className="sidebar-footer">
-          <button className="sidebar-item sidebar-home-link" onClick={() => navigate('/')}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            {!sidebarCollapsed && <span>{d.visitSite}</span>}
+        </nav>
+
+        {/* Footer links */}
+        <div className="dash-sidebar-footer">
+          <button className="dash-sidebar-item dash-sidebar-item--link" onClick={() => navigate('/')}>
+            <span className="dash-sidebar-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span>
+            <span className="dash-sidebar-label">{d.visitSite}</span>
           </button>
-          <button className="sidebar-item sidebar-logout" onClick={handleLogout}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            {!sidebarCollapsed && <span>{d.logout}</span>}
+          <button className="dash-sidebar-item dash-sidebar-item--danger" onClick={handleLogout}>
+            <span className="dash-sidebar-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            <span className="dash-sidebar-label">{d.logout}</span>
           </button>
         </div>
       </aside>
 
-      {/* ── Mobile Sidebar Overlay ── */}
+      {/* ── Mobile hamburger overlay ── */}
       <AnimatePresence>
         {mobileSidebarOpen && (
           <>
             <motion.div className="sidebar-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileSidebarOpen(false)} />
-            <motion.aside className="sidebar" initial={{ x: lang === 'ar' ? 300 : -300 }} animate={{ x: 0 }} exit={{ x: lang === 'ar' ? 300 : -300 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}>
-              <div className="sidebar-header">
-                <div className="sidebar-shop">
-                  {shop.logo_url ? <img src={shop.logo_url} alt="" className="sidebar-logo" /> : <div className="sidebar-logo-ph"><Logo size={20} /></div>}
-                  <div><div className="sidebar-shop-name">{shopName}</div><div className="sidebar-shop-type">{shop.type}</div></div>
-                </div>
-                <button className="sidebar-close" onClick={() => setMobileSidebarOpen(false)}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
+            <motion.aside className="dash-sidebar dash-sidebar--mobile" initial={{ x: lang === 'ar' ? 280 : -280 }} animate={{ x: 0 }} exit={{ x: lang === 'ar' ? 280 : -280 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}>
+              <div className="dash-sidebar-brand">
+                <img src="/favicon.svg" alt="وايا" className="dash-sidebar-logo" />
+                <span className="dash-sidebar-brand-name">{shopName}</span>
+                <button className="dash-sidebar-close" onClick={() => setMobileSidebarOpen(false)}>✕</button>
               </div>
-              <div className="sidebar-menu">
+              <nav className="dash-sidebar-nav">
                 {menuItems.map(item => (
-                  <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { if (item.isLink) { navigate('/dashboard/card-builder'); } else { setActiveTab(item.id); } setMobileSidebarOpen(false); }}>
-                    {item.icon}<span>{item.label}</span>
+                  <button key={item.id} className={`dash-sidebar-item ${activeTab === item.id ? 'dash-sidebar-item--active' : ''}`} onClick={() => { if (item.isLink) { navigate('/dashboard/card-builder'); } else { setActiveTab(item.id); } setMobileSidebarOpen(false); }}>
+                    <span className="dash-sidebar-icon">{item.icon}</span>
+                    <span className="dash-sidebar-label">{item.label}</span>
                   </button>
                 ))}
-              </div>
-              <div className="sidebar-footer">
-                <button className="sidebar-item sidebar-home-link" onClick={() => { navigate('/'); setMobileSidebarOpen(false) }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  <span>{d.visitSite}</span>
-                </button>
-                <button className="sidebar-item sidebar-logout" onClick={handleLogout}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                  <span>{d.logout}</span>
+              </nav>
+              <div className="dash-sidebar-footer">
+                <button className="dash-sidebar-item dash-sidebar-item--danger" onClick={handleLogout}>
+                  <span className="dash-sidebar-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+                  <span className="dash-sidebar-label">{d.logout}</span>
                 </button>
               </div>
             </motion.aside>
@@ -2697,36 +2699,34 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         )}
       </AnimatePresence>
 
-      {/* ── Main Area ── */}
-      <div className="dash-main-area">
-        {/* Top nav */}
-        <nav className="dash-nav">
-          <button className="dash-hamburger dash-hamburger--mobile" onClick={() => setMobileSidebarOpen(true)} aria-label="Menu">
+      {/* ── Main content area ── */}
+      <div className="dash-main">
+        {/* Top bar */}
+        <header className="dash-topbar">
+          <button className="dash-mobile-menu" onClick={() => setMobileSidebarOpen(true)} aria-label="Menu">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
-          <div className="dash-nav-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <Logo size={28} /><span>وايا</span>
-          </div>
-          <div className="dash-nav-right">
-            <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-            </button>
+          <div style={{ flex: 1 }}></div>
+          <div className="dash-topbar-right">
             <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
               <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
             </button>
-            <div className="dash-nav-account">
-              <div className="dash-nav-avatar">{user?.email?.[0]?.toUpperCase() || 'U'}</div>
-              <div className="dash-nav-account-dropdown">
-                <div className="dash-nav-account-email">{user?.email}</div>
-                <div className="dash-nav-account-divider"></div>
-                <button className="dash-nav-account-logout" onClick={handleLogout}>
+            <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+            </button>
+            <div className="dash-account">
+              <div className="dash-account-avatar">{user?.email?.[0]?.toUpperCase() || 'U'}</div>
+              <div className="dash-account-menu">
+                <div className="dash-account-email">{user?.email}</div>
+                <hr className="dash-account-hr" />
+                <button className="dash-account-btn" onClick={handleLogout}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                  <span>{lang === 'ar' ? 'تسجيل خروج' : 'Log out'}</span>
+                  {lang === 'ar' ? 'تسجيل خروج' : 'Log out'}
                 </button>
               </div>
             </div>
           </div>
-        </nav>
+        </header>
 
         {/* Demo banner */}
         <div className="demo-banner">
@@ -2869,7 +2869,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           </>
         )}
       </div>
-      </div>{/* end dash-main-area */}
+      </div>{/* end dash-main */}
     </div>
   )
 }
