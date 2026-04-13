@@ -116,7 +116,7 @@ const TEMPLATES = [
     nameEn: 'Custom',
     icon: '🎨',
     bgColor: '#191A23',
-    stampColor: '#B9FF66',
+    stampColor: '#10B981',
     textColor: '#FFFFFF',
     stamps: 10,
     reward: '',
@@ -294,7 +294,7 @@ function ColorPicker({ label, value, onChange }) {
             onClick={() => onChange(color)}
             style={{
               width: 28, height: 28, borderRadius: 8, background: color, cursor: 'pointer',
-              border: value === color ? '3px solid #B9FF66' : '2px solid transparent',
+              border: value === color ? '3px solid #10B981' : '2px solid transparent',
               boxShadow: value === color ? '0 0 0 1px #191A23' : 'none',
               transition: 'all 0.15s ease',
             }}
@@ -352,7 +352,7 @@ export default function CardBuilder() {
     businessName: '',
     description: '',
     bgColor: '#191A23',
-    stampColor: '#B9FF66',
+    stampColor: '#10B981',
     textColor: '#FFFFFF',
     stamps: 10,
     stampIcon: '⭐',
@@ -425,7 +425,7 @@ export default function CardBuilder() {
                 padding: 20,
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                boxShadow: isSelected ? `0 0 0 3px rgba(185,255,102,0.3)` : C.shadow,
+                boxShadow: isSelected ? `0 0 0 3px rgba(16,185,129,0.3)` : C.shadow,
                 transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                 textAlign: 'center',
               }}
