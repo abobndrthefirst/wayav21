@@ -2589,7 +2589,8 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const { user, signOut } = useAuth()
   const d = t.dashboard
   const [shop, setShop] = useState(null)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('home')
   const [loadingShop, setLoadingShop] = useState(true)
 
@@ -2604,10 +2605,10 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   }, [user])
 
   useEffect(() => {
-    if (sidebarOpen) { document.body.style.overflow = 'hidden' }
+    if (mobileSidebarOpen) { document.body.style.overflow = 'hidden' }
     else { document.body.style.overflow = '' }
     return () => { document.body.style.overflow = '' }
-  }, [sidebarOpen])
+  }, [mobileSidebarOpen])
 
   if (loadingShop) return <div className="auth-page"><div className="dash-loading"><Logo size={40} /></div></div>
   if (!shop) return null
@@ -2631,47 +2632,58 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   ]
 
   return (
-    <div className={`dash-page ${lang === 'en' ? 'ltr-mode' : ''}`}>
-      {/* Top nav */}
-      <nav className="dash-nav">
-        <button className="dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-        <div className="dash-nav-brand"><Logo size={28} /><span>وايا</span></div>
-        <div className="dash-nav-right">
-          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+    <div className={`dash-page dash-page--with-sidebar ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      {/* ── Persistent Sidebar (desktop) ── */}
+      <aside className={`sidebar sidebar--persistent ${sidebarCollapsed ? 'sidebar--collapsed' : ''}`}>
+        <div className="sidebar-header">
+          <div className="sidebar-shop" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            {shop.logo_url ? <img src={shop.logo_url} alt="" className="sidebar-logo" /> : <div className="sidebar-logo-ph"><Logo size={20} /></div>}
+            {!sidebarCollapsed && <div><div className="sidebar-shop-name">{shopName}</div><div className="sidebar-shop-type">{shop.type}</div></div>}
+          </div>
+        </div>
+        <div className="sidebar-menu">
+          {menuItems.map(item => (
+            <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { if (item.isLink) { navigate('/dashboard/card-builder'); } else { setActiveTab(item.id); } }}>
+              {item.icon}{!sidebarCollapsed && <span>{item.label}</span>}
+            </button>
+          ))}
+        </div>
+        <div className="sidebar-footer">
+          <button className="sidebar-item sidebar-home-link" onClick={() => navigate('/')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            {!sidebarCollapsed && <span>{d.visitSite}</span>}
           </button>
-          <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
-            <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
+          <button className="sidebar-item sidebar-logout" onClick={handleLogout}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            {!sidebarCollapsed && <span>{d.logout}</span>}
           </button>
         </div>
-      </nav>
+      </aside>
 
-      {/* Sidebar overlay */}
+      {/* ── Mobile Sidebar Overlay ── */}
       <AnimatePresence>
-        {sidebarOpen && (
+        {mobileSidebarOpen && (
           <>
-            <motion.div className="sidebar-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} />
+            <motion.div className="sidebar-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileSidebarOpen(false)} />
             <motion.aside className="sidebar" initial={{ x: lang === 'ar' ? 300 : -300 }} animate={{ x: 0 }} exit={{ x: lang === 'ar' ? 300 : -300 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}>
               <div className="sidebar-header">
                 <div className="sidebar-shop">
                   {shop.logo_url ? <img src={shop.logo_url} alt="" className="sidebar-logo" /> : <div className="sidebar-logo-ph"><Logo size={20} /></div>}
                   <div><div className="sidebar-shop-name">{shopName}</div><div className="sidebar-shop-type">{shop.type}</div></div>
                 </div>
-                <button className="sidebar-close" onClick={() => setSidebarOpen(false)}>
+                <button className="sidebar-close" onClick={() => setMobileSidebarOpen(false)}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </div>
               <div className="sidebar-menu">
                 {menuItems.map(item => (
-                  <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { if (item.isLink) { navigate('/dashboard/card-builder'); setSidebarOpen(false); } else { setActiveTab(item.id); setSidebarOpen(false); } }}>
+                  <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { if (item.isLink) { navigate('/dashboard/card-builder'); } else { setActiveTab(item.id); } setMobileSidebarOpen(false); }}>
                     {item.icon}<span>{item.label}</span>
                   </button>
                 ))}
               </div>
               <div className="sidebar-footer">
-                <button className="sidebar-item sidebar-home-link" onClick={() => { navigate('/'); setSidebarOpen(false) }}>
+                <button className="sidebar-item sidebar-home-link" onClick={() => { navigate('/'); setMobileSidebarOpen(false) }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                   <span>{d.visitSite}</span>
                 </button>
@@ -2685,13 +2697,44 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         )}
       </AnimatePresence>
 
-      {/* Demo banner */}
-      <div className="demo-banner">
-        <span>{d.demoBanner}</span>
-      </div>
+      {/* ── Main Area ── */}
+      <div className="dash-main-area">
+        {/* Top nav */}
+        <nav className="dash-nav">
+          <button className="dash-hamburger dash-hamburger--mobile" onClick={() => setMobileSidebarOpen(true)} aria-label="Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div className="dash-nav-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            <Logo size={28} /><span>وايا</span>
+          </div>
+          <div className="dash-nav-right">
+            <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+            </button>
+            <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
+              <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
+            </button>
+            <div className="dash-nav-account">
+              <div className="dash-nav-avatar">{user?.email?.[0]?.toUpperCase() || 'U'}</div>
+              <div className="dash-nav-account-dropdown">
+                <div className="dash-nav-account-email">{user?.email}</div>
+                <div className="dash-nav-account-divider"></div>
+                <button className="dash-nav-account-logout" onClick={handleLogout}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  <span>{lang === 'ar' ? 'تسجيل خروج' : 'Log out'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </nav>
 
-      {/* Content */}
-      <div className="dash-content">
+        {/* Demo banner */}
+        <div className="demo-banner">
+          <span>{d.demoBanner}</span>
+        </div>
+
+        {/* Content */}
+        <div className="dash-content">
         {activeTab === 'home' && (
           <>
             <div className="dash-header">
@@ -2735,6 +2778,40 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
                     <span className="dash-activity-time">{a.time}</span>
                   </div>
                 ))}
+              </div>
+            </motion.section>
+
+            {/* Active Card Preview */}
+            <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h2>{lang === 'ar' ? 'بطاقة الولاء النشطة' : 'Active Loyalty Card'}</h2>
+                <button onClick={() => setActiveTab('loyalty')} style={{ background: 'none', border: 'none', color: 'var(--green)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                  {lang === 'ar' ? 'تعديل ←' : '→ Edit'}
+                </button>
+              </div>
+              <div className="card-preview-wrap">
+                <div className="card-preview" style={{ background: shop.card_color || '#10B981' }}>
+                  <div className="card-preview-top">
+                    {shop.logo_url ? <img src={shop.logo_url} alt="" className="card-preview-logo" /> : <div className="card-preview-logo-ph"><Logo size={20} /></div>}
+                    <div className="card-preview-info">
+                      <div className="card-preview-name">{shop.name}</div>
+                      <div className="card-preview-issuer">Waya</div>
+                    </div>
+                  </div>
+                  <div className="card-preview-points">
+                    <div className="card-preview-pts-value">{shop.reward_threshold || 10}</div>
+                    <div className="card-preview-pts-label">{lang === 'ar' ? 'نقاط للمكافأة' : 'Points to Reward'}</div>
+                  </div>
+                  <div className="card-preview-reward">{shop.reward_description || (lang === 'ar' ? 'أكمل النقاط واحصل على مكافأة' : 'Complete points for a reward')}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                <button onClick={() => setActiveTab('loyalty')} className="auth-submit-btn" style={{ flex: 1, fontSize: '0.85rem', padding: '10px 16px' }}>
+                  {lang === 'ar' ? 'إدارة البطاقة' : 'Manage Card'}
+                </button>
+                <button onClick={() => navigate('/dashboard/card-builder')} style={{ flex: 1, fontSize: '0.85rem', padding: '10px 16px', background: 'transparent', border: '1.5px solid var(--green)', color: 'var(--green)', borderRadius: 10, cursor: 'pointer', fontWeight: 600 }}>
+                  {lang === 'ar' ? 'إنشاء بطاقة جديدة' : 'Create New Card'}
+                </button>
               </div>
             </motion.section>
           </>
@@ -2792,6 +2869,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           </>
         )}
       </div>
+      </div>{/* end dash-main-area */}
     </div>
   )
 }

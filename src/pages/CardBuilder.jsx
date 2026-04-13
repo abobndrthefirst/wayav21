@@ -7,19 +7,19 @@ function navigate(path) {
 
 // ─── Brand Tokens ────────────────────────────────────────────────────────────
 const C = {
-  lime: '#B9FF66',
-  dark: '#191A23',
-  gray: '#F3F3F3',
-  white: '#FFFFFF',
-  green: '#0A6C3B',
-  muted: '#4A5B4D',
-  border: '1px solid #E5E7EB',
-  borderDark: '1px solid #191A23',
+  lime: '#10B981',
+  dark: '#12110F',
+  gray: '#FAFAF8',
+  white: '#FFFBFF',
+  green: '#10B981',
+  muted: '#8A8A8A',
+  border: '1px solid #E5E2DC',
+  borderDark: '1px solid #32302A',
   shadow: '0 1px 3px rgba(0,0,0,0.06)',
   shadowMd: '0 4px 12px rgba(0,0,0,0.08)',
   shadowLg: '0 10px 30px rgba(0,0,0,0.12)',
   error: '#EF4444',
-  success: '#16A34A',
+  success: '#10B981',
 };
 
 const ff = '"Cairo", "Space Grotesk", sans-serif';
@@ -927,11 +927,11 @@ export default function CardBuilder() {
   const stepRenderers = [renderTemplateStep, renderDesignStep, renderRewardsStep, renderLocationStep, renderReviewStep];
 
   return (
-    <div dir="rtl" style={{ fontFamily: ff, background: '#F8F9FB', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div dir="rtl" style={{ fontFamily: ff, background: 'var(--bg, #FAFAF8)', minHeight: '100vh', display: 'flex', flexDirection: 'column', color: 'var(--white, #12110F)' }}>
 
       {/* ── Top Header ──────────────────────────────────────────────────── */}
       <header style={{
-        background: C.white, borderBottom: '1px solid #E5E7EB', padding: '14px 32px',
+        background: 'var(--bg-card, #fff)', borderBottom: '1px solid var(--border, #E5E2DC)', padding: '14px 32px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         position: 'sticky', top: 0, zIndex: 50,
       }}>
