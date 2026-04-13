@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+html, body {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  background: #12110f;
+  color: #fffbff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── Focus ────────────────────────────────────────────────────────────────── */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid #00ffa9;
+  outline-offset: 2px;
+}
+
+/* ── FLOAT: phone bobs up and down continuously ──────────────────────────── */
+@keyframes float {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  25%  { transform: translateY(-16px) rotate(1deg); }
+  75%  { transform: translateY(-8px) rotate(-0.5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+.animate-float {
+  animation: float 3.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* ── PULSE: green blob slowly breathes ─────────────────────────────────────*/
+@keyframes breathe {
+  0%, 100% { transform: scale(1);   opacity: 0.55; }
+  50%       { transform: scale(1.15); opacity: 0.7; }
+}
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* ── PING: WhatsApp button attention ring ───────────────────────────────── */
+@keyframes ping {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+.wa-ping-wrapper {
+  position: relative;
+  display: block;
+}
+.wa-ping-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 14px;
+  background: #25D366;
+  animation: ping 1.8s ease-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.wa-ping-wrapper > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── SCROLL REVEAL: sections slide in when they enter view ──────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+
+/* ── HERO FADE-UP on load ───────────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up   { animation: fade-up 0.6s ease-out forwards; opacity: 0; }
+.delay-100 { animation-delay: 0.10s; }
+.delay-200 { animation-delay: 0.20s; }
+.delay-300 { animation-delay: 0.30s; }
+.delay-400 { animation-delay: 0.40s; }
+
+/* ── HOVER LIFTS (Dark Theme) ──────────────────────────────────────────── */
+.waya-card {
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.waya-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3) !important;
+  border-color: rgba(0,255,169,0.2) !important;
+}
+
+.waya-btn {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.waya-btn:hover  { transform: translateY(-2px); filter: brightness(1.1); }
+.waya-btn:active { transform: translateY(1px); }
+
+.waya-wa-btn {
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+.waya-wa-btn:hover  { transform: translateY(-2px); filter: brightness(1.08); }
+.waya-wa-btn:active { transform: translateY(1px); }
+
+.waya-nav-link {
+  position: relative;
+  transition: color 0.15s ease;
+}
+.waya-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 2px;
+  background: #00ffa9;
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+  transform-origin: right;
+}
+[dir="rtl"] .waya-nav-link::after { transform-origin: left; }
+.waya-nav-link:hover { color: #fffbff !important; }
+.waya-nav-link:hover::after { transform: scaleX(1); }
+
+.waya-logo { transition: transform 0.15s ease; }
+.waya-logo:hover { transform: scale(1.06); }
+
+.waya-input {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.waya-input:focus {
+  border-color: #00ffa9 !important;
+  box-shadow: 0 0 0 3px rgba(0,255,169,0.2) !important;
+  outline: none;
+}
+
+/* ── Glass morphism nav ────────────────────────────────────────────────── */
+.glass-nav {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ── Floating stat circles ──────────────────────────────────────────────── */
+.floating-stat {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(44,44,41,0.6);
+  border: 1px solid rgba(72,72,69,0.15);
+  border-radius: 999px;
+  padding: 20px;
+  transition: transform 0.3s ease;
+}
+.floating-stat:hover {
+  transform: scale(1.1);
+}
+
+/* ── Industry pills ────────────────────────────────────────────────────── */
+.industry-pill {
+  background: #f8f5f0;
+  border: 1px solid #e6e1da;
+  border-radius: 999px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.2s ease;
+}
+.industry-pill:hover {
+  transform: scale(1.08);
+}
+
+/* ── Feature card glow ─────────────────────────────────────────────────── */
+.feature-card {
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+  border-color: rgba(0,255,169,0.15);
+}
+
+/* ── Comparison card ────────────────────────────────────────────────────── */
+.comparison-with {
+  background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(0,255,169,0.06));
+  border: 1px solid rgba(0,255,169,0.2);
+}
+.comparison-without {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Pricing glow ──────────────────────────────────────────────────────── */
+.pricing-card {
+  position: relative;
+  overflow: hidden;
+}
+.pricing-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(0,255,169,0.05), transparent 50%);
+  pointer-events: none;
+}
+
+/* ── Reduced motion: kill everything ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float, .animate-breathe, .fade-up,
+  .wa-ping-wrapper::before { animation: none !important; opacity: 1 !important; }
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .waya-card:hover, .waya-btn:hover, .waya-wa-btn:hover,
+  .feature-card:hover, .floating-stat:hover, .industry-pill:hover { transform: none !important; }
+}
