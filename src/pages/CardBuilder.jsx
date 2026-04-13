@@ -140,7 +140,7 @@ const STEPS = [
 ];
 
 // ─── Phone Mockup Component ──────────────────────────────────────────────────
-function PhoneMockup({ config }: { config }) {
+function PhoneMockup({ config }) {
   const filledStamps = Math.min(Math.floor(config.stamps * 0.6), config.stamps);
 
   return (
@@ -279,7 +279,7 @@ function PhoneMockup({ config }: { config }) {
 }
 
 // ─── Color Picker Component ──────────────────────────────────────────────────
-function ColorPicker({ label, value, onChange }: { label; value; onChange: (v) => void }) {
+function ColorPicker({ label, value, onChange }) {
   const presets = ['#191A23', '#4A2C2A', '#1B5E20', '#880E4F', '#E65100', '#1A237E', '#F57F17', '#00695C', '#4A148C', '#B71C1C'];
 
   return (
@@ -319,13 +319,10 @@ function ColorPicker({ label, value, onChange }: { label; value; onChange: (v) =
 }
 
 // ─── Input Field Component ───────────────────────────────────────────────────
-function Field({ label, value, onChange, placeholder, dir, type, textarea, required }: {
-  label; value; onChange: (v) => void; placeholder?;
-  dir?: 'ltr' | 'rtl'; type?; textarea?; required?;
-}) {
+function Field({ label, value, onChange, placeholder, dir, type, textarea, required }) {
   const shared = {
     value,
-    onChange: (e: any) => onChange(e.target.value),
+    onChange: (e) => onChange(e.target.value),
     placeholder,
     dir: dir || 'rtl',
     style: {
@@ -603,7 +600,7 @@ export default function CardBuilder() {
       });
     };
 
-    const updateReward = (id, updates: Partial<Reward>) => {
+    const updateReward = (id, updates) => {
       updateConfig({
         rewards: config.rewards.map(r => r.id === id ? { ...r, ...updates } : r),
       });
