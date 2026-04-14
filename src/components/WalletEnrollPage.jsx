@@ -171,13 +171,33 @@ export default function WalletEnrollPage({ lang = 'en' }) {
             <p>{T('Tap the button for your wallet:', 'اضغط الزر المناسب لمحفظتك:')}</p>
             <div className="we-wallet-buttons">
               {appleBlobUrl && (device === 'ios' || device === 'desktop') && (
-                <a href={appleBlobUrl} download={`${program.name}.pkpass`} className="we-apple-btn">
-                  <img src="https://developer.apple.com/wallet/add-to-apple-wallet-guidelines/images/add_to_apple_wallet_logo.svg" alt="Add to Apple Wallet" />
+                <a href={appleBlobUrl} download={`${program.name}.pkpass`} className="we-wallet-pill we-apple-pill" aria-label="Add to Apple Wallet">
+                  <svg className="we-wallet-icon" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+                    <rect x="2" y="6" width="32" height="24" rx="4" fill="#fff"/>
+                    <rect x="2" y="11" width="32" height="3" fill="#FA6E5A"/>
+                    <rect x="2" y="14" width="32" height="3" fill="#FFC93C"/>
+                    <rect x="2" y="17" width="32" height="3" fill="#22C55E"/>
+                    <rect x="2" y="20" width="32" height="3" fill="#3B82F6"/>
+                    <path d="M2 24h32v2a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4v-2z" fill="#E5E7EB"/>
+                  </svg>
+                  <span className="we-wallet-text">
+                    <span className="we-wallet-small">Add to</span>
+                    <span className="we-wallet-big">Apple Wallet</span>
+                  </span>
                 </a>
               )}
               {googleSaveUrl && (device === 'android' || device === 'desktop') && (
-                <a href={googleSaveUrl} target="_blank" rel="noopener" className="we-google-btn">
-                  <img src="https://developers.google.com/static/wallet/images/branding/save-to-google-wallet.svg" alt="Save to Google Wallet" />
+                <a href={googleSaveUrl} target="_blank" rel="noopener" className="we-wallet-pill we-google-pill" aria-label="Add to Google Wallet">
+                  <svg className="we-wallet-icon" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+                    <rect x="3" y="7" width="30" height="6" rx="2" fill="#34A853"/>
+                    <rect x="3" y="12" width="30" height="6" rx="2" fill="#FBBC04"/>
+                    <path d="M3 17h30v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4v-9z" fill="#4285F4"/>
+                    <path d="M3 17h30v4l-15 5L3 21v-4z" fill="#EA4335"/>
+                  </svg>
+                  <span className="we-wallet-text">
+                    <span className="we-wallet-small">Add to</span>
+                    <span className="we-wallet-big">Google Wallet</span>
+                  </span>
                 </a>
               )}
             </div>

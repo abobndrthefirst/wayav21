@@ -111,8 +111,13 @@
 .we-success h2 { margin:0 0 8px; color:#059669; }
 .we-success p { color:#555; margin: 0 0 20px; }
 .we-wallet-buttons { display:flex; flex-direction:column; gap:12px; align-items:center; }
-.we-apple-btn img { height:54px; }
-.we-google-btn img { height:54px; }
+.we-wallet-pill { display:inline-flex; align-items:center; gap:12px; padding:12px 22px; border-radius:999px; text-decoration:none; min-width:240px; box-shadow:0 4px 14px rgba(0,0,0,.18); transition:transform .12s ease, box-shadow .12s ease; background:#000; color:#fff; }
+.we-wallet-pill:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,.25); }
+.we-wallet-pill:active { transform:translateY(0); }
+.we-wallet-icon { width:34px; height:34px; flex-shrink:0; }
+.we-wallet-text { display:flex; flex-direction:column; align-items:flex-start; line-height:1.1; }
+.we-wallet-small { font-size:11px; opacity:.85; font-weight:500; letter-spacing:.2px; }
+.we-wallet-big { font-size:17px; font-weight:700; letter-spacing:.1px; }
 .we-link { display:inline-block; margin-top:18px; color:#10B981; text-decoration:none; font-weight:600; font-size:14px; }
 
 /* Customer management */
