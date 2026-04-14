@@ -385,6 +385,9 @@ body {
   align-items: center;
   gap: 8px;
 }
+.nav-logo img { display: block; height: 52px; width: auto; max-height: 52px; }
+.footer-logo img { display: block; height: 44px; width: auto; }
+.auth-brand img { display: block; height: 56px; width: auto; }
 
 .nav-logo-text {
   font-size: 20px;
@@ -2789,7 +2792,9 @@ body {
   background: var(--bg);
   z-index: 100;
 }
+.dash-nav-left { display: flex; align-items: center; gap: 12px; }
 .dash-nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
+.dash-nav-brand img { display: block; height: 48px; width: auto; max-height: 48px; }
 .dash-nav-right { display: flex; align-items: center; gap: 10px; }
 .dash-logout-btn {
   padding: 7px 16px;
