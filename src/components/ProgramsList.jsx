@@ -111,29 +111,133 @@ function ProgramQR({ program, onClose, lang }) {
   const isAr = lang === 'ar'
   const T = (en, ar) => (isAr ? ar : en)
   const url = `${window.location.origin}/w/${program.id}`
-  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&data=${encodeURIComponent(url)}&color=${(program.card_color || '#10B981').replace('#', '')}&bgcolor=ffffff&margin=12`
+  const color = program.card_color || '#10B981'
+  const text = program.text_color || '#FFFFFF'
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=520x520&data=${encodeURIComponent(url)}&color=${color.replace('#', '')}&bgcolor=ffffff&margin=12`
+  const qrPlain = `https://api.qrserver.com/v1/create-qr-code/?size=520x520&data=${encodeURIComponent(url)}&color=000000&bgcolor=ffffff&margin=12`
 
   const copy = async () => {
     try { await navigator.clipboard.writeText(url); alert(T('Link copied', 'تم النسخ')) } catch {}
   }
 
-  const downloadPoster = () => {
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${program.name}</title>
-      <style>body{font-family:system-ui;text-align:center;padding:48px;background:#f8f9fc}
-      .card{background:#fff;border-radius:24px;padding:40px;max-width:520px;margin:0 auto;box-shadow:0 10px 40px rgba(0,0,0,.08)}
-      h1{margin:0 0 8px;color:${program.card_color}}p{color:#555;margin:8px 0 24px}
-      img{width:100%;max-width:380px;border-radius:16px;border:6px solid ${program.card_color}20}
-      .url{margin-top:16px;font-family:monospace;color:#666;word-break:break-all;font-size:12px}</style></head>
-      <body><div class="card"><h1>${program.name}</h1>
-      <p>${T('Scan to join the loyalty program', 'امسح للانضمام لبرنامج الولاء')}</p>
-      <img src="${qr}" alt="QR"/><div class="url">${url}</div></div></body></html>`
+  const printPoster = (html) => {
     const w = window.open('', '_blank')
     w.document.write(html); w.document.close()
-    setTimeout(() => w.print(), 400)
+    setTimeout(() => w.print(), 600)
   }
 
+  // Bilingual instruction lines
+  const instr = {
+    enTitle: 'Join our loyalty program',
+    arTitle: 'انضم إلى برنامج الولاء',
+    enSteps: ['Scan the QR with your phone camera', 'Enter your name & phone', 'Add the card to Apple or Google Wallet'],
+    arSteps: ['امسح رمز QR بكاميرا الهاتف', 'أدخل اسمك ورقم جوالك', 'أضف البطاقة إلى Apple أو Google Wallet'],
+  }
+
+  const baseFonts = `@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Inter:wght@400;700;900&display=swap');`
+
+  // Design 1: Bold colored card
+  const designBold = () => `<!doctype html><html><head><meta charset="utf-8"><title>${program.name}</title>
+    <style>${baseFonts}
+    @page { size: A4 portrait; margin: 0; }
+    body{margin:0;font-family:Inter,Cairo,system-ui,sans-serif;background:${color};color:${text};min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px;}
+    .wrap{max-width:560px;width:100%;text-align:center;}
+    h1{font-size:46px;margin:0 0 8px;font-weight:900;letter-spacing:-.5px;}
+    h2{font-size:28px;margin:0 0 28px;font-weight:700;opacity:.95;direction:rtl;}
+    .qr-card{background:#fff;padding:28px;border-radius:28px;display:inline-block;box-shadow:0 20px 60px rgba(0,0,0,.18);}
+    .qr-card img{display:block;width:340px;height:340px;}
+    .reward{margin:24px 0 12px;font-size:22px;font-weight:700;}
+    .steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px;text-align:start;font-size:14px;}
+    .col{padding:14px;border-radius:14px;background:rgba(255,255,255,.12);}
+    .col.ar{direction:rtl;font-family:Cairo,sans-serif;}
+    .col h3{margin:0 0 8px;font-size:13px;opacity:.85;text-transform:uppercase;letter-spacing:.5px;}
+    .col ol{margin:0;padding-inline-start:18px;}
+    .col li{margin:4px 0;}
+    .footer{margin-top:24px;font-size:11px;opacity:.75;}
+    @media print { body { background: ${color} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <div class="wrap">
+      <h1>${program.name}</h1>
+      <h2>${instr.arTitle}</h2>
+      <div class="qr-card"><img src="${qr}" alt="QR"/></div>
+      <div class="reward">🎁 ${program.reward_title || 'Reward'}</div>
+      <div class="steps">
+        <div class="col"><h3>EN</h3><ol><li>${instr.enSteps[0]}</li><li>${instr.enSteps[1]}</li><li>${instr.enSteps[2]}</li></ol></div>
+        <div class="col ar"><h3>AR</h3><ol><li>${instr.arSteps[0]}</li><li>${instr.arSteps[1]}</li><li>${instr.arSteps[2]}</li></ol></div>
+      </div>
+      <div class="footer">${url}</div>
+    </div></body></html>`
+
+  // Design 2: Minimal white with colored accents
+  const designMinimal = () => `<!doctype html><html><head><meta charset="utf-8"><title>${program.name}</title>
+    <style>${baseFonts}
+    @page { size: A4 portrait; margin: 0; }
+    body{margin:0;font-family:Inter,Cairo,system-ui,sans-serif;background:#fff;color:#111;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px;}
+    .wrap{max-width:520px;width:100%;text-align:center;border-top:8px solid ${color};border-bottom:8px solid ${color};padding:48px 24px;}
+    h1{font-size:42px;margin:0 0 6px;font-weight:900;color:${color};letter-spacing:-.5px;}
+    h2{font-size:24px;margin:0 0 32px;font-weight:700;color:#333;direction:rtl;font-family:Cairo,sans-serif;}
+    .qr{display:block;margin:0 auto;width:320px;height:320px;border:4px solid ${color};border-radius:16px;padding:8px;background:#fff;}
+    .reward{margin:28px 0 8px;font-size:20px;font-weight:700;color:${color};}
+    .reward-sub{font-size:14px;color:#666;margin-bottom:24px;}
+    .row{display:flex;gap:20px;margin-top:24px;text-align:start;font-size:13px;color:#444;}
+    .row > div{flex:1;}
+    .row .ar{direction:rtl;font-family:Cairo,sans-serif;}
+    .row h3{font-size:11px;color:${color};text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;}
+    .row ol{margin:0;padding-inline-start:18px;line-height:1.7;}
+    .footer{margin-top:32px;font-size:11px;color:#999;font-family:monospace;}
+    @media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    </style></head><body>
+    <div class="wrap">
+      <h1>${program.name}</h1>
+      <h2>${instr.arTitle} · ${instr.enTitle}</h2>
+      <img class="qr" src="${qrPlain}" alt="QR"/>
+      <div class="reward">${program.reward_title || 'Reward'}</div>
+      <div class="reward-sub">${T('Scan to join · ', 'امسح للانضمام · ')}</div>
+      <div class="row">
+        <div><h3>English</h3><ol><li>${instr.enSteps[0]}</li><li>${instr.enSteps[1]}</li><li>${instr.enSteps[2]}</li></ol></div>
+        <div class="ar"><h3>عربي</h3><ol><li>${instr.arSteps[0]}</li><li>${instr.arSteps[1]}</li><li>${instr.arSteps[2]}</li></ol></div>
+      </div>
+      <div class="footer">${url}</div>
+    </div></body></html>`
+
+  // Design 3: Table tent — half-page, two-up identical sides for folding
+  const designTableTent = () => `<!doctype html><html><head><meta charset="utf-8"><title>${program.name}</title>
+    <style>${baseFonts}
+    @page { size: A4 landscape; margin: 0; }
+    body{margin:0;font-family:Inter,Cairo,system-ui,sans-serif;background:#fff;}
+    .sheet{display:flex;width:100vw;height:100vh;}
+    .side{flex:1;background:linear-gradient(135deg, ${color} 0%, ${color}dd 100%);color:${text};padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+    .side.flipped{transform:rotate(180deg);}
+    .side h1{font-size:34px;margin:0 0 4px;font-weight:900;}
+    .side h2{font-size:18px;margin:0 0 18px;font-weight:600;opacity:.9;direction:rtl;font-family:Cairo,sans-serif;}
+    .qr-box{background:#fff;padding:14px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.2);}
+    .qr-box img{display:block;width:200px;height:200px;}
+    .reward{margin-top:16px;font-size:16px;font-weight:700;}
+    .scan-hint{font-size:13px;margin-top:6px;opacity:.85;}
+    .scan-hint .ar{display:block;direction:rtl;font-family:Cairo,sans-serif;}
+    @media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; body, .side { background: ${color} !important; } }
+    </style></head><body>
+    <div class="sheet">
+      ${[0, 1].map((i) => `<div class="side ${i === 0 ? 'flipped' : ''}">
+        <h1>${program.name}</h1>
+        <h2>${instr.arTitle}</h2>
+        <div class="qr-box"><img src="${qr}" alt="QR"/></div>
+        <div class="reward">🎁 ${program.reward_title || 'Reward'}</div>
+        <div class="scan-hint">
+          <span>${instr.enSteps[0]}</span>
+          <span class="ar">${instr.arSteps[0]}</span>
+        </div>
+      </div>`).join('')}
+    </div></body></html>`
+
+  const posters = [
+    { key: 'bold', label: T('Bold colored', 'لون جريء'), build: designBold },
+    { key: 'minimal', label: T('Minimal white', 'أبيض بسيط'), build: designMinimal },
+    { key: 'tent', label: T('Table tent', 'عرض طاولة'), build: designTableTent },
+  ]
+
   return (
-    <div className="pl-shell">
+    <div className="pl-shell" dir={isAr ? 'rtl' : 'ltr'}>
       <div className="pl-header">
         <h2>{program.name}</h2>
         <button className="lw-btn ghost" onClick={onClose}>{T('Back', 'رجوع')}</button>
@@ -144,7 +248,25 @@ function ProgramQR({ program, onClose, lang }) {
         <code className="pl-qr-url">{url}</code>
         <div className="pl-qr-actions">
           <button onClick={copy} className="lw-btn primary">{T('Copy link', 'نسخ الرابط')}</button>
-          <button onClick={downloadPoster} className="lw-btn ghost">{T('Print poster', 'طباعة الملصق')}</button>
+        </div>
+      </div>
+
+      <div className="pl-posters">
+        <h3>{T('Printable posters', 'ملصقات للطباعة')}</h3>
+        <p className="pl-posters-sub">{T('Pick a design, then print or save as PDF (bilingual EN / AR).', 'اختر تصميماً، ثم اطبعه أو احفظه كـ PDF (إنجليزي / عربي).')}</p>
+        <div className="pl-posters-grid">
+          {posters.map((p) => (
+            <div key={p.key} className="pl-poster-card">
+              <div className="pl-poster-thumb" style={{ background: p.key === 'minimal' ? '#fff' : color, color: text, borderColor: color }}>
+                <div className="pl-poster-thumb-name" style={{ color: p.key === 'minimal' ? color : text }}>{program.name}</div>
+                <div className="pl-poster-thumb-qr">▣</div>
+                <div className="pl-poster-thumb-tag">{p.label}</div>
+              </div>
+              <button className="lw-btn primary" onClick={() => printPoster(p.build())}>
+                {T('Print / Save PDF', 'طباعة / حفظ PDF')}
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     </div>

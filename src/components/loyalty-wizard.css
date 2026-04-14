@@ -130,3 +130,42 @@
 .pl-customer-phone { font-size:13px; color:#666; }
 .pl-customer-meta { font-size:13px; color:#10B981; font-weight:600; margin-top:2px; }
 .pl-customer-actions { display:flex; gap:6px; flex-shrink:0; }
+
+/* Section titles within combined step */
+.lw-section-title { margin: 24px 0 10px; font-weight: 700; font-size: 14px; color: #444; text-transform: uppercase; letter-spacing: .5px; border-top: 1px solid #eef0f3; padding-top: 18px; }
+.lw-section-title:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+
+/* Branding step layout */
+.lw-branding-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+@media (max-width: 880px) { .lw-branding-grid { grid-template-columns: 1fr; } }
+.lw-branding-controls { display: flex; flex-direction: column; gap: 14px; }
+.lw-branding-previews { position: sticky; top: 16px; align-self: flex-start; }
+.lw-preview-sub { margin: 0 0 14px; color:#666; font-size:13px; }
+.lw-wallet-previews { display: flex; flex-direction: column; gap: 18px; }
+
+/* Wallet preview cards */
+.lw-wp { background:#fff; border-radius: 18px; overflow: hidden; box-shadow: 0 6px 24px rgba(0,0,0,.08); border:1px solid #eef0f3; }
+.lw-wp-chrome { display:flex; align-items:center; gap:8px; padding: 10px 14px; background:#000; color:#fff; font-size: 13px; font-weight: 600; }
+.lw-wp-platform-icon { width:22px; height:22px; border-radius: 4px; background:#fff; padding:1px; object-fit:contain; }
+.lw-wp-card { padding: 18px; min-height: 200px; display:flex; flex-direction:column; justify-content:space-between; gap: 14px; }
+.lw-wp-top { display:flex; align-items:center; gap:12px; }
+.lw-wp-logo { width:42px; height:42px; border-radius: 10px; object-fit: cover; background:#fff; }
+.lw-wp-logo-placeholder { display:flex; align-items:center; justify-content:center; font-weight:800; color:#333; font-size:18px; }
+.lw-wp-name strong { display:block; font-size: 16px; line-height:1.2; }
+.lw-wp-name small { opacity: .85; font-size: 13px; }
+.lw-wp-mid { text-align:center; }
+.lw-wp-balance-label { font-size: 11px; opacity: .8; text-transform: uppercase; letter-spacing: .6px; }
+.lw-wp-balance { font-size: 30px; font-weight: 800; margin-top: 4px; }
+.lw-wp-bot { display:flex; align-items:center; gap:8px; font-size: 13px; opacity: .95; }
+.lw-wp-reward-icon { width: 24px; height: 24px; object-fit: contain; }
+
+/* Poster picker on QR screen */
+.pl-posters { margin-top: 36px; padding-top: 24px; border-top: 1px solid #eef0f3; }
+.pl-posters h3 { margin: 0 0 4px; font-size: 18px; }
+.pl-posters-sub { margin: 0 0 18px; color: #666; font-size: 14px; }
+.pl-posters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.pl-poster-card { display:flex; flex-direction:column; gap:10px; }
+.pl-poster-thumb { aspect-ratio: 3/4; border-radius: 14px; padding: 18px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; text-align:center; border: 2px solid transparent; box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+.pl-poster-thumb-name { font-weight: 800; font-size: 15px; }
+.pl-poster-thumb-qr { font-size: 84px; line-height: 1; opacity: .9; }
+.pl-poster-thumb-tag { font-size: 11px; opacity: .85; text-transform: uppercase; letter-spacing: .5px; }
