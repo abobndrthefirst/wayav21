@@ -1,0 +1,127 @@
+/* ─── Loyalty Wizard ─── */
+.lw-shell { max-width: 760px; margin: 24px auto; background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.06); overflow: hidden; }
+.lw-header { display:flex; align-items:center; justify-content:space-between; padding: 20px 24px; border-bottom: 1px solid #eef0f3; }
+.lw-header h2 { margin:0; font-size: 1.25rem; }
+.lw-x { background:none; border:none; font-size:28px; cursor:pointer; color:#888; line-height:1; }
+.lw-stepper { display:flex; gap:8px; padding: 16px 24px; overflow-x:auto; border-bottom: 1px solid #f1f3f5; }
+.lw-step { display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:#f4f6f8; border:none; cursor:pointer; white-space:nowrap; font-size:13px; color:#555; }
+.lw-step.active { background:#10B981; color:#fff; }
+.lw-step.done { background:#d1fae5; color:#065f46; }
+.lw-step-num { width:22px; height:22px; border-radius:50%; background:rgba(0,0,0,.08); display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; }
+.lw-step.active .lw-step-num { background: rgba(255,255,255,.25); }
+.lw-body { padding: 24px; min-height: 320px; }
+.lw-step-content { display:flex; flex-direction:column; gap:18px; }
+.lw-field { display:flex; flex-direction:column; gap:6px; }
+.lw-field > span { font-weight:600; font-size:14px; color:#333; }
+.lw-field input, .lw-field textarea, .lw-field select { padding: 10px 12px; border:1px solid #d6dae0; border-radius:10px; font-size:15px; font-family:inherit; outline:none; transition:border-color .2s; background:#fff; }
+.lw-field input:focus, .lw-field textarea:focus { border-color:#10B981; }
+.lw-field small { color:#777; font-size:12px; }
+.lw-sep { border:none; border-top:1px solid #eef0f3; margin: 8px 0; }
+.lw-err { background:#fee; color:#b00; padding:10px 12px; border-radius:8px; font-size:14px; }
+.lw-footer { display:flex; justify-content:space-between; padding: 16px 24px; border-top: 1px solid #eef0f3; background:#fafbfc; }
+.lw-btn { padding: 10px 18px; border-radius:10px; border:none; font-weight:600; cursor:pointer; font-size:14px; transition:transform .1s,opacity .2s; }
+.lw-btn:disabled { opacity:.5; cursor:not-allowed; }
+.lw-btn.primary { background:#10B981; color:#fff; }
+.lw-btn.primary:hover:not(:disabled) { background:#059669; }
+.lw-btn.ghost { background:transparent; color:#555; border:1px solid #d6dae0; }
+.lw-btn.danger { background:transparent; color:#b00; border:1px solid #f5c6c6; }
+.lw-btn.sm { padding:6px 12px; font-size:13px; }
+
+.lw-type-grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+.lw-type-card { display:flex; flex-direction:column; align-items:flex-start; gap:6px; padding:18px; border-radius:14px; border:2px solid #e5e8ec; background:#fff; cursor:pointer; text-align:start; transition:all .15s; }
+.lw-type-card:hover { border-color:#a7f3d0; }
+.lw-type-card.selected { border-color:#10B981; background:#f0fdf4; }
+.lw-type-emoji { font-size:28px; }
+.lw-type-card strong { font-size:15px; }
+.lw-type-card small { color:#666; font-size:12px; }
+
+.lw-color-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.lw-swatch { width:32px; height:32px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; }
+.lw-swatch.sel { border-color:#0f172a; transform:scale(1.15); }
+
+.lw-uploader { display:flex; align-items:center; gap:12px; }
+.lw-uploader img { width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid #e5e8ec; }
+.lw-upload-btn { padding:10px 16px; border-radius:10px; border:1px dashed #c8cdd3; background:#f9fafb; cursor:pointer; color:#555; font-size:13px; }
+.lw-upload-btn:hover { background:#f3f4f6; }
+.lw-mini-btn { width:28px; height:28px; border-radius:50%; border:1px solid #ddd; background:#fff; cursor:pointer; font-size:16px; line-height:1; }
+.lw-mini-btn.add { width:auto; padding:6px 12px; border-radius:10px; }
+
+.lw-tiers { display:flex; flex-direction:column; gap:8px; padding:12px; background:#f9fafb; border-radius:10px; }
+.lw-tiers h4 { margin:0 0 4px; font-size:14px; }
+.lw-tier-row { display:flex; gap:8px; align-items:center; }
+.lw-tier-row input { flex:1; padding:8px 10px; border:1px solid #d6dae0; border-radius:8px; }
+
+.lw-preview-card { padding:24px; border-radius:18px; min-height:180px; display:flex; flex-direction:column; gap:14px; }
+.lw-pc-top { display:flex; align-items:center; gap:12px; }
+.lw-pc-logo { width:48px; height:48px; border-radius:8px; object-fit:cover; background:rgba(255,255,255,.2); }
+.lw-pc-name strong { display:block; font-size:18px; }
+.lw-pc-name small { opacity:.85; }
+.lw-pc-mid { flex:1; display:flex; align-items:center; justify-content:center; }
+.lw-pc-big { font-size:28px; font-weight:700; }
+.lw-pc-bot { display:flex; align-items:center; gap:8px; opacity:.95; font-size:14px; border-top:1px solid rgba(255,255,255,.2); padding-top:10px; }
+.lw-pc-icon { width:24px; height:24px; }
+.lw-summary { margin-top:16px; padding:14px; background:#f9fafb; border-radius:10px; font-size:13px; color:#444; }
+.lw-summary > div { margin-bottom:6px; }
+.lw-terms-prev { white-space:pre-wrap; }
+.lw-note { font-size:12px; color:#888; text-align:center; margin-top:12px; }
+
+/* ─── Programs List ─── */
+.pl-shell { max-width: 1000px; margin: 24px auto; padding: 0 20px; }
+.pl-header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 24px; }
+.pl-header h2 { margin:0; font-size: 1.5rem; }
+.pl-empty { text-align:center; padding: 60px 20px; color:#666; background:#fff; border-radius:14px; }
+.pl-empty p { margin: 0 0 16px; }
+.pl-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px; }
+.pl-card { background:#fff; border-radius:14px; padding:18px; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+.pl-card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.pl-card-top strong { font-size:16px; }
+.pl-pill { font-size:11px; padding:3px 8px; border-radius:999px; font-weight:600; }
+.pl-pill.on { background:#d1fae5; color:#065f46; }
+.pl-pill.off { background:#fee2e2; color:#991b1b; }
+.pl-card-meta { font-size:13px; color:#666; margin-bottom:14px; }
+.pl-card-actions { display:flex; flex-wrap:wrap; gap:6px; }
+
+.pl-qr-wrap { background:#fff; padding:32px; border-radius:14px; text-align:center; }
+.pl-qr-img { max-width:360px; width:100%; }
+.pl-qr-hint { color:#666; max-width:480px; margin: 16px auto; }
+.pl-qr-url { display:block; padding:8px 12px; background:#f4f6f8; border-radius:8px; font-size:12px; word-break:break-all; margin: 16px auto; max-width:480px; }
+.pl-qr-actions { display:flex; gap:10px; justify-content:center; }
+
+/* ─── Customer Wallet Enroll Page ─── */
+.we-shell { min-height:100vh; background: linear-gradient(135deg, #f8fafc, #e0f2fe); display:flex; align-items:center; justify-content:center; padding:20px; }
+.we-card { background:#fff; border-radius:24px; max-width:440px; width:100%; overflow:hidden; box-shadow: 0 20px 60px rgba(0,0,0,.12); }
+.we-preview { padding:32px 24px; text-align:center; }
+.we-logo { width:64px; height:64px; border-radius:12px; object-fit:cover; margin: 0 auto 12px; display:block; background:rgba(255,255,255,.2); }
+.we-preview h1 { margin:0 0 4px; font-size:22px; }
+.we-program-name { margin:0 0 12px; opacity:.9; font-size:15px; }
+.we-reward { margin:0; font-size:14px; opacity:.9; }
+.we-form { padding: 24px; }
+.we-form h2 { margin: 0 0 4px; font-size: 18px; }
+.we-sub { margin: 0 0 18px; color:#666; font-size:14px; }
+.we-form label { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.we-form label > span { font-size:13px; color:#444; font-weight:600; }
+.we-form input { padding: 12px 14px; border:1px solid #d6dae0; border-radius:10px; font-size:16px; outline:none; }
+.we-form input:focus { border-color: #10B981; }
+.we-err { background:#fee; color:#b00; padding:10px 12px; border-radius:8px; font-size:14px; margin-bottom:12px; }
+.we-submit { width:100%; padding:14px; border:none; border-radius:12px; color:#fff; font-size:16px; font-weight:700; cursor:pointer; margin-top:6px; }
+.we-submit:disabled { opacity:.6; cursor:not-allowed; }
+.we-terms { margin-top:18px; font-size:13px; color:#555; }
+.we-terms summary { cursor:pointer; }
+.we-success { padding: 32px 24px; text-align:center; }
+.we-success h2 { margin:0 0 8px; color:#059669; }
+.we-success p { color:#555; margin: 0 0 20px; }
+.we-wallet-buttons { display:flex; flex-direction:column; gap:12px; align-items:center; }
+.we-apple-btn img { height:54px; }
+.we-google-btn img { height:54px; }
+.we-link { display:inline-block; margin-top:18px; color:#10B981; text-decoration:none; font-weight:600; font-size:14px; }
+
+/* Customer management */
+.pl-customers-search { padding: 0 0 12px; }
+.pl-customers-search .lw-input { width: 100%; }
+.pl-customers { display:flex; flex-direction:column; gap:10px; }
+.pl-customer-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background:#fff; border:1px solid #eef0f3; border-radius:12px; }
+.pl-customer-info { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.pl-customer-info strong { font-size:15px; }
+.pl-customer-phone { font-size:13px; color:#666; }
+.pl-customer-meta { font-size:13px; color:#10B981; font-weight:600; margin-top:2px; }
+.pl-customer-actions { display:flex; gap:6px; flex-shrink:0; }

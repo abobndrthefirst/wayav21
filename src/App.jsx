@@ -3,6 +3,9 @@ import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'fra
 import { createClient } from '@supabase/supabase-js'
 // Analytics loaded via script tag in index.html
 import './styles.css'
+import './components/loyalty-wizard.css'
+import ProgramsList from './components/ProgramsList'
+import WalletEnrollPage from './components/WalletEnrollPage'
 
 /* ─── Supabase config ─── */
 const SUPABASE_URL = 'https://unnheqshkxpbflozechm.supabase.co'
@@ -2887,6 +2890,25 @@ function AuthRedirect() {
   return null
 }
 
+/* ─── Programs Page Wrapper (loads shop, renders <ProgramsList />) ─── */
+function ProgramsPageWrapper({ lang, setLang, theme, setTheme, t }) {
+  const { user, loading } = useAuth()
+  const [shop, setShop] = useState(null)
+  const [err, setErr] = useState(null)
+  useEffect(() => {
+    if (loading) return
+    if (!user) { navigate('/login'); return }
+    supabase.from('shops').select('*').eq('user_id', user.id).single()
+      .then(({ data, error }) => {
+        if (error) { setErr(error.message); return }
+        if (!data) { navigate('/setup'); return }
+        setShop(data)
+      })
+  }, [user, loading])
+  if (loading || !shop) return <div style={{padding:60,textAlign:'center'}}>{err || 'Loading…'}</div>
+  return <ProgramsList shop={shop} lang={lang} />
+}
+
 /* ─── App ─── */
 export default function App() {
   const [lang, setLang] = useState('ar')
@@ -2909,6 +2931,8 @@ export default function App() {
       if (p === '/data') return 'data'
       if (p === '/loyalty') return 'loyalty'
       if (p === '/settings') return 'settings'
+      if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
+      if (p.startsWith('/w/')) return 'enroll'
       if (p.startsWith('/wallet/')) return 'wallet'
       return 'home'
     }
@@ -2944,6 +2968,8 @@ export default function App() {
   if (page === 'loyalty') return <AuthProvider><LoyaltyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'settings') return <AuthProvider><SettingsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'wallet') return <WalletPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
+  if (page === 'enroll') return <WalletEnrollPage lang={lang} />
+  if (page === 'programs') return <AuthProvider><ProgramsPageWrapper lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
 
   return (
     <AuthProvider>

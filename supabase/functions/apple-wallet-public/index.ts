@@ -26,9 +26,9 @@ function sha1Hex(bytes: Uint8Array): string {
 function loadPrivateKey(pem: string, password: string | undefined): forge.pki.PrivateKey {
   const isEncrypted = /ENCRYPTED/.test(pem) || /Proc-Type:\s*4,ENCRYPTED/.test(pem);
   if (isEncrypted) {
-    if (!password) throw new Error("Signer key is encrypted but APPLE_WALLET_SIGNER_KEY_PASSWORD is not set");
+    if (!password) throw new Error("Signer key encrypted but APPLE_WALLET_SIGNER_KEY_PASSWORD not set");
     const key = forge.pki.decryptRsaPrivateKey(pem, password);
-    if (!key) throw new Error("Failed to decrypt signer key \u2014 wrong APPLE_WALLET_SIGNER_KEY_PASSWORD?");
+    if (!key) throw new Error("Failed to decrypt signer key");
     return key;
   }
   try { return forge.pki.privateKeyFromPem(pem); } catch (e) {
@@ -76,18 +76,91 @@ async function fetchImage(url: string | null | undefined): Promise<Uint8Array | 
   } catch { return null; }
 }
 
+function hexToRgb(hex: string): string {
+  const h = hex.replace("#", "");
+  return `rgb(${parseInt(h.slice(0, 2), 16)}, ${parseInt(h.slice(2, 4), 16)}, ${parseInt(h.slice(4, 6), 16)})`;
+}
+
+function buildPassFields(program: any, customer: any) {
+  const type = program.loyalty_type || "stamp";
+  if (type === "stamp") {
+    const need = program.stamps_required || 10;
+    const have = customer.stamps || 0;
+    return {
+      headerFields: [{ key: "stamps", label: "STAMPS", value: `${have}/${need}` }],
+      primaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
+      secondaryFields: [{ key: "shop", label: "SHOP", value: program.shop_name }],
+      auxiliaryFields: [{ key: "reward", label: "REWARD", value: program.reward_title || "Reward" }],
+    };
+  }
+  if (type === "points") {
+    const need = program.reward_threshold || 10;
+    const have = customer.points || 0;
+    return {
+      headerFields: [{ key: "points", label: "POINTS", value: `${have}/${need}` }],
+      primaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
+      secondaryFields: [{ key: "shop", label: "SHOP", value: program.shop_name }],
+      auxiliaryFields: [{ key: "reward", label: "REWARD", value: program.reward_title || "Reward" }],
+    };
+  }
+  if (type === "tiered") {
+    return {
+      headerFields: [{ key: "points", label: "POINTS", value: customer.points || 0 }],
+      primaryFields: [{ key: "tier", label: "TIER", value: customer.tier || "Bronze" }],
+      secondaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
+      auxiliaryFields: [{ key: "shop", label: "SHOP", value: program.shop_name }],
+    };
+  }
+  // coupon
+  return {
+    headerFields: [{ key: "value", label: "OFFER", value: program.coupon_discount || "DISCOUNT" }],
+    primaryFields: [{ key: "code", label: "CODE", value: program.coupon_code || "—" }],
+    secondaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
+    auxiliaryFields: [{ key: "shop", label: "SHOP", value: program.shop_name }],
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const { shop_id, customer_name, customer_phone } = await req.json();
-    if (!shop_id) throw new Error("Missing shop_id");
+    const body = await req.json();
+    const { program_id, shop_id, customer_name, customer_phone } = body;
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
-    const { data: shop, error: shopError } = await supabase
-      .from("shops").select("*").eq("id", shop_id).single();
-    if (shopError || !shop) throw new Error("Shop not found");
+
+    // Resolve program (preferred) or fall back to legacy shop-only mode
+    let program: any = null;
+    let shop: any = null;
+    if (program_id) {
+      const { data, error } = await supabase
+        .from("loyalty_programs").select("*, shop:shops(*)").eq("id", program_id).single();
+      if (error || !data) throw new Error("Program not found");
+      program = { ...data, shop_name: data.shop?.name };
+      shop = data.shop;
+    } else {
+      if (!shop_id) throw new Error("Missing program_id or shop_id");
+      const { data, error } = await supabase.from("shops").select("*").eq("id", shop_id).single();
+      if (error || !data) throw new Error("Shop not found");
+      shop = data;
+      program = {
+        id: null,
+        shop_id: shop.id,
+        loyalty_type: "points",
+        reward_threshold: shop.reward_threshold || 10,
+        reward_title: "Reward",
+        reward_description: shop.reward_description,
+        card_color: shop.card_color || "#10B981",
+        text_color: "#FFFFFF",
+        logo_url: shop.logo_url,
+        shop_name: shop.name,
+        terms: null,
+        expires_at: null,
+        google_maps_url: null,
+        website_url: null,
+      };
+    }
 
     const passTypeId = Deno.env.get("APPLE_PASS_TYPE_ID");
     const teamId = Deno.env.get("APPLE_TEAM_ID");
@@ -96,49 +169,105 @@ Deno.serve(async (req: Request) => {
     const signerKeyPassword = Deno.env.get("APPLE_WALLET_SIGNER_KEY_PASSWORD");
     const wwdr = Deno.env.get("APPLE_WALLET_WWDR_CERT");
     const orgName = Deno.env.get("APPLE_WALLET_ORG_NAME") || "Waya";
+    const webServiceURL = Deno.env.get("APPLE_PASSKIT_WEB_SERVICE_URL")
+      || `${Deno.env.get("SUPABASE_URL")}/functions/v1/apple-passkit/`;
     if (!passTypeId || !teamId || !signerCert || !signerKey || !wwdr) {
       throw new Error("Apple Wallet credentials not configured");
     }
 
-    const phoneClean = (customer_phone || String(Date.now())).replace(/[^\w]/g, "_");
-    const serialNumber = `waya_${shop.id.replace(/-/g, "")}_${phoneClean}_${Date.now()}`;
-    const bg = shop.card_color || "rgb(16, 185, 129)";
-    const bgRgb = bg.startsWith("#")
-      ? `rgb(${parseInt(bg.slice(1,3),16)}, ${parseInt(bg.slice(3,5),16)}, ${parseInt(bg.slice(5,7),16)})`
-      : bg;
+    // Look up or create customer_pass row
+    let pass_row: any = null;
+    if (program.id && customer_phone) {
+      const { data: existing } = await supabase
+        .from("customer_passes")
+        .select("*").eq("program_id", program.id).eq("customer_phone", customer_phone).maybeSingle();
+      if (existing) pass_row = existing;
+    }
+    if (!pass_row) {
+      const phoneClean = (customer_phone || String(Date.now())).replace(/[^\w]/g, "_");
+      const serial = `waya_${(program.id || shop.id).replace(/-/g, "")}_${phoneClean}_${Date.now()}`;
+      const authToken = crypto.randomUUID().replace(/-/g, "");
+      if (program.id) {
+        const { data: inserted } = await supabase
+          .from("customer_passes")
+          .insert({
+            program_id: program.id,
+            shop_id: shop.id,
+            customer_name,
+            customer_phone,
+            apple_serial: serial,
+            apple_auth_token: authToken,
+          }).select().single();
+        pass_row = inserted;
+      } else {
+        pass_row = { apple_serial: serial, apple_auth_token: authToken, points: 0, stamps: 0, customer_name, customer_phone };
+      }
+    } else if (!pass_row.apple_serial) {
+      const phoneClean = (customer_phone || String(Date.now())).replace(/[^\w]/g, "_");
+      const serial = `waya_${program.id.replace(/-/g, "")}_${phoneClean}_${Date.now()}`;
+      const authToken = crypto.randomUUID().replace(/-/g, "");
+      await supabase.from("customer_passes").update({
+        apple_serial: serial, apple_auth_token: authToken, customer_name,
+      }).eq("id", pass_row.id);
+      pass_row.apple_serial = serial;
+      pass_row.apple_auth_token = authToken;
+    }
 
-    const pass = {
+    const fields = buildPassFields(program, { ...pass_row, customer_name });
+    const bgRgb = (program.card_color || "#10B981").startsWith("#") ? hexToRgb(program.card_color) : program.card_color;
+    const fgRgb = (program.text_color || "#FFFFFF").startsWith("#") ? hexToRgb(program.text_color) : program.text_color;
+
+    const backFields: any[] = [];
+    if (program.reward_description) backFields.push({ key: "rewardDesc", label: "Reward", value: program.reward_description });
+    if (program.terms) backFields.push({ key: "terms", label: "Terms & Conditions", value: program.terms });
+    if (program.expires_at) backFields.push({ key: "expires", label: "Expires", value: new Date(program.expires_at).toLocaleDateString() });
+    if (program.google_maps_url) backFields.push({ key: "maps", label: "Find us", value: program.google_maps_url, attributedValue: `<a href='${program.google_maps_url}'>Open in Maps</a>` });
+    if (program.website_url) backFields.push({ key: "web", label: "Website", value: program.website_url });
+    if (program.phone) backFields.push({ key: "phone", label: "Phone", value: program.phone });
+    if (program.address) backFields.push({ key: "address", label: "Address", value: program.address });
+    backFields.push({ key: "powered", label: "Powered by", value: "Waya \u2014 trywaya.com" });
+
+    const passKey = program.loyalty_type === "coupon" ? "coupon" : "storeCard";
+    const pass: any = {
       formatVersion: 1,
       passTypeIdentifier: passTypeId,
-      serialNumber,
+      serialNumber: pass_row.apple_serial,
       teamIdentifier: teamId,
       organizationName: orgName,
-      description: `${shop.name} Loyalty Card`,
-      logoText: shop.name,
-      foregroundColor: "rgb(255, 255, 255)",
+      description: `${program.shop_name} ${program.name || "Loyalty"}`,
+      logoText: program.shop_name,
+      foregroundColor: fgRgb,
       backgroundColor: bgRgb,
-      labelColor: "rgb(255, 255, 255)",
-      barcodes: [{ message: serialNumber, format: "PKBarcodeFormatQR", messageEncoding: "iso-8859-1", altText: customer_name || "Waya Member" }],
-      storeCard: {
-        headerFields: [{ key: "points", label: "POINTS", value: 0 }],
-        primaryFields: [{ key: "member", label: "MEMBER", value: customer_name || "Waya Member" }],
-        secondaryFields: [{ key: "shop", label: "SHOP", value: shop.name }],
-        auxiliaryFields: [{ key: "reward", label: "REWARD AT", value: `${shop.reward_threshold || 10} pts` }],
-        backFields: [
-          { key: "rewardDesc", label: "Reward", value: shop.reward_description || `Collect ${shop.reward_threshold || 10} points for a reward` },
-          { key: "powered", label: "Powered by", value: "Waya \u2014 trywaya.com" },
-        ],
-      },
+      labelColor: fgRgb,
+      barcodes: [{
+        message: pass_row.apple_serial,
+        format: "PKBarcodeFormatQR",
+        messageEncoding: "iso-8859-1",
+        altText: customer_name || "Member",
+      }],
+      // Live update support
+      webServiceURL,
+      authenticationToken: pass_row.apple_auth_token,
+      [passKey]: { ...fields, backFields },
     };
+    if (program.expires_at) pass.expirationDate = new Date(program.expires_at).toISOString();
 
-    const remoteIcon = await fetchImage(shop.logo_url);
+    const remoteIcon = await fetchImage(program.logo_url || shop.logo_url);
+    const remoteBg = await fetchImage(program.background_url);
     const icon29 = remoteIcon || FALLBACK_ICON_29;
     const icon58 = remoteIcon || FALLBACK_ICON_58;
     const files: Record<string, Uint8Array> = {
       "pass.json": strToU8(JSON.stringify(pass)),
       "icon.png": icon29,
       "icon@2x.png": icon58,
+      "logo.png": icon29,
+      "logo@2x.png": icon58,
     };
+    if (remoteBg) {
+      files["strip.png"] = remoteBg;
+      files["strip@2x.png"] = remoteBg;
+    }
+
     const manifestObj: Record<string, string> = {};
     for (const [n, b] of Object.entries(files)) manifestObj[n] = sha1Hex(b);
     const manifestStr = JSON.stringify(manifestObj);
@@ -146,9 +275,7 @@ Deno.serve(async (req: Request) => {
     const signatureBytes = signManifest(manifestStr, signerCert, signerKey, wwdr, signerKeyPassword);
 
     const archive = zipSync({
-      "pass.json": files["pass.json"],
-      "icon.png": files["icon.png"],
-      "icon@2x.png": files["icon@2x.png"],
+      ...files,
       "manifest.json": manifestBytes,
       "signature": signatureBytes,
     }, { level: 6 });
@@ -166,7 +293,7 @@ Deno.serve(async (req: Request) => {
       headers: {
         ...corsHeaders,
         "Content-Type": "application/vnd.apple.pkpass",
-        "Content-Disposition": `attachment; filename="${shop.name.replace(/[^\w]/g, "_")}.pkpass"`,
+        "Content-Disposition": `attachment; filename="${(program.shop_name || "loyalty").replace(/[^\w]/g, "_")}.pkpass"`,
         "Cache-Control": "no-store",
       },
     });
