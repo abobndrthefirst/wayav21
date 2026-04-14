@@ -86,9 +86,12 @@ function buildPassFields(program: any, customer: any) {
   if (type === "stamp") {
     const need = program.stamps_required || 10;
     const have = customer.stamps || 0;
+    const max = Math.min(need, 12);
+    const filled = Math.min(have, max);
+    const stampRow = "\u2605".repeat(filled) + "\u2606".repeat(max - filled);
     return {
-      headerFields: [{ key: "stamps", label: "STAMPS", value: `${have}/${need}` }],
-      primaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
+      headerFields: [{ key: "count", label: "STAMPS", value: `${have}/${need}` }],
+      primaryFields: [{ key: "stamps", label: customer.customer_name || "Member", value: stampRow }],
       secondaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
       auxiliaryFields: [{ key: "reward", label: "REWARD", value: program.reward_title || "Reward" }],
     };

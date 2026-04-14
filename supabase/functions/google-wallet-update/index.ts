@@ -75,7 +75,11 @@ Deno.serve(async (req: Request) => {
     const stamps = pass.stamps || 0;
     let loyaltyPoints: any;
     if (program?.loyalty_type === 'stamp') {
-      loyaltyPoints = { label: 'Stamps', balance: { string: `${stamps}/${program.stamps_required || 10}` } };
+      const need = program.stamps_required || 10;
+      const max = Math.min(need, 12);
+      const filled = Math.min(stamps, max);
+      const row = '\u2605'.repeat(filled) + '\u2606'.repeat(max - filled);
+      loyaltyPoints = { label: `Stamps ${stamps}/${need}`, balance: { string: row } };
     } else if (program?.loyalty_type === 'tiered') {
       loyaltyPoints = { label: 'Points', balance: { int: points } };
     } else if (program?.loyalty_type === 'coupon') {

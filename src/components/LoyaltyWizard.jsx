@@ -412,13 +412,13 @@ function WalletPreview({ kind, data, sampleName, T }) {
   const headerLogo = kind === 'apple' ? appleWalletIcon : googleWalletIcon
   const platform = kind === 'apple' ? 'Apple Wallet' : 'Google Wallet'
 
-  const balance = loyaltyType === 'stamp'
-    ? `0 / ${stampsRequired}`
-    : loyaltyType === 'points'
-      ? `0 / ${rewardThreshold}`
-      : loyaltyType === 'tiered'
-        ? T('Bronze', 'برونزي')
-        : couponDiscount
+  const balance = loyaltyType === 'points'
+    ? `0 / ${rewardThreshold}`
+    : loyaltyType === 'tiered'
+      ? T('Bronze', 'برونزي')
+      : loyaltyType === 'coupon'
+        ? couponDiscount
+        : null
 
   const balanceLabel = loyaltyType === 'stamp' ? T('Stamps', 'الأختام')
     : loyaltyType === 'points' ? T('Points', 'النقاط')
@@ -445,13 +445,42 @@ function WalletPreview({ kind, data, sampleName, T }) {
         </div>
         <div className="lw-wp-mid">
           <div className="lw-wp-balance-label">{balanceLabel}</div>
-          <div className="lw-wp-balance">{balance}</div>
+          {loyaltyType === 'stamp' ? (
+            <StampRow total={stampsRequired} earned={0} icon={rewardIconUrl} textColor={textColor} />
+          ) : (
+            <div className="lw-wp-balance">{balance}</div>
+          )}
         </div>
         <div className="lw-wp-bot">
           {rewardIconUrl && <img src={rewardIconUrl} alt="" className="lw-wp-reward-icon" />}
           <span>{T('Reward', 'المكافأة')}: {rewardTitle}</span>
         </div>
       </div>
+    </div>
+  )
+}
+
+function StampRow({ total, earned, icon, textColor }) {
+  const max = Math.min(total || 10, 12)
+  const slots = Array.from({ length: max })
+  return (
+    <div className="lw-wp-stamps" dir="ltr">
+      {slots.map((_, i) => {
+        const filled = i < earned
+        return (
+          <span key={i} className={`lw-wp-stamp ${filled ? 'filled' : ''}`} style={{ borderColor: textColor, color: textColor }}>
+            {filled && icon ? (
+              <img src={icon} alt="" />
+            ) : filled ? (
+              <span>★</span>
+            ) : icon ? (
+              <img src={icon} alt="" style={{ opacity: 0.25 }} />
+            ) : (
+              <span style={{ opacity: 0.35 }}>★</span>
+            )}
+          </span>
+        )
+      })}
     </div>
   )
 }

@@ -150,7 +150,10 @@ Deno.serve(async (req: Request) => {
     if (linksModule.uris.length > 0) loyaltyObject.linksModuleData = linksModule;
 
     if (program.loyalty_type === 'stamp') {
-      loyaltyObject.loyaltyPoints = { label: 'Stamps', balance: { string: `0/${program.stamps_required || 10}` } };
+      const need = program.stamps_required || 10;
+      const max = Math.min(need, 12);
+      const row = '\u2606'.repeat(max);
+      loyaltyObject.loyaltyPoints = { label: `Stamps 0/${need}`, balance: { string: row } };
     } else if (program.loyalty_type === 'tiered') {
       loyaltyObject.loyaltyPoints = { label: 'Points', balance: { int: 0 } };
       loyaltyObject.secondaryLoyaltyPoints = { label: 'Tier', balance: { string: 'Bronze' } };
