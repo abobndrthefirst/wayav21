@@ -255,6 +255,21 @@ Deno.serve(async (req: Request) => {
     };
     if (program.expires_at) pass.expirationDate = new Date(program.expires_at).toISOString();
 
+    // Lock-screen geo relevance: include shop locations so the pass surfaces when the customer is nearby
+    const shopLocations = Array.isArray(shop?.locations) ? shop.locations : [];
+    const appleLocations = shopLocations
+      .filter((l: any) => typeof l.latitude === "number" && typeof l.longitude === "number")
+      .slice(0, 10)
+      .map((l: any) => {
+        const entry: any = { latitude: l.latitude, longitude: l.longitude };
+        if (l.relevant_text) entry.relevantText = l.relevant_text;
+        return entry;
+      });
+    if (appleLocations.length > 0) {
+      pass.locations = appleLocations;
+      pass.maxDistance = 500; // meters
+    }
+
     const remoteIcon = await fetchImage(program.logo_url || shop.logo_url);
     const remoteBg = await fetchImage(program.background_url);
     const icon29 = remoteIcon || FALLBACK_ICON_29;

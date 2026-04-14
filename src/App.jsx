@@ -2850,18 +2850,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         {activeTab === 'settings' && (
           <>
             <h1 className="dash-title">{t.settingsPage.title}</h1>
-            <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-              <h2>{t.settingsPage.shopInfo}</h2>
-              <div className="auth-form" style={{ gap: 18 }}>
-                <div className="auth-field"><label>{t.setup.shopName}</label><input type="text" defaultValue={shop.name} /></div>
-                <div className="auth-field"><label>{t.setup.shopType}</label><select defaultValue={shop.type} className="setup-select">{t.setup.types.map(tp => <option key={tp} value={tp}>{tp}</option>)}</select></div>
-                <div className="setup-row">
-                  <div className="auth-field"><label>{t.setup.phone}</label><input type="tel" defaultValue={shop.phone || ''} dir="ltr" /></div>
-                  <div className="auth-field"><label>{t.setup.address}</label><input type="text" defaultValue={shop.address || ''} /></div>
-                </div>
-                <button className="auth-submit-btn">{t.settingsPage.save}</button>
-              </div>
-            </motion.div>
+            <MerchantProfileCard shop={shop} setShop={setShop} t={t} lang={lang} />
             <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <h2>{t.settingsPage.account}</h2>
               <div className="settings-account-info">
@@ -2873,6 +2862,123 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         )}
       </div>
     </div>
+  )
+}
+
+/* ─── Merchant profile card (Settings > Business Info) ─── */
+function MerchantProfileCard({ shop, setShop, t, lang }) {
+  const isAr = lang === 'ar'
+  const T = (en, ar) => (isAr ? ar : en)
+  const [name, setName] = useState(shop.name || '')
+  const [crNumber, setCrNumber] = useState(shop.cr_number || '')
+  const [phone, setPhone] = useState(shop.phone || '')
+  const [address, setAddress] = useState(shop.address || '')
+  const [shopType, setShopType] = useState(shop.type || '')
+  const [locations, setLocations] = useState(Array.isArray(shop.locations) ? shop.locations : [])
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState(null)
+
+  const addLocation = () => setLocations([...locations, { name: '', latitude: '', longitude: '', relevant_text: '' }])
+  const removeLocation = (i) => setLocations(locations.filter((_, idx) => idx !== i))
+  const updateLocation = (i, field, value) => {
+    const copy = [...locations]
+    copy[i] = { ...copy[i], [field]: field === 'latitude' || field === 'longitude' ? (value === '' ? '' : Number(value)) : value }
+    setLocations(copy)
+  }
+
+  const useCurrent = (i) => {
+    if (!navigator.geolocation) { alert(T('Geolocation not supported', 'تحديد الموقع غير مدعوم')); return }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => updateLocation(i, 'latitude', pos.coords.latitude) || updateLocation(i, 'longitude', pos.coords.longitude) || setLocations((prev) => {
+        const copy = [...prev]
+        copy[i] = { ...copy[i], latitude: Number(pos.coords.latitude.toFixed(6)), longitude: Number(pos.coords.longitude.toFixed(6)) }
+        return copy
+      }),
+      (err) => alert(T('Could not get location: ', 'تعذّر تحديد الموقع: ') + err.message),
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
+  const save = async () => {
+    setSaving(true); setMsg(null)
+    const cleanLocations = locations
+      .filter((l) => l.latitude !== '' && l.longitude !== '' && !isNaN(Number(l.latitude)) && !isNaN(Number(l.longitude)))
+      .map((l) => ({
+        name: (l.name || '').trim(),
+        latitude: Number(l.latitude),
+        longitude: Number(l.longitude),
+        relevant_text: (l.relevant_text || '').trim() || null,
+      }))
+    const { data, error } = await supabase.from('shops').update({
+      name: name.trim(),
+      cr_number: crNumber.trim() || null,
+      phone: phone.trim() || null,
+      address: address.trim() || null,
+      type: shopType || null,
+      locations: cleanLocations,
+    }).eq('id', shop.id).select().single()
+    setSaving(false)
+    if (error) { setMsg({ type: 'err', text: error.message }); return }
+    setShop(data)
+    setLocations(cleanLocations)
+    setMsg({ type: 'ok', text: T('Saved', 'تم الحفظ') })
+    setTimeout(() => setMsg(null), 2500)
+  }
+
+  return (
+    <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+      <h2>{t.settingsPage.shopInfo}</h2>
+      <div className="auth-form" style={{ gap: 18 }}>
+        <div className="auth-field">
+          <label>{T('Business name', 'اسم النشاط')}</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div className="auth-field">
+          <label>{T('Commercial Registration (CR) number', 'رقم السجل التجاري')}</label>
+          <input type="text" value={crNumber} onChange={(e) => setCrNumber(e.target.value)} dir="ltr" placeholder="1010XXXXXX" />
+          <small style={{ color: '#6b7280' }}>{T('Used for invoices and verification', 'يُستخدم للفواتير والتحقق')}</small>
+        </div>
+        <div className="auth-field">
+          <label>{t.setup.shopType}</label>
+          <select value={shopType} onChange={(e) => setShopType(e.target.value)} className="setup-select">
+            <option value="">—</option>
+            {t.setup.types.map((tp) => <option key={tp} value={tp}>{tp}</option>)}
+          </select>
+        </div>
+        <div className="setup-row">
+          <div className="auth-field"><label>{t.setup.phone}</label><input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" /></div>
+          <div className="auth-field"><label>{t.setup.address}</label><input type="text" value={address} onChange={(e) => setAddress(e.target.value)} /></div>
+        </div>
+
+        <div className="mp-locations">
+          <div className="mp-loc-header">
+            <h3 style={{ margin: 0 }}>{T('Locations', 'المواقع')}</h3>
+            <small style={{ color: '#6b7280' }}>
+              {T('Wallet passes surface on the lock screen when customers are nearby.', 'تظهر البطاقة على شاشة قفل العميل عندما يكون قريباً من أحد مواقعك.')}
+            </small>
+          </div>
+          {locations.length === 0 && (
+            <p style={{ color: '#6b7280', fontSize: 13 }}>{T('No locations yet. Add at least one to enable nearby lock-screen notifications.', 'لم تُضف أي مواقع بعد. أضف موقعاً واحداً على الأقل لتفعيل الإشعارات القريبة على شاشة القفل.')}</p>
+          )}
+          {locations.map((loc, i) => (
+            <div key={i} className="mp-loc-row">
+              <input className="mp-loc-name" type="text" placeholder={T('Branch name (e.g. Main store)', 'اسم الفرع (مثال: الفرع الرئيسي)')} value={loc.name || ''} onChange={(e) => updateLocation(i, 'name', e.target.value)} />
+              <input className="mp-loc-coord" type="number" step="any" placeholder="Lat" value={loc.latitude ?? ''} onChange={(e) => updateLocation(i, 'latitude', e.target.value)} dir="ltr" />
+              <input className="mp-loc-coord" type="number" step="any" placeholder="Lng" value={loc.longitude ?? ''} onChange={(e) => updateLocation(i, 'longitude', e.target.value)} dir="ltr" />
+              <input className="mp-loc-rel" type="text" placeholder={T('Lock-screen text (e.g. Welcome back!)', 'نص الشاشة (مثال: أهلاً بعودتك!)')} value={loc.relevant_text || ''} onChange={(e) => updateLocation(i, 'relevant_text', e.target.value)} />
+              <button type="button" className="mp-loc-btn" onClick={() => useCurrent(i)} title={T('Use my current location', 'استخدم موقعي الحالي')}>📍</button>
+              <button type="button" className="mp-loc-btn mp-loc-del" onClick={() => removeLocation(i)}>×</button>
+            </div>
+          ))}
+          <button type="button" className="mp-loc-add" onClick={addLocation}>+ {T('Add location', 'إضافة موقع')}</button>
+        </div>
+
+        {msg && <div className={msg.type === 'ok' ? 'mp-ok' : 'mp-err'}>{msg.text}</div>}
+        <button className="auth-submit-btn" onClick={save} disabled={saving}>
+          {saving ? T('Saving…', 'جارٍ الحفظ…') : t.settingsPage.save}
+        </button>
+      </div>
+    </motion.div>
   )
 }
 

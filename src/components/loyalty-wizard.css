@@ -220,3 +220,39 @@
 }
 .lw-wp-stamp.filled { background: rgba(255,255,255,.9); color: #111 !important; }
 .lw-wp-stamp img { width: 70%; height: 70%; object-fit: contain; }
+
+/* Merchant profile — locations editor */
+.mp-locations { border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 8px; }
+.mp-loc-header { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.mp-loc-row {
+  display: grid;
+  grid-template-columns: 1.3fr 0.8fr 0.8fr 1.5fr auto auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.mp-loc-row input { padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; }
+.mp-loc-btn {
+  width: 36px; height: 36px; border-radius: 8px; border: 1px solid #e5e7eb;
+  background: #fff; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center;
+}
+.mp-loc-btn:hover { background: #f9fafb; }
+.mp-loc-del { color: #ef4444; border-color: #fecaca; }
+.mp-loc-del:hover { background: #fef2f2; }
+.mp-loc-add {
+  margin-top: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1.5px dashed #c7d2fe;
+  background: transparent;
+  color: #6366f1;
+  cursor: pointer;
+  font-weight: 500;
+}
+.mp-loc-add:hover { background: #eef2ff; }
+.mp-ok { padding: 10px 12px; background: #d1fae5; color: #065f46; border-radius: 8px; font-size: 13px; }
+.mp-err { padding: 10px 12px; background: #fee2e2; color: #991b1b; border-radius: 8px; font-size: 13px; }
+@media (max-width: 640px) {
+  .mp-loc-row { grid-template-columns: 1fr 1fr; }
+  .mp-loc-rel { grid-column: 1 / -1; }
+}

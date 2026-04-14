@@ -165,6 +165,17 @@ Deno.serve(async (req: Request) => {
 
     if (program.expires_at) loyaltyObject.validTimeInterval = { end: { date: new Date(program.expires_at).toISOString() } };
 
+    // Geo relevance: lock-screen notifications when customer is near a merchant location
+    const shopLocations = Array.isArray(shop?.locations) ? shop.locations : [];
+    const googleLocations = shopLocations
+      .filter((l: any) => typeof l.latitude === 'number' && typeof l.longitude === 'number')
+      .slice(0, 10)
+      .map((l: any) => ({ latitude: l.latitude, longitude: l.longitude }));
+    if (googleLocations.length > 0) {
+      (loyaltyClass as any).locations = googleLocations;
+      loyaltyObject.locations = googleLocations;
+    }
+
     const now = Math.floor(Date.now() / 1000);
     const claims = {
       iss: GW_SERVICE_ACCOUNT_EMAIL,
