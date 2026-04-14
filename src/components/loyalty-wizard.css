@@ -169,3 +169,32 @@
 .pl-poster-thumb-name { font-weight: 800; font-size: 15px; }
 .pl-poster-thumb-qr { font-size: 84px; line-height: 1; opacity: .9; }
 .pl-poster-thumb-tag { font-size: 11px; opacity: .85; text-transform: uppercase; letter-spacing: .5px; }
+
+/* Preset reward icon picker */
+.lw-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.lw-icon-tile {
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.lw-icon-tile:hover { transform: translateY(-1px); border-color: #c7d2fe; }
+.lw-icon-tile.sel { border-color: #6366F1; box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+.lw-icon-emoji { font-size: 26px; line-height: 1; }
+.lw-hint {
+  display: block;
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.35;
+}

@@ -369,9 +369,30 @@ function StepBranding(props) {
             <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} />
           </div>
         </label>
-        <Uploader label={T('Logo (square)', 'الشعار (مربع)')} url={logoUrl} onClear={() => setLogoUrl('')} onPick={(f) => upload(f, 'logo', setLogoUrl)} T={T} />
-        <Uploader label={T('Background photo', 'صورة الخلفية')} url={backgroundUrl} onClear={() => setBackgroundUrl('')} onPick={(f) => upload(f, 'bg', setBackgroundUrl)} T={T} />
-        <Uploader label={T('Reward icon', 'أيقونة المكافأة')} url={rewardIconUrl} onClear={() => setRewardIconUrl('')} onPick={(f) => upload(f, 'icon', setRewardIconUrl)} T={T} />
+        <Uploader
+          label={T('Logo (square)', 'الشعار (مربع)')}
+          hint={T('Square PNG, 512×512px recommended (max 2MB)', 'PNG مربع، الحجم الموصى به 512×512 بكسل (الحد الأقصى 2MB)')}
+          accept="image/png,image/jpeg"
+          url={logoUrl} onClear={() => setLogoUrl('')} onPick={(f) => upload(f, 'logo', setLogoUrl)} T={T}
+        />
+        <Uploader
+          label={T('Background photo', 'صورة الخلفية')}
+          hint={T('PNG only, 1125×432px (Apple shows top strip, Google shows hero). Max 2MB.', 'PNG فقط، 1125×432 بكسل (آبل تعرض الشريط العلوي، جوجل تعرض الصورة الكاملة). الحد 2MB.')}
+          accept="image/png"
+          url={backgroundUrl} onClear={() => setBackgroundUrl('')} onPick={(f) => upload(f, 'bg', setBackgroundUrl)} T={T}
+        />
+
+        <div className="lw-section-title">{T('Reward icon', 'أيقونة المكافأة')}</div>
+        <p className="lw-preview-sub">{T('Pick a preset or upload your own', 'اختر من المعدّة مسبقاً أو ارفع أيقونتك')}</p>
+        <PresetIconPicker selected={rewardIconUrl} onSelect={setRewardIconUrl} />
+        <Uploader
+          label={T('Or upload your own icon', 'أو ارفع أيقونتك الخاصة')}
+          hint={T('PNG with transparency, 90×90px recommended', 'PNG شفاف، الحجم الموصى به 90×90 بكسل')}
+          accept="image/png"
+          url={rewardIconUrl && rewardIconUrl.startsWith('data:') ? '' : rewardIconUrl}
+          onClear={() => setRewardIconUrl('')}
+          onPick={(f) => upload(f, 'icon', setRewardIconUrl)} T={T}
+        />
       </div>
 
       <div className="lw-branding-previews">
@@ -435,7 +456,7 @@ function WalletPreview({ kind, data, sampleName, T }) {
   )
 }
 
-function Uploader({ label, url, onPick, onClear, T }) {
+function Uploader({ label, url, onPick, onClear, T, hint, accept = 'image/png,image/jpeg' }) {
   const ref = useRef(null)
   return (
     <div className="lw-field">
@@ -451,8 +472,67 @@ function Uploader({ label, url, onPick, onClear, T }) {
             {T('Upload', 'رفع')}
           </button>
         )}
-        <input type="file" accept="image/*" ref={ref} style={{ display: 'none' }} onChange={(e) => onPick(e.target.files?.[0])} />
+        <input type="file" accept={accept} ref={ref} style={{ display: 'none' }} onChange={(e) => onPick(e.target.files?.[0])} />
       </div>
+      {hint && <small className="lw-hint">{hint}</small>}
+    </div>
+  )
+}
+
+const PRESET_ICONS = [
+  { key: 'coffee', emoji: '☕' },
+  { key: 'tea', emoji: '🍵' },
+  { key: 'pizza', emoji: '🍕' },
+  { key: 'burger', emoji: '🍔' },
+  { key: 'donut', emoji: '🍩' },
+  { key: 'icecream', emoji: '🍦' },
+  { key: 'cake', emoji: '🎂' },
+  { key: 'cookie', emoji: '🍪' },
+  { key: 'gift', emoji: '🎁' },
+  { key: 'star', emoji: '⭐' },
+  { key: 'heart', emoji: '❤️' },
+  { key: 'crown', emoji: '👑' },
+  { key: 'sparkles', emoji: '✨' },
+  { key: 'tag', emoji: '🏷️' },
+  { key: 'bag', emoji: '🛍️' },
+  { key: 'cart', emoji: '🛒' },
+  { key: 'flower', emoji: '🌸' },
+  { key: 'cut', emoji: '✂️' },
+  { key: 'sun', emoji: '☀️' },
+  { key: 'fire', emoji: '🔥' },
+]
+
+// Convert emoji to a small PNG data URL via canvas (so it survives as reward_icon_url everywhere).
+function emojiToDataUrl(emoji, size = 96) {
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')
+  ctx.font = `${Math.floor(size * 0.78)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(emoji, size / 2, size / 2 + size * 0.04)
+  return canvas.toDataURL('image/png')
+}
+
+function PresetIconPicker({ selected, onSelect }) {
+  const [selKey, setSelKey] = useState(null)
+  return (
+    <div className="lw-icon-grid">
+      {PRESET_ICONS.map((it) => (
+        <button
+          key={it.key}
+          type="button"
+          className={`lw-icon-tile ${selKey === it.key ? 'sel' : ''}`}
+          title={it.key}
+          onClick={() => {
+            setSelKey(it.key)
+            onSelect(emojiToDataUrl(it.emoji))
+          }}
+        >
+          <span className="lw-icon-emoji">{it.emoji}</span>
+        </button>
+      ))}
     </div>
   )
 }

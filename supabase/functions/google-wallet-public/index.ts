@@ -108,7 +108,7 @@ Deno.serve(async (req: Request) => {
       id: classId,
       issuerName: 'Waya',
       reviewStatus: 'UNDER_REVIEW',
-      programName: program.shop_name,
+      programName: program.name || program.shop_name,
       hexBackgroundColor: hexColor,
       countryCode: 'SA',
     };
@@ -127,7 +127,7 @@ Deno.serve(async (req: Request) => {
 
     // Build textModulesData
     const textModules: any[] = [
-      { header: 'Shop', body: program.shop_name, id: 'shop' },
+      { header: 'Shop', body: program.name || program.shop_name, id: 'shop' },
     ];
     if (program.reward_title) textModules.push({ header: 'Reward', body: program.reward_title + (program.reward_description ? ' — ' + program.reward_description : ''), id: 'reward' });
     if (program.terms) textModules.push({ header: 'Terms', body: program.terms, id: 'terms' });

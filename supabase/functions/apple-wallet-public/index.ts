@@ -89,7 +89,7 @@ function buildPassFields(program: any, customer: any) {
     return {
       headerFields: [{ key: "stamps", label: "STAMPS", value: `${have}/${need}` }],
       primaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
-      secondaryFields: [{ key: "shop", label: "SHOP", value: program.shop_name }],
+      secondaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
       auxiliaryFields: [{ key: "reward", label: "REWARD", value: program.reward_title || "Reward" }],
     };
   }
@@ -99,7 +99,7 @@ function buildPassFields(program: any, customer: any) {
     return {
       headerFields: [{ key: "points", label: "POINTS", value: `${have}/${need}` }],
       primaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
-      secondaryFields: [{ key: "shop", label: "SHOP", value: program.shop_name }],
+      secondaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
       auxiliaryFields: [{ key: "reward", label: "REWARD", value: program.reward_title || "Reward" }],
     };
   }
@@ -108,7 +108,7 @@ function buildPassFields(program: any, customer: any) {
       headerFields: [{ key: "points", label: "POINTS", value: customer.points || 0 }],
       primaryFields: [{ key: "tier", label: "TIER", value: customer.tier || "Bronze" }],
       secondaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
-      auxiliaryFields: [{ key: "shop", label: "SHOP", value: program.shop_name }],
+      auxiliaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
     };
   }
   // coupon
@@ -116,7 +116,7 @@ function buildPassFields(program: any, customer: any) {
     headerFields: [{ key: "value", label: "OFFER", value: program.coupon_discount || "DISCOUNT" }],
     primaryFields: [{ key: "code", label: "CODE", value: program.coupon_code || "—" }],
     secondaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
-    auxiliaryFields: [{ key: "shop", label: "SHOP", value: program.shop_name }],
+    auxiliaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
   };
 }
 
@@ -234,8 +234,8 @@ Deno.serve(async (req: Request) => {
       serialNumber: pass_row.apple_serial,
       teamIdentifier: teamId,
       organizationName: orgName,
-      description: `${program.shop_name} ${program.name || "Loyalty"}`,
-      logoText: program.shop_name,
+      description: `${program.name || program.shop_name} Loyalty`,
+      logoText: program.name || program.shop_name,
       foregroundColor: fgRgb,
       backgroundColor: bgRgb,
       labelColor: fgRgb,
