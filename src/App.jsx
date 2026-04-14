@@ -612,7 +612,7 @@ function Reveal({ children, delay = 0, direction = 'up', className = '' }) {
 
 /* ─── Logo ─── */
 function Logo({ size = 34 }) {
-  return <img src="/logo.svg" alt="وايا" style={{ width: size, height: 'auto' }} />
+  return <img src="/waya-logo.png" alt="وايا" style={{ width: size, height: 'auto' }} />
 }
 
 /* ─── Icons ─── */
