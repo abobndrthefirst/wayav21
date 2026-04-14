@@ -2172,11 +2172,22 @@ function GoogleWalletIcon() {
   )
 }
 
-/* ─── Loyalty Tab with Google Wallet ─── */
+/* ─── Apple Wallet Icon ─── */
+function AppleWalletIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.41-1.09-.47-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.41C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.50-3.74 4.25z"/>
+    </svg>
+  )
+}
+
+/* ─── Loyalty Tab with Google Wallet + Apple Wallet ─── */
 function LoyaltyTab({ t, lang, shop, user }) {
   const [walletUrl, setWalletUrl] = useState(null)
   const [walletLoading, setWalletLoading] = useState(false)
   const [walletError, setWalletError] = useState(null)
+  const [appleLoading, setAppleLoading] = useState(false)
+  const [appleError, setAppleError] = useState(null)
   const [copied, setCopied] = useState(false)
 
   // Editable settings
@@ -2251,6 +2262,34 @@ function LoyaltyTab({ t, lang, shop, user }) {
       else { setWalletError(data.error || t.loyaltyPage.walletError) }
     } catch (err) { setWalletError(err.message) }
     setWalletLoading(false)
+  }
+
+  const generateAppleTestPass = async () => {
+    setAppleLoading(true)
+    setAppleError(null)
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/apple-wallet-public`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shop_id: shop.id, customer_name: user?.email?.split('@')[0] || 'Test', customer_phone: '0500000000' }),
+      })
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}))
+        throw new Error(errJson.error || 'Failed to generate Apple Wallet pass')
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${shop.name.replace(/[^\w]/g, '_')}.pkpass`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setAppleError(err.message)
+    }
+    setAppleLoading(false)
   }
 
   const copyCustomerLink = () => {
@@ -2438,6 +2477,18 @@ body{font-family:'Inter','Noto Sans Arabic',sans-serif;background:#f5f5f5;displa
               <GoogleWalletIcon />
               {walletLoading ? t.loyaltyPage.walletGenerating : (lang === 'ar' ? 'جرّب بنفسك' : 'Try it Yourself')}
             </button>
+
+            <button
+              className="wallet-test-btn wallet-test-btn-apple"
+              onClick={generateAppleTestPass}
+              disabled={appleLoading}
+              style={{ background: '#000', color: '#fff' }}
+            >
+              <AppleWalletIcon />
+              {appleLoading
+                ? (lang === 'ar' ? 'جاري الإنشاء...' : 'Generating...')
+                : (lang === 'ar' ? 'بطاقة Apple Wallet' : 'Try Apple Wallet')}
+            </button>
           </div>
 
           {walletUrl && (
@@ -2449,6 +2500,7 @@ body{font-family:'Inter','Noto Sans Arabic',sans-serif;background:#f5f5f5;displa
           )}
 
           {walletError && <div className="wallet-error">{walletError}</div>}
+          {appleError && <div className="wallet-error">{appleError}</div>}
 
           {/* Share link */}
           <div className="wallet-customer-link">
@@ -2472,6 +2524,7 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [walletUrl, setWalletUrl] = useState(null)
+  const [appleBlobUrl, setAppleBlobUrl] = useState(null)
   const [generating, setGenerating] = useState(false)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -2494,23 +2547,31 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
     if (!name || !phone) return
     setGenerating(true)
     try {
-      // Call edge function without auth (we'll need to allow this for customers)
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shop_id: shopId,
-          customer_name: name,
-          customer_phone: phone,
-        }),
-      })
-      const data = await res.json()
-      if (data.success) {
-        setWalletUrl(data.saveUrl)
-        setSubmitted(true)
-      } else {
-        setError(data.error)
-      }
+      const body = JSON.stringify({ shop_id: shopId, customer_name: name, customer_phone: phone })
+
+      // Fire Google + Apple in parallel
+      const [googleRes, appleRes] = await Promise.all([
+        fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        }).then(r => r.json()).catch(e => ({ success: false, error: e.message })),
+
+        fetch(`${SUPABASE_URL}/functions/v1/apple-wallet-public`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        }).then(async r => {
+          if (!r.ok) return { success: false }
+          const blob = await r.blob()
+          return { success: true, blobUrl: URL.createObjectURL(blob) }
+        }).catch(() => ({ success: false })),
+      ])
+
+      if (googleRes.success) setWalletUrl(googleRes.saveUrl)
+      if (appleRes.success) setAppleBlobUrl(appleRes.blobUrl)
+      if (googleRes.success || appleRes.success) setSubmitted(true)
+      else setError(googleRes.error || 'Failed to generate pass')
     } catch (err) {
       setError(err.message)
     }
@@ -2563,9 +2624,22 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
           <motion.div className="wallet-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <div className="wallet-done-check">✓</div>
             <p>{lang === 'ar' ? 'تم إنشاء بطاقتك!' : 'Your card is ready!'}</p>
-            <a href={walletUrl} target="_blank" rel="noopener noreferrer" className="wallet-add-btn-google">
-              <img src="https://developers.google.com/static/wallet/images/web/en_add_to_google_wallet_wallet-button.png" alt="Add to Google Wallet" style={{ height: 52 }} />
-            </a>
+            {walletUrl && (
+              <a href={walletUrl} target="_blank" rel="noopener noreferrer" className="wallet-add-btn-google">
+                <img src="https://developers.google.com/static/wallet/images/web/en_add_to_google_wallet_wallet-button.png" alt="Add to Google Wallet" style={{ height: 52 }} />
+              </a>
+            )}
+            {appleBlobUrl && (
+              <a
+                href={appleBlobUrl}
+                download={`${shop.name.replace(/[^\w]/g, '_')}.pkpass`}
+                className="wallet-add-btn-apple"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 12, background: '#000', color: '#fff', padding: '12px 20px', borderRadius: 10, textDecoration: 'none', fontWeight: 600 }}
+              >
+                <AppleWalletIcon />
+                {lang === 'ar' ? 'أضف إلى Apple Wallet' : 'Add to Apple Wallet'}
+              </a>
+            )}
             <p className="wallet-reward-info">
               {lang === 'ar'
                 ? `اجمع ${shop.reward_threshold || 10} نقاط واحصل على مكافأة`
