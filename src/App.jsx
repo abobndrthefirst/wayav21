@@ -9,6 +9,7 @@ import './components/loyalty-wizard.css'
 // page doesn't ship a LoyaltyWizard / WalletEnrollPage bundle it never uses.
 const ProgramsList = lazy(() => import('./components/ProgramsList'))
 const WalletEnrollPage = lazy(() => import('./components/WalletEnrollPage'))
+const EventsPanel = lazy(() => import('./components/EventsPanel'))
 
 const LazyFallback = () => (
   <div style={{ padding: 48, textAlign: 'center', color: '#888' }}>Loading…</div>
@@ -2809,6 +2810,14 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
                 ))}
               </div>
             </motion.section>
+
+            {shop?.id && (
+              <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <Suspense fallback={<LazyFallback />}>
+                  <EventsPanel shopId={shop.id} lang={lang} compact />
+                </Suspense>
+              </motion.section>
+            )}
           </>
         )}
 
@@ -2829,9 +2838,14 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
                 </motion.div>
               ))}
             </div>
-            <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-              <div className="dash-empty"><p>{t.dataPage.moreComingSoon}</p></div>
-            </motion.div>
+            {shop?.id && (
+              <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+                <h2>{lang === 'ar' ? 'سجل الأحداث' : 'Events log'}</h2>
+                <Suspense fallback={<LazyFallback />}>
+                  <EventsPanel shopId={shop.id} lang={lang} />
+                </Suspense>
+              </motion.div>
+            )}
           </>
         )}
 
