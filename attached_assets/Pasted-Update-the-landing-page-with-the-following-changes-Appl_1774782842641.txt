@@ -1,0 +1,54 @@
+Update the landing page with the following changes. Apply every instruction exactly.
+Name
+Replace all instances of "نقاطي" / "Niqaty" with Waya / وايا everywhere — nav, hero, footer, meta title, body copy.
+Overall design direction
+Less is more. Remove visual noise. Every element on the page must earn its place. If it doesn't help someone understand or sign up — delete it. Increase white space between every section. Green and white are the only active colors. Gold is used once as an accent maximum.
+Hero — one job only: get the email
+
+Headline: أبسط تطبيق ولاء للمحلات الصغيرة
+Sub: بدون أجهزة. بدون برامج معقدة. جاهز في 5 دقائق.
+One email input field, full width, placeholder: بريدك الإلكتروني أو واتساب
+One green button below it: انضم للقائمة المجانية
+One trust line below the button: أسبوعان مجاناً · ضمان استرداد الأموال · 75 ريال / الشهر بعدها
+Remove everything else from the hero. No floating badges. No secondary CTA. Nothing competing with the email input.
+
+What is Waya — 4 points, clean grid
+No heavy cards. Icon + bold title + one line only. Centered. Lots of space between each point.
+
+📲 بطاقة ولاء خاصة لكل عميل — تعيش في Apple Wallet و Google Wallet مباشرة
+🚫 بدون جهاز إضافي — موظفك يشتغل من جواله بس
+⚡ إعداد في 5 دقائق — من التسجيل لأول مسح في نفس الجلسة
+✅ يشتغل لأي محل — كافيه، مطعم، حلاقة، صالون، مغسلة، وأكثر
+
+App demo — phone mockup only
+Show one phone graphic. Inside it show the Apple Wallet loyalty card only — flat design, no 3D, no shadows. The card shows: business name, points 7/10, gold stamp dots, one QR code. Below the phone add one caption: هكذا يشوف عميلك بطاقته — في جيبه دايماً
+Businesses strip
+Dark background. Single scrolling marquee line. Icons + names only, no cards:
+☕ كافيهات · 🍕 مطاعم · ✂️ حلاقة · 💅 صالونات · 🧺 مغاسل · 🍰 حلويات · 👗 بوتيكات · 🥙 مطابخ · 🐾 بيت الحيوانات
+Pricing — three lines, centered, nothing else
+
+75 ريال / الشهر
+أسبوعان مجاناً — بدون بطاقة بنكية
+ضمان استرداد الأموال خلال 30 يوم — بدون أسئلة
+
+Then one green CTA button: ابدأ تجربتي المجانية
+Remove entirely
+
+Zigzag how-it-works diagram
+Stats bar with numbers
+Features grid section
+Wallet demo section with bullet points
+Any section that repeats what another section already says
+All floating emoji badges and decorative scattered elements
+
+Typography
+
+Cairo for all Arabic text
+Headings: large, bold, confident — feels like a statement
+Body / descriptions: #6B7C6E, never pure black
+Generous line height — text breathes
+
+Mobile
+Single column. Email input and CTA button full width. Phone mockup centered. All text centered on mobile.
+Form behavior
+On submit — validate it's an email or starts with 05. Show inline success message: 🎉 تم! بنتواصل معك قريباً على واتساب أو الإيميل. Disable the input and button after success.

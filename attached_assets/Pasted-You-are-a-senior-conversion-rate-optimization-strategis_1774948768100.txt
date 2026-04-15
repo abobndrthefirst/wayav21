@@ -1,0 +1,778 @@
+You are a senior conversion-rate optimization strategist, UX writer, SaaS marketer, brand designer, and full-stack front-end engineer.
+
+Your task is to fully audit, rewrite, redesign, and optimize my landing page for higher conversion from SME customers.
+
+PROJECT
+
+- Website: https://trywaya.com/
+- Audience: SMEs / small and medium-sized businesses
+- Goal: make the landing page much clearer, more trustworthy, more persuasive, and more conversion-focused
+- Primary objective: increase qualified demo requests / signups / contact conversions
+- Secondary objective: make the value proposition instantly understandable in under 5 seconds
+
+IMPORTANT CONTEXT
+I already have a report listing what is wrong and right with the landing page. You must use that report as the source of truth for priorities. If the report is pasted below, follow it closely. If something in the report is unclear, inspect the existing page and make the best conversion-focused decision.
+
+PASTE REPORT BELOW:
+
+## **Executive summary**
+
+The **core positioning** visible to crawlers is strong: the page title presents **“وايا Waya — أبسط برنامج ولاء للمحلات الصغيرة في السعودية”** (“Waya — the simplest loyalty program for small shops in Saudi Arabia”).  This line does three important jobs: it names the product category (loyalty program), defines a narrow audience (small shops), and anchors the geography (Saudi Arabia).
+
+However, this audit is constrained by a major technical limitation: **the page’s rendered content (headlines, CTAs, sections, links, forms, and on-page copy) was not retrievable in the text crawl**—the fetch returns the title but **no parseable body content** (0 lines).  That typically happens when the landing page is heavily client-rendered (SPA), blocked behind bot protection, or returns a minimal HTML shell without server-rendered content.  This matters because it can affect **SEO (indexing and snippet generation)**, **accessibility**, and sometimes **performance**—and it prevents this report from quoting your current hero/CTA/layout as-is.
+
+Given that constraint, the report focuses on:
+
+- What you **definitely did right** (positioning and audience specificity that we can observe).
+- The **highest-probability landing page issues** for an SME loyalty SaaS in Saudi, mapped to measurable outcomes.
+- A **step-by-step fix plan** covering messaging, layout, funnel, performance, SEO, analytics, and accessibility—using reputable best-practice references (Google Search Central, web.dev, accessibility standards, and CRO guidance).
+
+If you want a true “pixel-accurate” critique of the current hero, CTA contrast, navigation, and form friction, you’ll need to enable server-rendered HTML (or allow crawlers), or share a screenshot / exported HTML.  Even without that, the recommendations below are practical and prioritized.
+
+## **What we can observe and key assumptions**
+
+### **Confirmed observations from the crawl**
+
+- The page title communicates: **Waya**, a **loyalty program**, **for small shops**, **in Saudi Arabia**.
+- The crawler could not extract any page body content (“Total lines: 0”).
+
+### **Assumptions (explicit)**
+
+Because the site content is not crawl-visible, the following are assumptions used to tailor recommendations. Treat them as hypotheses to validate:
+
+- You are a B2B SaaS or managed service helping SMEs run loyalty programs for **offline retail** (mini-markets, cafés, salons, laundries, small restaurants, specialty retail). (Inferred from “المحلات الصغيرة” and “برنامج ولاء”.)
+- Primary acquisition channels include **WhatsApp**, paid social, and/or Google Search; Saudi SME owners are often mobile-first.
+- Budget and stack are unspecified; recommendations include alternatives for “no-code,” “low-code,” and “custom dev.”
+
+## **Page goals and target SME personas**
+
+### **The landing page goal stack**
+
+For an SME-targeted loyalty product, landing pages typically succeed when they are designed around one primary conversion goal and two secondary goals (to reduce friction and build intent):
+
+Primary goal (choose one; design everything around it):
+
+- **Demo booked** (best for higher ACV / sales-led motion).
+- **WhatsApp / phone lead** initiated (common in Saudi B2B).
+- **Self-serve trial started** (best for product-led motion).
+
+Secondary goals:
+
+- **Trust formation** (prove legitimacy quickly: real customers, outcomes, compliance, local footprint).
+- **Qualification** (collect enough context—industry, branches, POS status—without over-forming).
+
+This aligns with CRO best practice: remove distractions, keep the action clear, and make the CTA highly visible, especially above the fold.
+
+### **Assumed SME personas (Saudi)**
+
+Since personas aren’t accessible from the crawl, here is a practical stack you can adopt (and reflect in copy and social proof):
+
+**Owner-operator (“Busy Owner”)**
+
+- Runs 1–2 locations; time-poor; wants “set it up fast.”
+- Motivated by: repeat purchases, higher average ticket, competitor pressure.
+- Anxiety: complexity, staff adoption, “Will this actually bring customers back?”
+
+**Branch manager / supervisor (“Operations-First”)**
+
+- Cares about training staff, reducing mistakes, keeping checkout fast.
+- Motivated by: easy workflow, low friction redemption, simple reporting.
+
+**Marketing-minded SME (“Growth Owner”)**
+
+- Already runs Instagram/Snap/WhatsApp; wants campaigns and segmentation.
+- Motivated by: targeted offers, customer lists, measurable ROI.
+
+**Accountant / admin helper (“Control & Compliance”)**
+
+- Wants clarity on pricing, contracts, VAT invoices, data handling.
+
+The landing page should “speak” to these personas via **sections, examples, and proof**, not a single generic claim.
+
+## **Value proposition, above-the-fold effectiveness, and design fixes**
+
+### **What you did right**
+
+**Audience + category + locale are explicitly stated.** That is a strong foundation for message match and relevance, especially if your ads/keywords also target loyalty programs for small shops in Saudi.
+
+### **Likely gaps (and how to fix them)**
+
+Because we can’t see your hero section, the items below are framed as “checkpoints.” Each includes **impact**, **priority**, **step-by-step fixes**, **effort**, and **expected outcome**.
+
+### **Issue: “Simplest loyalty program” may be clear but not concrete**
+
+**Why it matters:** “Simplest” is a positioning claim that often fails the 5-second test unless it is immediately backed by specifics: *What makes it simple? No app? QR? WhatsApp? POS integration? Setup time?* CRO guidance consistently emphasizes clarity and compelling copy, and that the key action and unique sales proposition should be visible above the fold.
+
+**Priority:** High
+
+**Effort:** S–M (2 hours to 1 day, depending on approvals)
+
+**Step-by-step fix**
+
+1. Convert the headline into an **outcome + mechanism** statement (still simple, but concrete).
+2. Add a subheadline with **3 proof points**, ideally numeric (setup time, retention lift ranges, number of businesses).
+3. Add one sentence about **who it’s for** (industries) and one about **how it works** (in plain language).
+4. Add a **single primary CTA** and a **single secondary CTA** (e.g., “Book demo” + “WhatsApp us”).
+
+**Example hero copy (English mock)**
+
+- **Headline:** “Turn first-time shoppers into regulars—without an app.”
+- **Subheadline:** “A digital loyalty program built for small shops in Saudi: QR sign-up, points & rewards, and simple reports. Launch in 30 minutes.”
+- **Primary CTA button:** “Book a 15‑min demo”
+- **Secondary CTA link/button:** “Chat on WhatsApp”
+
+**Expected outcome**
+
+- Higher CTA click-through rate (CTR) from qualified visitors because the offer is easier to understand quickly (lower cognitive load).
+
+### **Issue: Above-the-fold may not “earn the scroll” and/or may bury the CTA**
+
+**Why it matters:** Best-practice landing pages keep the value proposition *and* action highly visible above the fold, without clutter.
+
+**Priority:** High
+
+**Effort:** M (1–3 days design + dev)
+
+**Step-by-step fix**
+
+1. Ensure the hero contains: headline, subheadline, 1–3 bullets, primary CTA, secondary CTA, and a “trust strip” (logos or numbers).
+2. If this is lead-gen (demo/trial), keep at least the **start of the form** (or the button to open it) above the fold; Unbounce recommends design tactics to keep action visible even when forms are longer.
+3. Consider a **sticky mobile CTA** (bottom bar) to compensate for small screens.
+
+**Expected outcome**
+
+- Reduced bounce rate and higher click-to-lead rate because users know what to do immediately.
+
+### **Issue: Hero visuals may not show the product “in action”**
+
+**Why it matters:** Showing the product/service in context helps visitors quickly understand how it works and imagine using it.
+
+**Priority:** Medium
+
+**Effort:** M (2–5 days: collect screenshots, create a simple “in use” mock)
+
+**Step-by-step fix**
+
+1. Add a hero visual: dashboard screenshot, customer phone QR flow, or “customer wallet card” view.
+2. Annotate with 2–3 callouts (“Scan,” “Earn points,” “Redeem reward”).
+3. If you don’t have polished UI, use a short 20–30s screen recording or light mock.
+
+**Expected outcome**
+
+- Higher engagement (scroll depth, time on page) and higher conversion because product comprehension improves.
+
+## **Trust signals, social proof, CTAs, and funnel design**
+
+### **Trust signals and social proof**
+
+Unbounce explicitly calls out including authentic social proof (real names, context) as a core landing page best practice.  For SMEs, trust is often the largest conversion lever because the switching cost feels high and owners are risk-averse.
+
+### **Issue: Trust proof may be missing, generic, or not localized**
+
+**Priority:** High
+
+**Effort:** M (3–7 days to gather proof; 1 day to implement)
+
+**Impact**
+
+- Without proof, “simplest loyalty program” reads like marketing, not reality—lower conversion and more WhatsApp “price?” messages instead of qualified leads.
+
+**Step-by-step fix**
+
+1. Add a **trust strip** under hero:
+    - “Trusted by X+ shops in Saudi” (only if true), or “X+ loyalty members enrolled.”
+2. Add **3 customer mini-quotes** with:
+    - Business type + city + role (“Owner, Mini-market, Riyadh”).
+3. Add **one short case study section**:
+    - Before/after metrics (visits/month, repeat rate proxy, average basket) and timeframe (30–90 days).
+4. Add a “legitimacy footer”:
+    - Company legal name, support channels, address (or at least city), and VAT details if applicable.
+
+**Expected outcome**
+
+- Higher lead conversion rate and lower sales friction, because doubts are resolved earlier.
+
+### **CTA strategy (placement, copy, contrast)**
+
+Unbounce emphasizes keeping the action above the fold and making CTA buttons visually recognizable and prominent.
+
+### **Issue: CTA may be too generic (“Get started”) or mismatched to SME intent**
+
+**Priority:** High
+
+**Effort:** S (2–6 hours)
+
+**Step-by-step fix**
+
+1. Choose one primary CTA based on your motion:
+    - Sales-led: “Book a 15‑min demo”
+    - WhatsApp-led: “Chat on WhatsApp (reply < 5 min)”
+    - Product-led: “Start free trial”
+2. Add microcopy near CTA:
+    - “No credit card”
+    - “Arabic support”
+    - “Setup help included”
+3. Ensure CTA contrast meets accessibility minimums for UI components and text. The WCAG contrast guidance is widely used: **4.5:1 for normal text**, and **3:1 for large text**, with **non-text UI components** also having contrast guidance; WebAIM’s contrast resources summarize these thresholds and provide a checker.
+
+**Expected outcome**
+
+- Higher CTA CTR and fewer low-intent clicks if the CTA matches the visitor’s readiness stage.
+
+### **Navigation and conversion leakage**
+
+For dedicated acquisition landing pages, reducing distractions (including navigation to unrelated pages) is a common best practice because it keeps focus on one conversion goal.
+
+### **Issue: Navigation may leak traffic away from the primary goal**
+
+**Priority:** Medium (High if paid traffic is significant)
+
+**Effort:** S–M (same-day if using a landing page builder; 1–2 days if custom)
+
+**Step-by-step fix**
+
+1. If this page is for paid acquisition, consider a “reduced nav” variant:
+    - Logo + “Pricing” + “FAQ” + “Login” only.
+2. Keep “Pricing” visible if price transparency is crucial for SME trust; otherwise provide “Starting from X SAR/month” near CTA.
+3. Add sticky CTA in top nav on desktop and bottom on mobile.
+
+**Expected outcome**
+
+- Higher conversion rate per visit (especially on paid campaigns) due to fewer exits.
+
+## **Performance, mobile responsiveness, SEO basics, analytics readiness, accessibility**
+
+### **Performance and Core Web Vitals targets**
+
+Even without measuring your actual metrics, you can set engineering targets using Core Web Vitals thresholds. web.dev documents the thresholds and their rationale; for example:
+
+- **LCP (Largest Contentful Paint): good ≤ 2.5s**
+- **INP (Interaction to Next Paint): good ≤ 200ms**
+- **CLS (Cumulative Layout Shift): good ≤ 0.1**
+
+### **Issue: Client-rendered/blocked content can hurt SEO and sometimes perceived speed**
+
+The fact that crawlers can’t retrieve body content suggests your page may rely on client rendering or may block automated access.  That can:
+
+- Reduce what search engines can confidently extract for titles/snippets (they use page content, headings, and other signals).
+- Increase JS payload and delay visible content (often affecting LCP).
+
+**Priority:** High
+
+**Effort:** M–L (depends on stack; 3–10 days)
+
+**Step-by-step fix**
+
+1. Ensure **server-side rendering (SSR)** or **static pre-rendering** for the landing page.
+2. Make sure the HTML includes:
+    - One `<h1>` with your primary message
+    - Key sections as plain HTML text (not only in JS)
+3. Optimize for Core Web Vitals:
+    - Compress and properly size hero images; lazy-load below-the-fold
+    - Reduce third-party scripts on the landing page (especially chat widgets + trackers)
+    - Preload critical fonts; avoid layout shift from late-loading assets
+
+**Expected outcome**
+
+- Higher organic visibility and improved conversion (faster first impression, fewer bounces).
+
+### **SEO basics (meta tags, headings, snippet control)**
+
+Google documents how it uses titles and page content for title links and snippets, and provides best practices:
+
+- Ensure each page has a descriptive `<title>`.
+- Meta descriptions can be used when they better describe the page than on-page content; best practice is unique, descriptive summaries.
+- Google also documents supported meta tags and robots controls.
+
+### **Issue: Meta description and heading structure may be missing or weak (unverifiable)**
+
+**Priority:** Medium
+
+**Effort:** S (2–4 hours)
+
+**Step-by-step fix**
+
+1. Write a meta description that matches the promise and includes audience + locale:
+    - Example: “Launch a simple digital loyalty program for small shops in Saudi Arabia—QR sign‑up, points, rewards, and reports. Book a demo in 15 minutes.”
+2. Ensure a single, prominent `<h1>` matches the hero headline; Google may use headings as title signals.
+3. Add Open Graph tags (`og:title`, `og:description`) for social sharing consistency (also a signal Google may consider for titles).
+
+**Expected outcome**
+
+- Better click-through rate from search and clearer “good click” alignment from ads.
+
+### **Analytics/tracking readiness**
+
+Google Analytics 4 (GA4) publishes recommended events, including **`generate_lead`** for form submissions and a set of lead funnel events for B2B measurement.
+
+### **Issue: Untracked funnel steps (common on landing pages)**
+
+**Priority:** High
+
+**Effort:** S–M (0.5–2 days)
+
+**Step-by-step fix**
+
+1. Define events (GA4 recommended + custom):
+    - `view_landing` (custom)
+    - `cta_click` (custom with parameters: location, label)
+    - `generate_lead` (GA4 recommended for form submission)
+    - `whatsapp_click` (custom)
+2. Implement via Google Tag Manager with a consistent dataLayer schema; data layer guidance from official materials emphasizes using a data layer for effective tracking and tag management.
+3. Validate in Tag Assistant / DebugView and document naming conventions.
+
+**Expected outcome**
+
+- You can diagnose where SMEs drop (hero misunderstanding vs. trust vs. form friction) and run real A/B tests with confidence.
+
+### **Accessibility**
+
+At minimum, meet WCAG contrast requirements:
+
+- **4.5:1** contrast for normal text; **3:1** for large text, with clear rationale in official WCAG understanding docs. WebAIM provides a practical contrast checker and summarizes the thresholds.
+
+### **Issue: CTA and form accessibility risks (contrast, focus, labels)**
+
+**Priority:** Medium
+
+**Effort:** S–M (1–3 days)
+
+**Step-by-step fix**
+
+1. Run a contrast audit on CTA buttons, link text, form labels, error messages.
+2. Ensure all form inputs have labels (not placeholder-only).
+3. Ensure keyboard focus states are visible and consistent.
+
+**Expected outcome**
+
+- Higher conversion especially on mobile and for users with visibility challenges; fewer “can’t complete form” drop-offs.
+
+## **Prioritized comparison table: current vs recommended**
+
+Because the crawl cannot access your rendered content, many “Current” fields are **Not observable**.  Use this table as a structured implementation backlog.
+
+| **Element** | **Current (observable today)** | **Recommended change** | **Rationale** | **Priority** |
+| --- | --- | --- | --- | --- |
+| Page title / positioning | “Waya — simplest loyalty program for small shops in Saudi Arabia” (Arabic) | Keep intent, add concreteness: outcome + mechanism + speed | “Simplest” needs proof; clarity improves conversions | High |
+| Above-the-fold CTA | Not observable | Primary CTA: “Book a 15‑min demo” + secondary “WhatsApp” | Visible action above fold is a core best practice | High |
+| Hero content density | Not observable | Headline + subheadline + 3 bullets + trust strip | Reduces bounce; improves comprehension | High |
+| Product visual | Not observable | Show dashboard/QR flow + annotations | “Show in action” improves understanding | Medium |
+| Trust signals | Not observable | Add logos/numbers + 3 testimonials + 1 mini case study | Social proof is a key landing page lever | High |
+| Navigation | Not observable | Reduce nav for paid traffic; keep pricing/FAQ if needed | Minimize distractions on landing pages | Medium |
+| Form length & friction | Not observable | Short form; consider multi-step if qualification needed | Reduce friction improves lead gen performance | High |
+| SEO meta description | Not observable | Add unique, descriptive meta description | Helps snippets and CTR | Medium |
+| Heading structure | Not observable | Ensure clear H1 + structured H2 sections | Google may use headings for title/snippets | Medium |
+| Indexability / crawl visibility | Body content not crawl-visible | SSR/pre-render landing page; avoid “empty shell” HTML | Improves SEO and sometimes performance | High |
+| Core Web Vitals | Not measured here | Target: LCP ≤2.5s, INP ≤200ms, CLS ≤0.1 | Web Vitals thresholds define “good” UX | High |
+| Analytics events | Not observable | Track CTA clicks + `generate_lead` + WhatsApp click | GA4 recommended events support lead gen reporting | High |
+| Accessibility contrast | Not observable | Ensure 4.5:1 text contrast; 3:1 large text | WCAG minimum requirements | Medium |
+
+## **Measurement plan, conversion flow, and A/B testing roadmap**
+
+### **Suggested metrics to track (minimum viable dashboard)**
+
+Track these per channel (paid social, search, referrals, organic) and per device (mobile vs desktop):
+
+- **Landing page CVR**: sessions → leads (demo booked / WhatsApp / trial).
+- **CTA CTR**: sessions → primary CTA clicks.
+- **Form completion rate**: form starts → `generate_lead`.
+- **Lead quality proxy**: % leads that become qualified (if you can track offline stages).
+- **Scroll depth**: % reaching social proof, pricing, FAQ.
+- **Core Web Vitals**: LCP, INP, CLS at p75 (field data target thresholds).
+
+### **Conversion path flowchart (recommended)**
+
+```
+
+Show code
+```
+
+### **Five A/B test hypotheses (actionable)**
+
+Each hypothesis should be run with clean tracking and a single primary success metric (lead conversion rate), plus secondary metrics (CTA CTR, bounce, form starts/completes).
+
+1. **Headline specificity test**
+    
+    Hypothesis: “Outcome + mechanism” headline will increase CTA CTR vs. “simplest loyalty program.”
+    
+    Why: clearer proposition improves comprehension and reduces bounce.
+    
+2. **Primary CTA intent match**
+    
+    Hypothesis: “Book a 15‑min demo” will outperform “Get started” for SME visitors coming from paid traffic.
+    
+    Why: reduces ambiguity; aligns with action above fold guidance.
+    
+3. **Trust strip placement**
+    
+    Hypothesis: Adding a trust strip (logos/metrics) directly under the hero will increase conversion vs. placing trust lower.
+    
+    Why: social proof reduces perceived risk early.
+    
+4. **Form friction reduction**
+    
+    Hypothesis: Short form (name + business + phone) will increase `generate_lead` rate vs. long qualification form; qualification can happen post-lead.
+    
+    Why: lower friction improves lead gen.
+    
+5. **Mobile sticky CTA**
+    
+    Hypothesis: A sticky bottom CTA (WhatsApp + Demo) will increase mobile conversions vs. no sticky CTA.
+    
+    Why: keeps action visible on small screens (above-the-fold principle adapted to mobile)
+    
+
+WHAT I WANT FROM YOU
+I do NOT want vague suggestions.
+I want you to:
+
+1. audit the current landing page
+2. identify all UX, messaging, design, trust, structure, accessibility, and performance issues
+3. rewrite the copy
+4. redesign the structure
+5. improve CTA strategy
+6. improve credibility for SME buyers
+7. simplify the user journey
+8. implement the improved landing page directly in code
+9. explain what you changed and why
+10. make the final page look modern, premium, trustworthy, and high-converting
+
+CORE INSTRUCTION
+Do not preserve weak sections just because they already exist.
+If a section is hurting clarity or conversion, rewrite, reorder, replace, or remove it.
+
+THINK LIKE THIS
+The visitor is an SME decision-maker.
+They are busy, skeptical, comparison-shopping, and want immediate clarity.
+
+They need to understand:
+
+- What this product is
+- Who it is for
+- What problem it solves
+- Why it is better than alternatives
+- Why they should trust it
+- What they should do next
+
+The landing page must answer those questions quickly and clearly.
+
+# ==================================================
+PART 1 — AUDIT THE CURRENT PAGE
+
+First, inspect the existing page and produce a structured audit.
+
+Evaluate these areas:
+
+A. POSITIONING & MESSAGING
+
+- Is the headline clear?
+- Does the hero explain the product in plain language?
+- Can an SME understand the offer in 5 seconds?
+- Is the copy too generic, too abstract, too technical, or too vague?
+- Does the page focus on customer outcomes instead of product features?
+- Does it clearly explain the problem, solution, and value?
+
+B. CONVERSION STRATEGY
+
+- Is there one clear primary CTA?
+- Are there too many CTAs competing with each other?
+- Is the CTA wording specific and persuasive?
+- Is the CTA repeated enough throughout the page?
+- Is the path to action frictionless?
+
+C. INFORMATION HIERARCHY
+
+- Does the page present information in the right order?
+- Does the user first see value, then trust, then proof, then CTA?
+- Are sections too long, repetitive, confusing, or poorly prioritized?
+- Should any sections be removed or reordered?
+
+D. SME RELEVANCE
+
+- Does the page clearly speak to SMEs?
+- Does it show understanding of SME pain points like limited time, limited resources, ROI pressure, simplicity, ease of setup, and need for reliability?
+- Does the copy feel like it was written for a real business owner or operator?
+
+E. TRUST & CREDIBILITY
+
+- Does the page include testimonials, logos, stats, proof points, guarantees, certifications, security reassurance, or concrete claims?
+- Are there weak claims without evidence?
+- Does the page feel credible enough for a serious buyer?
+
+F. UX & DESIGN
+
+- Is the page visually clean and easy to scan?
+- Is there enough whitespace?
+- Is the typography readable?
+- Is the contrast accessible?
+- Are buttons obvious?
+- Does the design look premium and current?
+- Does anything feel cluttered, inconsistent, or low trust?
+
+G. MOBILE EXPERIENCE
+
+- Is the page optimized for mobile scanning?
+- Are buttons large enough?
+- Are sections too long?
+- Is key information buried too far down?
+
+H. PERFORMANCE & ACCESSIBILITY
+
+- Improve speed where possible
+- Use semantic HTML
+- Improve accessibility labels and heading structure
+- Ensure CTA buttons are keyboard accessible
+- Ensure responsive layout and readable text
+
+Output the audit in this format:
+
+1. What is working
+2. What is hurting conversion
+3. What is unclear
+4. What is missing
+5. What should be removed
+6. What should be rewritten
+7. What should be reordered
+8. Highest-priority fixes first
+
+# ==================================================
+PART 2 — REBUILD THE LANDING PAGE STRATEGY
+
+Based on the audit, rebuild the page using a stronger conversion structure for SME buyers.
+
+Use this recommended structure unless the report suggests a better one:
+
+1. HERO SECTION
+- Clear, specific headline
+- One-line subheadline explaining what the product does and why it matters
+- Primary CTA
+- Secondary CTA only if useful
+- Product visual / dashboard / illustration if available
+- Trust strip if available (client logos, metrics, social proof, certifications)
+1. PROBLEM SECTION
+- Show the real pain SMEs face
+- Make the visitor feel understood
+- Keep this practical, not dramatic
+1. SOLUTION SECTION
+- Explain how the product solves those pains
+- Focus on outcomes, simplicity, and speed to value
+1. BENEFITS SECTION
+- 3 to 6 strong benefit cards
+- Write benefits from the customer point of view
+- Avoid feature dumping
+1. HOW IT WORKS
+- 3-step or 4-step process
+- Make it feel easy and low friction
+1. SOCIAL PROOF / TRUST
+- Testimonials
+- Customer logos
+- Metrics
+- Case-study snippets
+- Security/privacy reassurance if relevant
+1. DIFFERENTIATION
+- Why choose us over alternatives?
+- Why now?
+- Why is this especially good for SMEs?
+1. FAQ
+- Answer objections:
+    - Is it hard to set up?
+    - Is it suitable for small businesses?
+    - How long does it take?
+    - What does pricing look like?
+    - Is support included?
+    - Is my data secure?
+1. FINAL CTA
+- Strong closing section
+- Clear benefit-driven CTA
+- Low-friction wording
+
+# ==================================================
+PART 3 — COPYWRITING RULES
+
+Rewrite all copy to be:
+
+- clear
+- specific
+- concise
+- confident
+- human
+- benefit-driven
+- easy to scan
+
+Avoid:
+
+- fluff
+- empty buzzwords
+- generic startup language
+- unclear claims
+- long dense paragraphs
+- overhyped promises
+- vague words like “revolutionary”, “cutting-edge”, “seamless” unless backed by substance
+
+Write for SME owners, managers, and operators.
+Use plain business language.
+Prioritize clarity over cleverness.
+
+COPY GOALS
+
+- The headline should immediately explain the offer
+- Every section should answer “why should I care?”
+- The CTA text should be action-oriented and specific
+- The page should reduce doubt and increase trust
+
+Where needed, generate:
+
+- 3 alternative hero headlines
+- 3 alternative subheadlines
+- improved CTA text options
+- concise testimonial placeholders if real testimonials are not yet available
+- FAQ copy
+- stronger section titles
+
+# ==================================================
+PART 4 — DESIGN & UI RULES
+
+Redesign the landing page with these qualities:
+
+- modern SaaS design
+- premium but simple
+- clean layout
+- high readability
+- clear visual hierarchy
+- strong CTA emphasis
+- mobile-first responsiveness
+- polished spacing and alignment
+- consistent button styles
+- visually trustworthy for business buyers
+
+Design requirements:
+
+- strong hero layout
+- better spacing between sections
+- readable typography scale
+- obvious section hierarchy
+- visual consistency
+- cards that are clean, not noisy
+- clear hover states
+- accessible color contrast
+- no visual clutter
+- no giant walls of text
+
+If a component is weak, redesign it rather than just polishing it.
+
+# ==================================================
+PART 5 — IMPLEMENTATION REQUIREMENTS
+
+Now implement the improved landing page in code.
+
+Requirements:
+
+- keep code clean and production-ready
+- use reusable components
+- maintain responsive design
+- optimize for performance
+- use semantic HTML
+- ensure accessibility
+- preserve brand identity where possible, but improve it if it hurts trust or clarity
+
+If needed:
+
+- refactor layout
+- replace weak copy
+- restructure sections
+- remove unnecessary blocks
+- add trust-building sections
+- improve CTA placement
+- improve navbar and footer clarity
+
+If forms exist:
+
+- simplify fields
+- reduce friction
+- improve labels and validation
+- make submit CTA clearer
+
+# ==================================================
+PART 6 — OUTPUT FORMAT
+
+Work in this order:
+
+STEP 1
+Give me a concise audit with:
+
+- strengths
+- weaknesses
+- missed opportunities
+- priority fixes
+
+STEP 2
+Propose the improved landing page structure
+
+STEP 3
+Rewrite the copy section by section
+
+STEP 4
+Implement the new landing page in code
+
+STEP 5
+Summarize all changes in a changelog with this format:
+
+- issue
+- why it hurts conversion
+- fix applied
+- expected impact
+
+STEP 6
+List any assumptions you made because the report or current page was unclear
+
+# ==================================================
+PART 7 — NON-NEGOTIABLE CONVERSION CHECKLIST
+
+Before finalizing, verify the page meets all of these:
+
+- A visitor can understand the offer in under 5 seconds
+- The headline is specific and not vague
+- The subheadline explains value clearly
+- The CTA is obvious and repeated strategically
+- The page speaks directly to SMEs
+- The benefits are outcome-focused
+- The page includes trust-building elements
+- The flow feels logical and persuasive
+- The design looks credible and modern
+- Mobile layout is strong
+- There is no unnecessary jargon
+- Each section earns its place
+- The final CTA is compelling
+
+If any item fails, fix it before finishing.
+
+# ==================================================
+PART 8 — IF YOU FIND COMMON LANDING PAGE ISSUES
+
+If the current page has any of these issues, fix them automatically:
+
+- vague hero headline
+- weak subheadline
+- too much text above the fold
+- lack of trust signals
+- poor CTA wording
+- too many CTAs
+- generic feature lists
+- no clear target audience
+- confusing navigation
+- weak visual hierarchy
+- hidden pricing logic
+- no objection handling
+- no SME-specific messaging
+- no proof or credibility markers
+- cluttered layout
+- poor mobile spacing
+- inaccessible contrast or button states
+
+# ==================================================
+PART 9 — FINAL BEHAVIOR
+
+Be decisive.
+Do not just “recommend” improvements — implement them.
+Do not keep underperforming copy for sentimental reasons.
+Do not output generic advice.
+Output practical, conversion-focused improvements that make the landing page stronger for SME customers.
