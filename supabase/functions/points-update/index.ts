@@ -15,6 +15,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeadersFor, preflightResponse } from "../_shared/cors.ts";
 import { getApnsJwt } from "../_shared/tokenCache.ts";
+import { events, logEvent } from "../_shared/events.ts";
 
 async function sendAPNs(pushToken: string, jwt: string, topic: string): Promise<{ ok: boolean; status: number; body: string }> {
   const res = await fetch(`https://api.push.apple.com/3/device/${pushToken}`, {
@@ -136,11 +137,28 @@ Deno.serve(async (req: Request) => {
                   .eq("push_token", r.push_token);
               } catch {}
             }
+            if (!result.ok) {
+              events.apnsFailed({
+                source: "points-update",
+                shop_id: pass.shop_id,
+                customer_pass_id: pass.id,
+                message: `APNs returned ${result.status}`,
+                error_code: `APNS_${result.status}`,
+                metadata: { status: result.status, body: result.body?.slice(0, 200) },
+              });
+            }
           }
         }
       } catch (err) {
         console.error("APNs error:", err);
         apnsResults.push({ error: (err as Error).message });
+        events.apnsFailed({
+          source: "points-update",
+          shop_id: pass.shop_id,
+          customer_pass_id: pass.id,
+          message: (err as Error).message,
+          error_code: "APNS_EXCEPTION",
+        });
       }
     }
 
@@ -154,9 +172,50 @@ Deno.serve(async (req: Request) => {
           body: JSON.stringify({ pass_id }),
         });
         googleResult = { status: r.status };
+        if (!r.ok) {
+          events.googleWalletApiError({
+            source: "points-update",
+            shop_id: pass.shop_id,
+            customer_pass_id: pass.id,
+            message: `Google Wallet update returned ${r.status}`,
+            error_code: `GW_${r.status}`,
+          });
+        }
       } catch (err) {
         googleResult = { error: (err as Error).message };
+        events.googleWalletApiError({
+          source: "points-update",
+          shop_id: pass.shop_id,
+          customer_pass_id: pass.id,
+          message: (err as Error).message,
+          error_code: "GW_EXCEPTION",
+        });
       }
+    }
+
+    // Business event: what actually happened (points vs stamp vs reward redemption)
+    const actionStr = action || (points_delta ? "add_points" : stamps_delta ? "add_stamp" : "update");
+    const isRedemption = actionStr === "redeem_reward" || (typeof set_points === "number" && set_points === 0 && (pass.points || 0) > 0);
+    if (isRedemption) {
+      events.rewardRedeemed({
+        source: "points-update",
+        shop_id: pass.shop_id,
+        program_id: pass.program_id,
+        customer_pass_id: pass.id,
+        message: `Reward redeemed for ${pass.customer_name || "member"}`,
+        metadata: { prior_points: pass.points, prior_stamps: pass.stamps },
+        request_id: idempotencyKey,
+      });
+    } else {
+      events.pointsAdded({
+        source: "points-update",
+        shop_id: pass.shop_id,
+        program_id: pass.program_id,
+        customer_pass_id: pass.id,
+        message: `${actionStr}: Δpoints=${points_delta || 0} Δstamps=${stamps_delta || 0}`,
+        metadata: { action: actionStr, points_delta, stamps_delta, new_points: updates.points, new_stamps: updates.stamps, new_tier: updates.tier },
+        request_id: idempotencyKey,
+      });
     }
 
     return new Response(JSON.stringify({
@@ -167,7 +226,17 @@ Deno.serve(async (req: Request) => {
       idempotency_key: idempotencyKey,
     }), { headers: { ...cors, "Content-Type": "application/json" } });
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
+    const msg = (err as Error).message;
+    logEvent({
+      event_type: "points_update_failed",
+      category: "tech",
+      severity: /unauthorized|not your/i.test(msg) ? "warn" : "error",
+      source: "points-update",
+      message: msg,
+      error_code: /unauthorized/i.test(msg) ? "AUTH_FAILED" : "POINTS_UPDATE_FAIL",
+      req,
+    });
+    return new Response(JSON.stringify({ success: false, error: msg }), {
       status: 400,
       headers: { ...cors, "Content-Type": "application/json" },
     });

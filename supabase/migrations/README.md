@@ -36,6 +36,7 @@ Supabase SQL Editor and run it.
 | 3 | `20260415_0003_idempotency_and_hashing.sql` | Adds `activity_log.client_request_id` UNIQUE + APNs status columns. |
 | 4 | `20260415_0004_shop_monthly_stats.sql` | Replaces the old `get_monthly_growth` function with a materialized view + hourly refresh. |
 | 5 | `20260415_0005_schedule_apple_cleanup.sql` | Schedules nightly cleanup of dead Apple device registrations via pg_cron + pg_net. Requires GUC secrets (see file header). |
+| 6 | `20260415_0006_events_table.sql` | Unified `events` table for business + tech + security events (card_issued, card_failed, apns_push_failed, rate_limited, etc.) with RLS, severity-tiered retention, and nightly prune cron. |
 
 ## Required project secrets / env
 

@@ -17,6 +17,7 @@ import { corsHeadersFor, preflightResponse } from "../_shared/cors.ts";
 import { clientIp, rateLimit, rateLimitHeaders } from "../_shared/rateLimit.ts";
 import { parseEnrollmentInput, ValidationError } from "../_shared/validation.ts";
 import { verifyEnrollmentToken } from "../_shared/enrollmentToken.ts";
+import { events } from "../_shared/events.ts";
 
 function getPrivateKey(): string {
   let raw = Deno.env.get("GOOGLE_WALLET_PRIVATE_KEY") || "";
@@ -68,6 +69,12 @@ Deno.serve(async (req: Request) => {
   // Rate limit first — 10 req / 10 min per IP
   const rl = await rateLimit("rl:google-wallet-public", clientIp(req), 10, 10 * 60_000);
   if (!rl.allowed) {
+    events.rateLimited({
+      source: "google-wallet-public",
+      message: "IP exceeded wallet-public rate limit",
+      error_code: "RATE_LIMITED",
+      req,
+    });
     return new Response(JSON.stringify({ success: false, error: "Rate limit exceeded" }), {
       status: 429,
       headers: { ...cors, ...rateLimitHeaders(rl), "Content-Type": "application/json" },
@@ -235,12 +242,46 @@ Deno.serve(async (req: Request) => {
       });
     } catch (_) { /* non-fatal */ }
 
+    events.cardIssued({
+      source: "google-wallet-public",
+      shop_id: shop.id,
+      program_id: input.program_id,
+      message: `Google Wallet pass issued for ${programWithShopName.name}`,
+      metadata: { platform: "google", loyalty_type: programWithShopName.loyalty_type, object_id: objectId },
+      req,
+    });
+
     return new Response(JSON.stringify({ success: true, saveUrl, classId, objectId }), {
       headers: { ...cors, ...rateLimitHeaders(rl), "Content-Type": "application/json" },
     });
   } catch (error) {
-    const status = error instanceof ValidationError ? 422 : 400;
-    return new Response(JSON.stringify({ success: false, error: (error as Error).message }), {
+    const isValidation = error instanceof ValidationError;
+    const status = isValidation ? 422 : 400;
+    const msg = (error as Error).message;
+    if (isValidation) {
+      events.validationFailed({
+        source: "google-wallet-public",
+        message: msg,
+        error_code: "VALIDATION_FAILED",
+        req,
+      });
+    } else if (/enrollment token|signature|expired/i.test(msg)) {
+      events.invalidToken({
+        source: "google-wallet-public",
+        message: msg,
+        error_code: "INVALID_ENROLLMENT_TOKEN",
+        req,
+      });
+    } else {
+      events.cardFailed({
+        source: "google-wallet-public",
+        message: msg,
+        error_code: "GOOGLE_WALLET_FAIL",
+        metadata: { platform: "google" },
+        req,
+      });
+    }
+    return new Response(JSON.stringify({ success: false, error: msg }), {
       status,
       headers: { ...cors, ...rateLimitHeaders(rl), "Content-Type": "application/json" },
     });

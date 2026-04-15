@@ -19,6 +19,7 @@ import { clientIp, rateLimit, rateLimitHeaders } from "../_shared/rateLimit.ts";
 import { parseEnrollmentInput, ValidationError } from "../_shared/validation.ts";
 import { verifyEnrollmentToken } from "../_shared/enrollmentToken.ts";
 import { hashSecret } from "../_shared/hash.ts";
+import { events } from "../_shared/events.ts";
 
 const FALLBACK_ICON_29 = Uint8Array.from(atob(
   "iVBORw0KGgoAAAANSUhEUgAAAB0AAAAdCAYAAABWk2cPAAAAGUlEQVR42mNkYGD4z0AEYBxVSF+FAAEGAAgyAQEAhuNGAAAAAElFTkSuQmCC"
@@ -148,6 +149,12 @@ Deno.serve(async (req: Request) => {
 
   const rl = await rateLimit("rl:apple-wallet-public", clientIp(req), 10, 10 * 60_000);
   if (!rl.allowed) {
+    events.rateLimited({
+      source: "apple-wallet-public",
+      message: "IP exceeded wallet-public rate limit",
+      error_code: "RATE_LIMITED",
+      req,
+    });
     return new Response(JSON.stringify({ success: false, error: "Rate limit exceeded" }), {
       status: 429,
       headers: { ...cors, ...rateLimitHeaders(rl), "Content-Type": "application/json" },
@@ -329,6 +336,16 @@ Deno.serve(async (req: Request) => {
       });
     } catch (_) { /* non-fatal */ }
 
+    events.cardIssued({
+      source: "apple-wallet-public",
+      shop_id: shop.id,
+      program_id: input.program_id,
+      customer_pass_id: pass_row?.id ?? null,
+      message: `Apple Wallet pass issued for ${program.name || program.shop_name}`,
+      metadata: { platform: "apple", loyalty_type: program.loyalty_type, serial: pass_row?.apple_serial },
+      req,
+    });
+
     return new Response(archive, {
       headers: {
         ...cors,
@@ -339,8 +356,40 @@ Deno.serve(async (req: Request) => {
       },
     });
   } catch (err) {
-    const status = err instanceof ValidationError ? 422 : 400;
-    return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
+    const isValidation = err instanceof ValidationError;
+    const status = isValidation ? 422 : 400;
+    const msg = (err as Error).message;
+    if (isValidation) {
+      events.validationFailed({
+        source: "apple-wallet-public",
+        message: msg,
+        error_code: "VALIDATION_FAILED",
+        req,
+      });
+    } else if (/enrollment token|signature|expired/i.test(msg)) {
+      events.invalidToken({
+        source: "apple-wallet-public",
+        message: msg,
+        error_code: "INVALID_ENROLLMENT_TOKEN",
+        req,
+      });
+    } else if (/sign|pkcs|certificate/i.test(msg)) {
+      events.pkpassSignFailed({
+        source: "apple-wallet-public",
+        message: msg,
+        error_code: "PKPASS_SIGN_FAIL",
+        req,
+      });
+    } else {
+      events.cardFailed({
+        source: "apple-wallet-public",
+        message: msg,
+        error_code: "APPLE_WALLET_FAIL",
+        metadata: { platform: "apple" },
+        req,
+      });
+    }
+    return new Response(JSON.stringify({ success: false, error: msg }), {
       status,
       headers: { ...cors, ...rateLimitHeaders(rl), "Content-Type": "application/json" },
     });

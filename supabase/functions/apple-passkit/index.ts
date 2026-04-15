@@ -11,6 +11,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeadersFor, preflightResponse } from "../_shared/cors.ts";
 import { verifySecret } from "../_shared/hash.ts";
+import { logEvent } from "../_shared/events.ts";
 
 function getSupa() {
   return createClient(
@@ -57,6 +58,16 @@ Deno.serve(async (req: Request) => {
 
       if (req.method === "POST" && serial) {
         if (!(await authorizePass(req, supabase, serial))) {
+          logEvent({
+            event_type: "apple_passkit_auth_failed",
+            category: "security",
+            severity: "warn",
+            source: "apple-passkit",
+            message: `ApplePass auth rejected for serial ${serial}`,
+            error_code: "APPLEPASS_AUTH_FAIL",
+            metadata: { route: "register", serial, device_library_identifier: deviceLibId },
+            req,
+          });
           return new Response("Unauthorized", { status: 401, headers: cors });
         }
         const body = await req.json().catch(() => ({}));
@@ -81,17 +92,45 @@ Deno.serve(async (req: Request) => {
           serial_number: serial,
           push_token: pushToken,
         });
+        logEvent({
+          event_type: "apple_device_registered",
+          category: "business",
+          severity: "info",
+          source: "apple-passkit",
+          message: `Device registered for serial ${serial}`,
+          metadata: { serial, device_library_identifier: deviceLibId },
+          req,
+        });
         return new Response("", { status: 201, headers: cors });
       }
 
       if (req.method === "DELETE" && serial) {
         if (!(await authorizePass(req, supabase, serial))) {
+          logEvent({
+            event_type: "apple_passkit_auth_failed",
+            category: "security",
+            severity: "warn",
+            source: "apple-passkit",
+            message: `ApplePass auth rejected on DELETE for serial ${serial}`,
+            error_code: "APPLEPASS_AUTH_FAIL",
+            metadata: { route: "unregister", serial },
+            req,
+          });
           return new Response("Unauthorized", { status: 401, headers: cors });
         }
         await supabase.from("apple_device_registrations").delete()
           .eq("device_library_identifier", deviceLibId)
           .eq("pass_type_identifier", passTypeId)
           .eq("serial_number", serial);
+        logEvent({
+          event_type: "apple_device_unregistered",
+          category: "business",
+          severity: "info",
+          source: "apple-passkit",
+          message: `Device unregistered for serial ${serial}`,
+          metadata: { serial, device_library_identifier: deviceLibId },
+          req,
+        });
         return new Response("", { status: 200, headers: cors });
       }
 
@@ -124,6 +163,16 @@ Deno.serve(async (req: Request) => {
     if (passMatch && req.method === "GET") {
       const [, , serial] = passMatch;
       if (!(await authorizePass(req, supabase, serial))) {
+        logEvent({
+          event_type: "apple_passkit_auth_failed",
+          category: "security",
+          severity: "warn",
+          source: "apple-passkit",
+          message: `ApplePass auth rejected on pass fetch for serial ${serial}`,
+          error_code: "APPLEPASS_AUTH_FAIL",
+          metadata: { route: "get_pass", serial },
+          req,
+        });
         return new Response("Unauthorized", { status: 401, headers: cors });
       }
       // NOTE: /v1/passes re-issues the pass but doesn't re-run public
@@ -168,6 +217,15 @@ Deno.serve(async (req: Request) => {
     return new Response("Not Found", { status: 404, headers: cors });
   } catch (err) {
     console.error("apple-passkit error:", err);
+    logEvent({
+      event_type: "apple_passkit_error",
+      category: "tech",
+      severity: "error",
+      source: "apple-passkit",
+      message: (err as Error).message,
+      error_code: "PASSKIT_EXCEPTION",
+      req,
+    });
     return new Response((err as Error).message, { status: 500, headers: cors });
   }
 });
