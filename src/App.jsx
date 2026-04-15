@@ -2663,7 +2663,6 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const { user, signOut } = useAuth()
   const d = t.dashboard
   const [shop, setShop] = useState(null)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('home')
   const [loadingShop, setLoadingShop] = useState(true)
 
@@ -2676,12 +2675,6 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         setLoadingShop(false)
       })
   }, [user])
-
-  useEffect(() => {
-    if (sidebarOpen) { document.body.style.overflow = 'hidden' }
-    else { document.body.style.overflow = '' }
-    return () => { document.body.style.overflow = '' }
-  }, [sidebarOpen])
 
   if (loadingShop) return <div className="auth-page"><div className="dash-loading"><Logo size={40} /></div></div>
   if (!shop) return null
@@ -2704,15 +2697,44 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
   ]
 
+  const chev = <svg className="sidebar-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+
   return (
-    <div className={`dash-page ${lang === 'en' ? 'ltr-mode' : ''}`}>
+    <div className={`dash-page has-sidebar ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      {/* Persistent Sidebar (LoyaPro-style) */}
+      <aside className="sidebar sidebar-persistent">
+        <div className="sidebar-header">
+          <div className="sidebar-brand"><Logo size={36} /><span className="sidebar-brand-name">Waya</span></div>
+        </div>
+        <div className="sidebar-shop-block">
+          {shop.logo_url ? <img src={shop.logo_url} alt="" className="sidebar-logo" /> : <div className="sidebar-logo-ph"><Logo size={20} /></div>}
+          <div className="sidebar-shop-info"><div className="sidebar-shop-name">{shopName}</div><div className="sidebar-shop-type">{shop.type}</div></div>
+        </div>
+        <div className="sidebar-menu">
+          {menuItems.map(item => (
+            <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => setActiveTab(item.id)}>
+              <span className="sidebar-item-icon">{item.icon}</span>
+              <span className="sidebar-item-label">{item.label}</span>
+              {chev}
+            </button>
+          ))}
+        </div>
+        <div className="sidebar-footer">
+          <button className="sidebar-item sidebar-home-link" onClick={() => navigate('/')}>
+            <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span>
+            <span className="sidebar-item-label">{d.visitSite}</span>
+          </button>
+          <button className="sidebar-item sidebar-logout" onClick={handleLogout}>
+            <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+            <span className="sidebar-item-label">{d.logout}</span>
+          </button>
+        </div>
+      </aside>
+
       {/* Top nav */}
       <nav className="dash-nav">
         <div className="dash-nav-left">
-          <button className="dash-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Menu">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-          <div className="dash-nav-brand"><Logo size={48} /></div>
+          <div className="dash-nav-brand"><Logo size={40} /></div>
         </div>
         <div className="dash-nav-right">
           <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
@@ -2723,43 +2745,6 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           </button>
         </div>
       </nav>
-
-      {/* Sidebar overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <>
-            <motion.div className="sidebar-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} />
-            <motion.aside className="sidebar" initial={{ x: lang === 'ar' ? 300 : -300 }} animate={{ x: 0 }} exit={{ x: lang === 'ar' ? 300 : -300 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }}>
-              <div className="sidebar-header">
-                <div className="sidebar-shop">
-                  {shop.logo_url ? <img src={shop.logo_url} alt="" className="sidebar-logo" /> : <div className="sidebar-logo-ph"><Logo size={20} /></div>}
-                  <div><div className="sidebar-shop-name">{shopName}</div><div className="sidebar-shop-type">{shop.type}</div></div>
-                </div>
-                <button className="sidebar-close" onClick={() => setSidebarOpen(false)}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              </div>
-              <div className="sidebar-menu">
-                {menuItems.map(item => (
-                  <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { setActiveTab(item.id); setSidebarOpen(false) }}>
-                    {item.icon}<span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="sidebar-footer">
-                <button className="sidebar-item sidebar-home-link" onClick={() => { navigate('/'); setSidebarOpen(false) }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  <span>{d.visitSite}</span>
-                </button>
-                <button className="sidebar-item sidebar-logout" onClick={handleLogout}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                  <span>{d.logout}</span>
-                </button>
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Demo banner */}
       <div className="demo-banner">
