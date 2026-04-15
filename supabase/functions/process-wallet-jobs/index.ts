@@ -34,7 +34,7 @@ function backoffSeconds(attempts: number): number {
 
 interface Job {
   id: string;
-  kind: "apple_apns" | "google_wallet";
+  kind: "apple_apns" | "google_wallet" | "wallet_message";
   customer_pass_id: string | null;
   shop_id: string | null;
   payload: Record<string, unknown>;
@@ -78,6 +78,79 @@ async function runApple(supabase: any, job: Job) {
     return { terminal: false, ok: false, status: r.status, body: r.body };
   }
   return { terminal: true, ok: true, status: r.status };
+}
+
+// Wallet notification (merchant broadcast). Apple: silent APNs push with
+// changeMessage baked into pass fields (merchant sets this via send-notification).
+// Google: appends a message to the Loyalty Object via the Google Wallet API.
+async function runMessage(supabase: any, job: Job) {
+  const platform = (job.payload?.platform as string) || "";
+  const campaignId = (job.payload?.campaign_id as string) || "";
+  const title = (job.payload?.title as string) || "";
+  const body = (job.payload?.body as string) || "";
+
+  if (platform === "apple") {
+    const pushToken = (job.payload?.push_token as string) || "";
+    if (!pushToken) throw new Error("Missing push_token");
+    const jwt = await getApnsJwt();
+    const topic = Deno.env.get("APPLE_PASS_TYPE_ID") || "";
+    const r = await sendAPNs(pushToken, jwt, topic);
+
+    // Update the per-recipient send row
+    if (campaignId) {
+      await supabase
+        .from("notification_sends")
+        .update({
+          status: r.ok ? "delivered" : (r.status === 410 ? "failed" : "failed"),
+          delivered_at: r.ok ? new Date().toISOString() : null,
+          last_error: r.ok ? null : `apple ${r.status}: ${(r.body || "").slice(0, 200)}`,
+        })
+        .eq("campaign_id", campaignId)
+        .eq("customer_pass_id", job.customer_pass_id)
+        .eq("platform", "apple");
+    }
+
+    if (r.status === 410) {
+      await supabase
+        .from("apple_device_registrations")
+        .update({ last_apns_status: 410, last_apns_at: new Date().toISOString() })
+        .eq("push_token", pushToken);
+      return { terminal: true, ok: false, status: r.status, body: r.body, deadToken: true };
+    }
+    if (!r.ok) return { terminal: false, ok: false, status: r.status, body: r.body };
+    return { terminal: true, ok: true, status: r.status };
+  }
+
+  if (platform === "google") {
+    const objectId = (job.payload?.google_object_id as string) || "";
+    if (!objectId) throw new Error("Missing google_object_id");
+    // Delegate to google-wallet-update with a message payload. The google
+    // function recognizes `message: { header, body }` and calls addMessage.
+    const r = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/google-wallet-update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        google_object_id: objectId,
+        message: { header: title, body },
+      }),
+    });
+    const text = await r.text().catch(() => "");
+    if (campaignId) {
+      await supabase
+        .from("notification_sends")
+        .update({
+          status: r.ok ? "delivered" : "failed",
+          delivered_at: r.ok ? new Date().toISOString() : null,
+          last_error: r.ok ? null : `google ${r.status}: ${text.slice(0, 200)}`,
+        })
+        .eq("campaign_id", campaignId)
+        .eq("customer_pass_id", job.customer_pass_id)
+        .eq("platform", "google");
+    }
+    return { terminal: r.ok, ok: r.ok, status: r.status, body: text };
+  }
+
+  throw new Error(`Unknown platform: ${platform}`);
 }
 
 async function runGoogle(_supabase: any, job: Job) {
@@ -197,6 +270,8 @@ Deno.serve(async (req: Request) => {
       try {
         const outcome = job.kind === "apple_apns"
           ? await runApple(supabase, job)
+          : job.kind === "wallet_message"
+          ? await runMessage(supabase, job)
           : await runGoogle(supabase, job);
         await finalizeJob(supabase, job, outcome);
         if (outcome.ok) ok++;

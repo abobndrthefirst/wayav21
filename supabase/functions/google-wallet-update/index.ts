@@ -11,13 +11,46 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return preflightResponse(req, "POST, OPTIONS");
 
   try {
-    const { pass_id } = await req.json();
-    if (!pass_id) throw new Error("Missing pass_id");
+    const body = await req.json();
+    const { pass_id, google_object_id, message } = body;
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+
+    // ── Message mode: append a notification to an existing LoyaltyObject ──
+    // Invoked by process-wallet-jobs when a merchant sends a broadcast.
+    if (message && google_object_id) {
+      const accessToken = await getGoogleAccessToken();
+      const url = `https://walletobjects.googleapis.com/walletobjects/v1/loyaltyObject/${encodeURIComponent(google_object_id)}/addMessage`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: {
+            header: (message.header || "").slice(0, 80),
+            body: (message.body || "").slice(0, 240),
+            messageType: "TEXT_AND_NOTIFY",
+          },
+        }),
+      });
+      const text = await res.text().catch(() => "");
+      if (!res.ok) {
+        return new Response(
+          JSON.stringify({ success: false, status: res.status, body: text }),
+          { status: res.status, headers: { ...cors, "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ success: true, mode: "message" }), {
+        headers: { ...cors, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!pass_id) throw new Error("Missing pass_id");
     const { data: pass } = await supabase
       .from("customer_passes")
       .select("*, program:loyalty_programs(*)")

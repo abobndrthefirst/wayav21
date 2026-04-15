@@ -4,12 +4,14 @@ import { createClient } from '@supabase/supabase-js'
 // Analytics loaded via script tag in index.html
 import './styles.css'
 import './components/loyalty-wizard.css'
+import './components/notifications-panel.css'
 
 // Lazy-load the heavy merchant + customer flows so the marketing landing
 // page doesn't ship a LoyaltyWizard / WalletEnrollPage bundle it never uses.
 const ProgramsList = lazy(() => import('./components/ProgramsList'))
 const WalletEnrollPage = lazy(() => import('./components/WalletEnrollPage'))
 const EventsPanel = lazy(() => import('./components/EventsPanel'))
+const NotificationsPanel = lazy(() => import('./components/NotificationsPanel'))
 
 const LazyFallback = () => (
   <div style={{ padding: 48, textAlign: 'center', color: '#888' }}>Loading…</div>
@@ -2699,6 +2701,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     { id: 'data', label: d.navData, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
     { id: 'loyalty', label: d.navLoyalty, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> },
     { id: 'cards', label: d.navCards, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h4"/></svg> },
+    { id: 'notifications', label: lang === 'ar' ? 'الإشعارات' : 'Notifications', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
     { id: 'settings', label: d.navSettings, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
   ]
 
@@ -2811,6 +2814,20 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               </div>
             </motion.section>
 
+          </>
+        )}
+
+        {activeTab === 'notifications' && (
+          <>
+            <h1 className="dash-title">{lang === 'ar' ? 'الإشعارات' : 'Notifications'}</h1>
+            <p className="dash-subtitle" style={{ marginBottom: 16, color: 'var(--muted, #888)' }}>
+              {lang === 'ar'
+                ? 'أرسل رسالة لكل حاملي بطاقاتك مباشرة على محفظتهم.'
+                : 'Broadcast a message straight to every cardholder’s wallet.'}
+            </p>
+            <Suspense fallback={<LazyFallback />}>
+              <NotificationsPanel shopId={shop?.id} lang={lang} />
+            </Suspense>
           </>
         )}
 
