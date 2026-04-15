@@ -2811,13 +2811,6 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               </div>
             </motion.section>
 
-            {shop?.id && (
-              <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <Suspense fallback={<LazyFallback />}>
-                  <EventsPanel shopId={shop.id} lang={lang} compact />
-                </Suspense>
-              </motion.section>
-            )}
           </>
         )}
 
@@ -2838,14 +2831,9 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
                 </motion.div>
               ))}
             </div>
-            {shop?.id && (
-              <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-                <h2>{lang === 'ar' ? 'سجل الأحداث' : 'Events log'}</h2>
-                <Suspense fallback={<LazyFallback />}>
-                  <EventsPanel shopId={shop.id} lang={lang} />
-                </Suspense>
-              </motion.div>
-            )}
+            <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+              <div className="dash-empty"><p>{t.dataPage.moreComingSoon}</p></div>
+            </motion.div>
           </>
         )}
 
@@ -3036,6 +3024,64 @@ function ProgramsPageWrapper({ lang, setLang, theme, setTheme, t }) {
   )
 }
 
+/* ─── Admin-only events viewer (gated by email allowlist) ─── */
+const ADMIN_EMAILS = ['sultanhhaidar@gmail.com']
+
+function AdminEventsPage({ lang, setLang, theme, setTheme }) {
+  const { user, loading } = useAuth()
+  const [shops, setShops] = useState([])
+  const [selectedShopId, setSelectedShopId] = useState(null)
+  const [err, setErr] = useState(null)
+
+  useEffect(() => {
+    if (loading) return
+    if (!user) { navigate('/login'); return }
+    if (!ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
+      setErr('Not authorized')
+      return
+    }
+    supabase.from('shops').select('id, name').order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) { setErr(error.message); return }
+        setShops(data || [])
+        if (data && data[0]) setSelectedShopId(data[0].id)
+      })
+  }, [user, loading])
+
+  if (loading) return <div style={{ padding: 60, textAlign: 'center' }}>Loading…</div>
+  if (err) return <div style={{ padding: 60, textAlign: 'center', color: '#b91c1c' }}>{err}</div>
+  if (!user) return null
+
+  return (
+    <div style={{ maxWidth: 1100, margin: '40px auto', padding: '0 20px' }}>
+      <h1 style={{ fontSize: '1.6rem', marginBottom: 8 }}>Admin · Events</h1>
+      <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: 20 }}>
+        Signed in as <strong>{user.email}</strong>
+      </p>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 20 }}>
+        <label style={{ fontSize: '0.85rem', color: '#555' }}>Shop:</label>
+        <select
+          value={selectedShopId || ''}
+          onChange={(e) => setSelectedShopId(e.target.value)}
+          style={{ padding: '8px 10px', border: '1px solid #e5e5e8', borderRadius: 8 }}
+        >
+          {shops.map((s) => (
+            <option key={s.id} value={s.id}>{s.name || s.id.slice(0, 8)}</option>
+          ))}
+        </select>
+        <span style={{ fontSize: '0.8rem', color: '#888' }}>
+          ({shops.length} shop{shops.length === 1 ? '' : 's'})
+        </span>
+      </div>
+      {selectedShopId && (
+        <Suspense fallback={<LazyFallback />}>
+          <EventsPanel shopId={selectedShopId} lang={lang} />
+        </Suspense>
+      )}
+    </div>
+  )
+}
+
 /* ─── App ─── */
 export default function App() {
   const [lang, setLang] = useState('ar')
@@ -3058,6 +3104,7 @@ export default function App() {
       if (p === '/data') return 'data'
       if (p === '/loyalty') return 'loyalty'
       if (p === '/settings') return 'settings'
+      if (p === '/admin/events') return 'admin-events'
       if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
       if (p.startsWith('/w/')) return 'enroll'
       if (p.startsWith('/wallet/')) return 'wallet'
@@ -3097,6 +3144,7 @@ export default function App() {
   if (page === 'wallet') return <WalletPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
   if (page === 'enroll') return <Suspense fallback={<LazyFallback />}><WalletEnrollPage lang={lang} /></Suspense>
   if (page === 'programs') return <AuthProvider><ProgramsPageWrapper lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'admin-events') return <AuthProvider><AdminEventsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} /></AuthProvider>
 
   return (
     <AuthProvider>
