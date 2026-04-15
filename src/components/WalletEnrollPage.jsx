@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import {
+  isValidKsaPhone,
+  handlePhoneChange,
+  KSA_PHONE_HINT_EN,
+  KSA_PHONE_HINT_AR,
+  KSA_PHONE_ERR_EN,
+  KSA_PHONE_ERR_AR,
+} from '../lib/phone'
 import appleWalletIcon from './Wallet_App_icon_iOS_12.png'
 import googleWalletIcon from '../png-transparent-google-wallet-logo-thumbnail-tech-companies.png'
 
@@ -64,10 +72,16 @@ export default function WalletEnrollPage({ lang = 'en' }) {
     })()
   }, [programId])
 
+  const phoneInvalid = phone.length > 0 && !isValidKsaPhone(phone)
+
   const submit = async (e) => {
     e.preventDefault()
     if (!name.trim() || !phone.trim()) {
       setError(T('Please enter name and phone.', 'يرجى إدخال الاسم ورقم الهاتف.'))
+      return
+    }
+    if (!isValidKsaPhone(phone)) {
+      setError(T(KSA_PHONE_ERR_EN, KSA_PHONE_ERR_AR))
       return
     }
     if (!enrollmentToken) {
@@ -88,18 +102,27 @@ export default function WalletEnrollPage({ lang = 'en' }) {
       'x-enrollment-token': enrollmentToken,
     }
 
+    // Collect server error messages so the user actually sees them instead
+    // of a blank success screen when both wallet calls fail silently.
+    const failures = []
+    let anyOk = false
+
     try {
-      // On desktop, fire both. On iOS, fire Apple. On Android, fire Google.
       const calls = []
       if (device === 'ios' || device === 'desktop') {
         calls.push(
           fetch(`${SUPABASE_URL}/functions/v1/apple-wallet-public`, {
             method: 'POST', headers, body,
           }).then(async (res) => {
-            if (!res.ok) throw new Error(`Apple: ${res.status}`)
+            if (!res.ok) {
+              let msg = `Apple Wallet: ${res.status}`
+              try { const j = await res.json(); if (j.error) msg = `Apple Wallet: ${j.error}` } catch {}
+              throw new Error(msg)
+            }
             const blob = await res.blob()
             setAppleBlobUrl(URL.createObjectURL(blob))
-          }).catch((err) => console.error('apple', err))
+            anyOk = true
+          }).catch((err) => { console.error('apple', err); failures.push(err.message) })
         )
       }
       if (device === 'android' || device === 'desktop') {
@@ -107,14 +130,23 @@ export default function WalletEnrollPage({ lang = 'en' }) {
           fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
             method: 'POST', headers, body,
           }).then(async (res) => {
-            const json = await res.json()
-            if (json.success) setGoogleSaveUrl(json.saveUrl)
-            else throw new Error(json.error || 'Google Wallet error')
-          }).catch((err) => console.error('google', err))
+            const json = await res.json().catch(() => ({}))
+            if (res.ok && json.success) {
+              setGoogleSaveUrl(json.saveUrl)
+              anyOk = true
+            } else {
+              throw new Error(`Google Wallet: ${json.error || res.status}`)
+            }
+          }).catch((err) => { console.error('google', err); failures.push(err.message) })
         )
       }
       await Promise.all(calls)
-      setDone(true)
+      if (anyOk) {
+        setDone(true)
+      } else {
+        // Surface the real server error instead of pretending it worked.
+        setError(failures.join(' — ') || T('Could not create your card. Please try again.', 'تعذر إنشاء البطاقة. حاول مرة أخرى.'))
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -158,7 +190,30 @@ export default function WalletEnrollPage({ lang = 'en' }) {
             </label>
             <label>
               <span>{T('Phone', 'الهاتف')}</span>
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="05XXXXXXXX" />
+              <input
+                type="tel"
+                inputMode="numeric"
+                value={phone}
+                onChange={(e) => setPhone(handlePhoneChange(e.target.value))}
+                required
+                placeholder="05XXXXXXXX"
+                maxLength={13}
+                dir="ltr"
+                aria-invalid={phoneInvalid ? 'true' : 'false'}
+                style={phoneInvalid ? { borderColor: '#e11d48', outlineColor: '#e11d48' } : undefined}
+              />
+              <small
+                style={{
+                  display: 'block',
+                  marginTop: 4,
+                  fontSize: 12,
+                  color: phoneInvalid ? '#e11d48' : '#6b7280',
+                }}
+              >
+                {phoneInvalid
+                  ? T(KSA_PHONE_ERR_EN, KSA_PHONE_ERR_AR)
+                  : T(KSA_PHONE_HINT_EN, KSA_PHONE_HINT_AR)}
+              </small>
             </label>
 
             {error && <div className="we-err">{error}</div>}

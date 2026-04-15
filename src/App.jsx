@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, createContext, useContext, lazy, Suspense } from 'react'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { createClient } from '@supabase/supabase-js'
+import {
+  isValidKsaPhone,
+  handlePhoneChange,
+  KSA_PHONE_HINT_EN,
+  KSA_PHONE_HINT_AR,
+  KSA_PHONE_ERR_EN,
+  KSA_PHONE_ERR_AR,
+} from './lib/phone'
 // Analytics loaded via script tag in index.html
 import './styles.css'
 import './components/loyalty-wizard.css'
@@ -2560,6 +2568,10 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!name || !phone) return
+    if (!isValidKsaPhone(phone)) {
+      setError(lang === 'ar' ? KSA_PHONE_ERR_AR : KSA_PHONE_ERR_EN)
+      return
+    }
     setGenerating(true)
     try {
       const body = JSON.stringify({ shop_id: shopId, customer_name: name, customer_phone: phone })
@@ -2625,7 +2637,23 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
             </div>
             <div className="auth-field">
               <label>{lang === 'ar' ? 'رقم جوالك' : 'Your Phone'}</label>
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="05XXXXXXXX" dir="ltr" required />
+              <input
+                type="tel"
+                inputMode="numeric"
+                value={phone}
+                onChange={e => setPhone(handlePhoneChange(e.target.value))}
+                placeholder="05XXXXXXXX"
+                dir="ltr"
+                maxLength={13}
+                required
+                aria-invalid={phone.length > 0 && !isValidKsaPhone(phone) ? 'true' : 'false'}
+                style={phone.length > 0 && !isValidKsaPhone(phone) ? { borderColor: '#e11d48' } : undefined}
+              />
+              <small style={{ display: 'block', marginTop: 4, fontSize: 12, color: phone.length > 0 && !isValidKsaPhone(phone) ? '#e11d48' : '#6b7280' }}>
+                {phone.length > 0 && !isValidKsaPhone(phone)
+                  ? (lang === 'ar' ? KSA_PHONE_ERR_AR : KSA_PHONE_ERR_EN)
+                  : (lang === 'ar' ? KSA_PHONE_HINT_AR : KSA_PHONE_HINT_EN)}
+              </small>
             </div>
             <button type="submit" className="wallet-add-btn-full" disabled={generating}>
               <GoogleWalletIcon />
