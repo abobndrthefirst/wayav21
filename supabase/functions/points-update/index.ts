@@ -1,37 +1,19 @@
-// Bumps points/stamps on a customer_pass and triggers wallet update notifications:
-//   - Apple: APNs push to all device registrations for the pass serial
-//   - Google: PATCH the LoyaltyObject (delegated to google-wallet-update)
+// Bumps points/stamps on a customer_pass and ENQUEUES wallet update jobs.
+// The actual outbound push (APNs + Google Wallet) is handled async by the
+// `process-wallet-jobs` worker, so merchants don't wait 200-2000ms per stamp
+// and transient push failures don't surface as merchant errors.
 //
 // Hardening:
 //   - CORS allowlist
 //   - Idempotency-Key header (or body.client_request_id) prevents duplicate
 //     stamps on retries. Uses activity_log.client_request_id UNIQUE constraint.
-//   - APNs JWT cached (50 min TTL) via _shared/tokenCache
-//
-// Required env (for Apple APNs):
-//   APPLE_APNS_AUTH_KEY   APPLE_APNS_KEY_ID   APPLE_TEAM_ID   APPLE_PASS_TYPE_ID
+//   - Queue insert uses the same idempotency_key so retries don't enqueue
+//     duplicate pushes (UNIQUE partial index on wallet_update_jobs).
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeadersFor, preflightResponse } from "../_shared/cors.ts";
-import { getApnsJwt } from "../_shared/tokenCache.ts";
 import { events, logEvent } from "../_shared/events.ts";
-
-async function sendAPNs(pushToken: string, jwt: string, topic: string): Promise<{ ok: boolean; status: number; body: string }> {
-  const res = await fetch(`https://api.push.apple.com/3/device/${pushToken}`, {
-    method: "POST",
-    headers: {
-      "authorization": `bearer ${jwt}`,
-      "apns-topic": topic,
-      "apns-push-type": "background",
-      "apns-priority": "5",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({}),
-  });
-  const body = await res.text();
-  return { ok: res.ok, status: res.status, body };
-}
 
 Deno.serve(async (req: Request) => {
   const cors = corsHeadersFor(req, "POST, OPTIONS");
@@ -115,80 +97,75 @@ Deno.serve(async (req: Request) => {
       console.warn("[points-update] activity_log insert:", (err as Error).message);
     }
 
-    // Trigger Apple APNs push to all registered devices
-    const apnsResults: any[] = [];
+    // ─────────────────────────────────────────────────────────────────────────
+    // ENQUEUE push jobs (async). We don't await delivery — the worker does it.
+    // ─────────────────────────────────────────────────────────────────────────
+    const enqueued: { kind: string; count: number }[] = [];
+
+    // Apple: one job per registered device (separate jobs so partial failures
+    // can retry independently).
     if (pass.apple_serial) {
       try {
         const { data: regs } = await supabase
           .from("apple_device_registrations")
           .select("push_token")
           .eq("serial_number", pass.apple_serial);
-        if (regs && regs.length > 0) {
-          const jwt = await getApnsJwt();
-          const topic = Deno.env.get("APPLE_PASS_TYPE_ID")!;
-          for (const r of regs) {
-            const result = await sendAPNs(r.push_token, jwt, topic);
-            apnsResults.push({ token: r.push_token.slice(0, 8) + "...", ...result });
-            // Mark dead registrations for later cleanup (410 = unregistered)
-            if (result.status === 410) {
-              try {
-                await supabase.from("apple_device_registrations")
-                  .update({ last_apns_status: 410, last_apns_at: new Date().toISOString() })
-                  .eq("push_token", r.push_token);
-              } catch {}
-            }
-            if (!result.ok) {
-              events.apnsFailed({
-                source: "points-update",
-                shop_id: pass.shop_id,
-                customer_pass_id: pass.id,
-                message: `APNs returned ${result.status}`,
-                error_code: `APNS_${result.status}`,
-                metadata: { status: result.status, body: result.body?.slice(0, 200) },
-              });
-            }
-          }
+        const rows = (regs || []).map((r: any) => ({
+          kind: "apple_apns",
+          customer_pass_id: pass.id,
+          shop_id: pass.shop_id,
+          payload: { push_token: r.push_token },
+          idempotency_key: idempotencyKey,
+        }));
+        if (rows.length > 0) {
+          // Use upsert on the unique (kind, customer_pass_id, idempotency_key)
+          // partial index so retries don't double-enqueue.
+          const { error: insErr } = await supabase.from("wallet_update_jobs")
+            .upsert(rows, { onConflict: "kind,customer_pass_id,idempotency_key", ignoreDuplicates: true });
+          if (insErr) throw insErr;
+          enqueued.push({ kind: "apple_apns", count: rows.length });
         }
       } catch (err) {
-        console.error("APNs error:", err);
-        apnsResults.push({ error: (err as Error).message });
-        events.apnsFailed({
+        // Enqueue failure isn't fatal to the merchant request; log and move on.
+        console.error("enqueue apple jobs:", err);
+        logEvent({
+          event_type: "wallet_enqueue_failed",
+          category: "tech",
+          severity: "warn",
           source: "points-update",
           shop_id: pass.shop_id,
           customer_pass_id: pass.id,
-          message: (err as Error).message,
-          error_code: "APNS_EXCEPTION",
+          message: `Failed to enqueue apple_apns jobs: ${(err as Error).message}`,
+          error_code: "ENQUEUE_APPLE_FAIL",
         });
       }
     }
 
-    // Trigger Google Wallet update (delegate)
-    let googleResult: any = null;
+    // Google: one job per pass (the google-wallet-update function handles the
+    // single LoyaltyObject PATCH).
     if (pass.google_object_id) {
       try {
-        const r = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/google-wallet-update`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pass_id }),
-        });
-        googleResult = { status: r.status };
-        if (!r.ok) {
-          events.googleWalletApiError({
-            source: "points-update",
-            shop_id: pass.shop_id,
+        const { error: insErr } = await supabase.from("wallet_update_jobs")
+          .upsert([{
+            kind: "google_wallet",
             customer_pass_id: pass.id,
-            message: `Google Wallet update returned ${r.status}`,
-            error_code: `GW_${r.status}`,
-          });
-        }
+            shop_id: pass.shop_id,
+            payload: { google_object_id: pass.google_object_id },
+            idempotency_key: idempotencyKey,
+          }], { onConflict: "kind,customer_pass_id,idempotency_key", ignoreDuplicates: true });
+        if (insErr) throw insErr;
+        enqueued.push({ kind: "google_wallet", count: 1 });
       } catch (err) {
-        googleResult = { error: (err as Error).message };
-        events.googleWalletApiError({
+        console.error("enqueue google job:", err);
+        logEvent({
+          event_type: "wallet_enqueue_failed",
+          category: "tech",
+          severity: "warn",
           source: "points-update",
           shop_id: pass.shop_id,
           customer_pass_id: pass.id,
-          message: (err as Error).message,
-          error_code: "GW_EXCEPTION",
+          message: `Failed to enqueue google_wallet job: ${(err as Error).message}`,
+          error_code: "ENQUEUE_GOOGLE_FAIL",
         });
       }
     }
@@ -203,7 +180,7 @@ Deno.serve(async (req: Request) => {
         program_id: pass.program_id,
         customer_pass_id: pass.id,
         message: `Reward redeemed for ${pass.customer_name || "member"}`,
-        metadata: { prior_points: pass.points, prior_stamps: pass.stamps },
+        metadata: { prior_points: pass.points, prior_stamps: pass.stamps, enqueued },
         request_id: idempotencyKey,
       });
     } else {
@@ -213,7 +190,11 @@ Deno.serve(async (req: Request) => {
         program_id: pass.program_id,
         customer_pass_id: pass.id,
         message: `${actionStr}: Δpoints=${points_delta || 0} Δstamps=${stamps_delta || 0}`,
-        metadata: { action: actionStr, points_delta, stamps_delta, new_points: updates.points, new_stamps: updates.stamps, new_tier: updates.tier },
+        metadata: {
+          action: actionStr, points_delta, stamps_delta,
+          new_points: updates.points, new_stamps: updates.stamps, new_tier: updates.tier,
+          enqueued,
+        },
         request_id: idempotencyKey,
       });
     }
@@ -221,8 +202,7 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({
       success: true,
       pass: { ...pass, ...updates },
-      apns: apnsResults,
-      google: googleResult,
+      enqueued,
       idempotency_key: idempotencyKey,
     }), { headers: { ...cors, "Content-Type": "application/json" } });
   } catch (err) {

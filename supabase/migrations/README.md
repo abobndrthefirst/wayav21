@@ -37,6 +37,8 @@ Supabase SQL Editor and run it.
 | 4 | `20260415_0004_shop_monthly_stats.sql` | Replaces the old `get_monthly_growth` function with a materialized view + hourly refresh. |
 | 5 | `20260415_0005_schedule_apple_cleanup.sql` | Schedules nightly cleanup of dead Apple device registrations via pg_cron + pg_net. Requires GUC secrets (see file header). |
 | 6 | `20260415_0006_events_table.sql` | Unified `events` table for business + tech + security events (card_issued, card_failed, apns_push_failed, rate_limited, etc.) with RLS, severity-tiered retention, and nightly prune cron. |
+| 7 | `20260415_0007_wallet_update_jobs.sql` | Async queue for APNs + Google Wallet pushes. `claim_wallet_update_jobs()` uses FOR UPDATE SKIP LOCKED for safe concurrent workers. Nightly retention cron. |
+| 8 | `20260415_0008_schedule_wallet_worker.sql` | pg_cron entry that calls `process-wallet-jobs` edge function every 30 seconds to drain the queue. Requires `app.waya_worker_endpoint` GUC. |
 
 ## Required project secrets / env
 
@@ -57,6 +59,10 @@ supabase secrets set ALLOWED_ORIGINS=   # optional, comma-separated extras
 alter database postgres set "app.waya_cron_secret" = '<same WAYA_CRON_SECRET>';
 alter database postgres set "app.waya_cron_endpoint" =
   'https://<project>.supabase.co/functions/v1/apple-device-cleanup';
+
+-- GUC needed by migration 0008 (wallet worker cron)
+alter database postgres set "app.waya_worker_endpoint" =
+  'https://<project>.supabase.co/functions/v1/process-wallet-jobs';
 ```
 
 ## Vercel env vars (Project → Settings → Environment Variables)
