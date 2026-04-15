@@ -1,13 +1,24 @@
+// Public endpoint that emits a signed Apple Wallet .pkpass.
+// Hardening mirrors google-wallet-public:
+//   - CORS allowlist
+//   - Per-IP rate limit: 10 req / 10 min
+//   - Signed enrollment token required
+//   - Strict input validation
+//   - apple_auth_token hashed before insert; plaintext is only returned once
+//     in the generated pass. Legacy plaintext rows are transparently migrated
+//     to hashed form on next pass re-issue.
+//   - Logos are read from Supabase Storage only (no external URL fetch).
+
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import forge from "npm:node-forge@1.3.1";
 import { zipSync, strToU8 } from "npm:fflate@0.8.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { corsHeadersFor, preflightResponse } from "../_shared/cors.ts";
+import { clientIp, rateLimit, rateLimitHeaders } from "../_shared/rateLimit.ts";
+import { parseEnrollmentInput, ValidationError } from "../_shared/validation.ts";
+import { verifyEnrollmentToken } from "../_shared/enrollmentToken.ts";
+import { hashSecret } from "../_shared/hash.ts";
 
 const FALLBACK_ICON_29 = Uint8Array.from(atob(
   "iVBORw0KGgoAAAANSUhEUgAAAB0AAAAdCAYAAABWk2cPAAAAGUlEQVR42mNkYGD4z0AEYBxVSF+FAAEGAAgyAQEAhuNGAAAAAElFTkSuQmCC"
@@ -65,9 +76,18 @@ function signManifest(manifestJson: string, signerCertPem: string, signerKeyPem:
   return out;
 }
 
-async function fetchImage(url: string | null | undefined): Promise<Uint8Array | null> {
+/**
+ * Fetches an image from our OWN Supabase Storage bucket. Never follows
+ * arbitrary external URLs (SSRF defense). We key on the `/storage/v1/object/`
+ * substring, which our storage URLs always contain.
+ */
+async function fetchStorageImage(supabaseUrl: string, url: string | null | undefined): Promise<Uint8Array | null> {
   if (!url) return null;
+  if (!url.includes("/storage/v1/object/")) return null;
   try {
+    const u = new URL(url);
+    const expected = new URL(supabaseUrl);
+    if (u.host !== expected.host) return null;
     const res = await fetch(url);
     if (!res.ok) return null;
     const buf = new Uint8Array(await res.arrayBuffer());
@@ -114,7 +134,6 @@ function buildPassFields(program: any, customer: any) {
       auxiliaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
     };
   }
-  // coupon
   return {
     headerFields: [{ key: "value", label: "OFFER", value: program.coupon_discount || "DISCOUNT" }],
     primaryFields: [{ key: "code", label: "CODE", value: program.coupon_code || "—" }],
@@ -124,46 +143,38 @@ function buildPassFields(program: any, customer: any) {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const cors = corsHeadersFor(req, "POST, OPTIONS");
+  if (req.method === "OPTIONS") return preflightResponse(req, "POST, OPTIONS");
+
+  const rl = await rateLimit("rl:apple-wallet-public", clientIp(req), 10, 10 * 60_000);
+  if (!rl.allowed) {
+    return new Response(JSON.stringify({ success: false, error: "Rate limit exceeded" }), {
+      status: 429,
+      headers: { ...cors, ...rateLimitHeaders(rl), "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const body = await req.json();
-    const { program_id, shop_id, customer_name, customer_phone } = body;
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const input = parseEnrollmentInput(body);
 
-    // Resolve program (preferred) or fall back to legacy shop-only mode
-    let program: any = null;
-    let shop: any = null;
-    if (program_id) {
-      const { data, error } = await supabase
-        .from("loyalty_programs").select("*, shop:shops(*)").eq("id", program_id).single();
-      if (error || !data) throw new Error("Program not found");
-      program = { ...data, shop_name: data.shop?.name };
-      shop = data.shop;
-    } else {
-      if (!shop_id) throw new Error("Missing program_id or shop_id");
-      const { data, error } = await supabase.from("shops").select("*").eq("id", shop_id).single();
-      if (error || !data) throw new Error("Shop not found");
-      shop = data;
-      program = {
-        id: null,
-        shop_id: shop.id,
-        loyalty_type: "points",
-        reward_threshold: shop.reward_threshold || 10,
-        reward_title: "Reward",
-        reward_description: shop.reward_description,
-        card_color: shop.card_color || "#10B981",
-        text_color: "#FFFFFF",
-        logo_url: shop.logo_url,
-        shop_name: shop.name,
-        terms: null,
-        expires_at: null,
-        google_maps_url: null,
-        website_url: null,
-      };
+    const token = req.headers.get("x-enrollment-token") || body.t || body.enrollment_token;
+    if (!token || typeof token !== "string") {
+      throw new ValidationError("Missing enrollment token", "enrollment_token");
     }
+    await verifyEnrollmentToken(token, input.program_id);
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+    const { data, error } = await supabase
+      .from("loyalty_programs")
+      .select("*, shop:shops(*)")
+      .eq("id", input.program_id)
+      .single();
+    if (error || !data) throw new Error("Program not found");
+    const program: any = { ...data, shop_name: (data as any).shop?.name };
+    const shop: any = (data as any).shop;
 
     const passTypeId = Deno.env.get("APPLE_PASS_TYPE_ID");
     const teamId = Deno.env.get("APPLE_TEAM_ID");
@@ -173,50 +184,63 @@ Deno.serve(async (req: Request) => {
     const wwdr = Deno.env.get("APPLE_WALLET_WWDR_CERT");
     const orgName = Deno.env.get("APPLE_WALLET_ORG_NAME") || "Waya";
     const webServiceURL = Deno.env.get("APPLE_PASSKIT_WEB_SERVICE_URL")
-      || `${Deno.env.get("SUPABASE_URL")}/functions/v1/apple-passkit/`;
+      || `${supabaseUrl}/functions/v1/apple-passkit/`;
     if (!passTypeId || !teamId || !signerCert || !signerKey || !wwdr) {
       throw new Error("Apple Wallet credentials not configured");
     }
 
-    // Look up or create customer_pass row
+    // Look up or create customer_pass row. Auth token is stored HASHED.
     let pass_row: any = null;
-    if (program.id && customer_phone) {
-      const { data: existing } = await supabase
-        .from("customer_passes")
-        .select("*").eq("program_id", program.id).eq("customer_phone", customer_phone).maybeSingle();
-      if (existing) pass_row = existing;
-    }
-    if (!pass_row) {
-      const phoneClean = (customer_phone || String(Date.now())).replace(/[^\w]/g, "_");
-      const serial = `waya_${(program.id || shop.id).replace(/-/g, "")}_${phoneClean}_${Date.now()}`;
-      const authToken = crypto.randomUUID().replace(/-/g, "");
-      if (program.id) {
+    let plaintextAuthToken: string | null = null;
+
+    const { data: existing } = await supabase
+      .from("customer_passes")
+      .select("*")
+      .eq("program_id", input.program_id)
+      .eq("customer_phone", input.customer_phone)
+      .maybeSingle();
+    pass_row = existing;
+
+    if (!pass_row || !pass_row.apple_serial) {
+      const phoneClean = input.customer_phone.replace(/[^\w]/g, "_");
+      const serial = `waya_${input.program_id.replace(/-/g, "")}_${phoneClean}_${Date.now()}`;
+      plaintextAuthToken = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+      const hashedAuthToken = await hashSecret(plaintextAuthToken);
+      if (!pass_row) {
         const { data: inserted } = await supabase
           .from("customer_passes")
           .insert({
-            program_id: program.id,
+            program_id: input.program_id,
             shop_id: shop.id,
-            customer_name,
-            customer_phone,
+            customer_name: input.customer_name,
+            customer_phone: input.customer_phone,
             apple_serial: serial,
-            apple_auth_token: authToken,
-          }).select().single();
+            apple_auth_token: hashedAuthToken,
+          })
+          .select()
+          .single();
         pass_row = inserted;
       } else {
-        pass_row = { apple_serial: serial, apple_auth_token: authToken, points: 0, stamps: 0, customer_name, customer_phone };
+        await supabase.from("customer_passes").update({
+          apple_serial: serial,
+          apple_auth_token: hashedAuthToken,
+          customer_name: input.customer_name,
+        }).eq("id", pass_row.id);
+        pass_row.apple_serial = serial;
       }
-    } else if (!pass_row.apple_serial) {
-      const phoneClean = (customer_phone || String(Date.now())).replace(/[^\w]/g, "_");
-      const serial = `waya_${program.id.replace(/-/g, "")}_${phoneClean}_${Date.now()}`;
-      const authToken = crypto.randomUUID().replace(/-/g, "");
+    } else {
+      // Existing pass: we need to emit a pkpass but we CAN'T recover the
+      // plaintext auth token from the hash. Rotate the token so the new pass
+      // supersedes the old one. Old pass will get 401s and Apple auto-removes it.
+      plaintextAuthToken = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+      const hashedAuthToken = await hashSecret(plaintextAuthToken);
       await supabase.from("customer_passes").update({
-        apple_serial: serial, apple_auth_token: authToken, customer_name,
+        apple_auth_token: hashedAuthToken,
+        customer_name: input.customer_name,
       }).eq("id", pass_row.id);
-      pass_row.apple_serial = serial;
-      pass_row.apple_auth_token = authToken;
     }
 
-    const fields = buildPassFields(program, { ...pass_row, customer_name });
+    const fields = buildPassFields(program, { ...pass_row, customer_name: input.customer_name });
     const bgRgb = (program.card_color || "#10B981").startsWith("#") ? hexToRgb(program.card_color) : program.card_color;
     const fgRgb = (program.text_color || "#FFFFFF").startsWith("#") ? hexToRgb(program.text_color) : program.text_color;
 
@@ -246,16 +270,14 @@ Deno.serve(async (req: Request) => {
         message: pass_row.apple_serial,
         format: "PKBarcodeFormatQR",
         messageEncoding: "iso-8859-1",
-        altText: customer_name || "Member",
+        altText: input.customer_name,
       }],
-      // Live update support
       webServiceURL,
-      authenticationToken: pass_row.apple_auth_token,
+      authenticationToken: plaintextAuthToken, // plaintext only leaves server in the pass file
       [passKey]: { ...fields, backFields },
     };
     if (program.expires_at) pass.expirationDate = new Date(program.expires_at).toISOString();
 
-    // Lock-screen geo relevance: include shop locations so the pass surfaces when the customer is nearby
     const shopLocations = Array.isArray(shop?.locations) ? shop.locations : [];
     const appleLocations = shopLocations
       .filter((l: any) => typeof l.latitude === "number" && typeof l.longitude === "number")
@@ -267,11 +289,11 @@ Deno.serve(async (req: Request) => {
       });
     if (appleLocations.length > 0) {
       pass.locations = appleLocations;
-      pass.maxDistance = 500; // meters
+      pass.maxDistance = 500;
     }
 
-    const remoteIcon = await fetchImage(program.logo_url || shop.logo_url);
-    const remoteBg = await fetchImage(program.background_url);
+    const remoteIcon = await fetchStorageImage(supabaseUrl, program.logo_url || shop?.logo_url);
+    const remoteBg = await fetchStorageImage(supabaseUrl, program.background_url);
     const icon29 = remoteIcon || FALLBACK_ICON_29;
     const icon58 = remoteIcon || FALLBACK_ICON_58;
     const files: Record<string, Uint8Array> = {
@@ -301,24 +323,26 @@ Deno.serve(async (req: Request) => {
     try {
       await supabase.from("activity_log").insert({
         shop_id: shop.id,
-        customer_name: customer_name || "Unknown",
+        customer_name: input.customer_name,
         action: "apple_wallet_add",
         points: 0,
       });
-    } catch (_) {}
+    } catch (_) { /* non-fatal */ }
 
     return new Response(archive, {
       headers: {
-        ...corsHeaders,
+        ...cors,
+        ...rateLimitHeaders(rl),
         "Content-Type": "application/vnd.apple.pkpass",
         "Content-Disposition": `attachment; filename="${(program.shop_name || "loyalty").replace(/[^\w]/g, "_")}.pkpass"`,
         "Cache-Control": "no-store",
       },
     });
   } catch (err) {
+    const status = err instanceof ValidationError ? 422 : 400;
     return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status,
+      headers: { ...cors, ...rateLimitHeaders(rl), "Content-Type": "application/json" },
     });
   }
 });

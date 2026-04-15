@@ -2,62 +2,19 @@
 //   - Apple: APNs push to all device registrations for the pass serial
 //   - Google: PATCH the LoyaltyObject (delegated to google-wallet-update)
 //
-// Requires (for Apple APNs):
-//   APPLE_APNS_AUTH_KEY      (the .p8 private key contents)
-//   APPLE_APNS_KEY_ID        (10-char key ID from Apple Developer)
-//   APPLE_TEAM_ID            (already used by apple-wallet-public)
-//   APPLE_PASS_TYPE_ID       (used as APN topic, already set)
+// Hardening:
+//   - CORS allowlist
+//   - Idempotency-Key header (or body.client_request_id) prevents duplicate
+//     stamps on retries. Uses activity_log.client_request_id UNIQUE constraint.
+//   - APNs JWT cached (50 min TTL) via _shared/tokenCache
+//
+// Required env (for Apple APNs):
+//   APPLE_APNS_AUTH_KEY   APPLE_APNS_KEY_ID   APPLE_TEAM_ID   APPLE_PASS_TYPE_ID
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-// ─── ES256 JWT for APNs ───
-function b64url(buf: ArrayBuffer | Uint8Array): string {
-  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
-  let bin = "";
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-}
-
-function pemToBuf(pem: string): ArrayBuffer {
-  const b64 = pem.replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
-  const bin = atob(b64);
-  const buf = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
-  return buf.buffer;
-}
-
-async function makeApnsJwt(): Promise<string> {
-  const keyPem = Deno.env.get("APPLE_APNS_AUTH_KEY");
-  const keyId = Deno.env.get("APPLE_APNS_KEY_ID");
-  const teamId = Deno.env.get("APPLE_TEAM_ID");
-  if (!keyPem || !keyId || !teamId) throw new Error("APNs credentials not configured");
-  const header = b64url(new TextEncoder().encode(JSON.stringify({ alg: "ES256", kid: keyId })));
-  const payload = b64url(new TextEncoder().encode(JSON.stringify({
-    iss: teamId,
-    iat: Math.floor(Date.now() / 1000),
-  })));
-  const data = `${header}.${payload}`;
-  const key = await crypto.subtle.importKey(
-    "pkcs8",
-    pemToBuf(keyPem),
-    { name: "ECDSA", namedCurve: "P-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign(
-    { name: "ECDSA", hash: "SHA-256" },
-    key,
-    new TextEncoder().encode(data),
-  );
-  return `${data}.${b64url(sig)}`;
-}
+import { corsHeadersFor, preflightResponse } from "../_shared/cors.ts";
+import { getApnsJwt } from "../_shared/tokenCache.ts";
 
 async function sendAPNs(pushToken: string, jwt: string, topic: string): Promise<{ ok: boolean; status: number; body: string }> {
   const res = await fetch(`https://api.push.apple.com/3/device/${pushToken}`, {
@@ -76,17 +33,26 @@ async function sendAPNs(pushToken: string, jwt: string, topic: string): Promise<
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const cors = corsHeadersFor(req, "POST, OPTIONS");
+  if (req.method === "OPTIONS") return preflightResponse(req, "POST, OPTIONS");
+
   try {
-    const { pass_id, points_delta, stamps_delta, set_points, set_stamps, set_tier, action } = await req.json();
+    const payload = await req.json();
+    const { pass_id, points_delta, stamps_delta, set_points, set_stamps, set_tier, action } = payload;
     if (!pass_id) throw new Error("Missing pass_id");
+
+    // Idempotency key: required for stamp/points mutations to prevent
+    // double-charging on retries. If missing, we generate one so the insert
+    // always has a value, but we RECOMMEND clients send a stable key.
+    const idempotencyKey: string = req.headers.get("x-idempotency-key")
+      || payload.client_request_id
+      || crypto.randomUUID();
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Auth: business user must own the shop tied to the pass
     const authHeader = req.headers.get("authorization") || "";
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -102,7 +68,22 @@ Deno.serve(async (req: Request) => {
     if (!pass) throw new Error("Pass not found");
     if (pass.shop?.user_id !== user.id) throw new Error("Not your customer");
 
-    // Compute new values
+    // Idempotency check: if activity_log already has this (shop_id, client_request_id)
+    // pair, short-circuit and return the existing state. Requires UNIQUE index.
+    const { data: priorLog } = await supabase
+      .from("activity_log")
+      .select("id")
+      .eq("shop_id", pass.shop_id)
+      .eq("client_request_id", idempotencyKey)
+      .maybeSingle();
+    if (priorLog) {
+      return new Response(JSON.stringify({
+        success: true,
+        idempotent_replay: true,
+        pass,
+      }), { headers: { ...cors, "Content-Type": "application/json" } });
+    }
+
     const updates: any = { updated_at: new Date().toISOString(), last_visit_at: new Date().toISOString() };
     if (typeof set_points === "number") updates.points = set_points;
     else if (typeof points_delta === "number") updates.points = (pass.points || 0) + points_delta;
@@ -110,7 +91,6 @@ Deno.serve(async (req: Request) => {
     else if (typeof stamps_delta === "number") updates.stamps = (pass.stamps || 0) + stamps_delta;
     if (set_tier) updates.tier = set_tier;
 
-    // Auto-tier (if tiered program)
     if (pass.program?.loyalty_type === "tiered" && pass.program?.tiers && updates.points != null) {
       const sortedTiers = [...pass.program.tiers].sort((a: any, b: any) => b.threshold - a.threshold);
       const t = sortedTiers.find((x: any) => updates.points >= (x.threshold || 0));
@@ -119,18 +99,23 @@ Deno.serve(async (req: Request) => {
 
     await supabase.from("customer_passes").update(updates).eq("id", pass_id);
 
-    // Log activity
+    // Insert activity_log with idempotency key. UNIQUE constraint makes
+    // duplicate retries fail gracefully (we already bailed above).
     try {
       await supabase.from("activity_log").insert({
         shop_id: pass.shop_id,
         customer_name: pass.customer_name,
         action: action || (points_delta ? "add_points" : stamps_delta ? "add_stamp" : "update"),
         points: points_delta || stamps_delta || 0,
+        client_request_id: idempotencyKey,
       });
-    } catch {}
+    } catch (err) {
+      // Likely a race on the UNIQUE index — fine, another request won.
+      console.warn("[points-update] activity_log insert:", (err as Error).message);
+    }
 
-    // ─── Trigger Apple APNs push to all registered devices ───
-    let apnsResults: any[] = [];
+    // Trigger Apple APNs push to all registered devices
+    const apnsResults: any[] = [];
     if (pass.apple_serial) {
       try {
         const { data: regs } = await supabase
@@ -138,11 +123,19 @@ Deno.serve(async (req: Request) => {
           .select("push_token")
           .eq("serial_number", pass.apple_serial);
         if (regs && regs.length > 0) {
-          const jwt = await makeApnsJwt();
+          const jwt = await getApnsJwt();
           const topic = Deno.env.get("APPLE_PASS_TYPE_ID")!;
           for (const r of regs) {
             const result = await sendAPNs(r.push_token, jwt, topic);
             apnsResults.push({ token: r.push_token.slice(0, 8) + "...", ...result });
+            // Mark dead registrations for later cleanup (410 = unregistered)
+            if (result.status === 410) {
+              try {
+                await supabase.from("apple_device_registrations")
+                  .update({ last_apns_status: 410, last_apns_at: new Date().toISOString() })
+                  .eq("push_token", r.push_token);
+              } catch {}
+            }
           }
         }
       } catch (err) {
@@ -151,7 +144,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // ─── Trigger Google Wallet update (delegate) ───
+    // Trigger Google Wallet update (delegate)
     let googleResult: any = null;
     if (pass.google_object_id) {
       try {
@@ -171,11 +164,12 @@ Deno.serve(async (req: Request) => {
       pass: { ...pass, ...updates },
       apns: apnsResults,
       google: googleResult,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      idempotency_key: idempotencyKey,
+    }), { headers: { ...cors, "Content-Type": "application/json" } });
   } catch (err) {
     return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
       status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...cors, "Content-Type": "application/json" },
     });
   }
 });

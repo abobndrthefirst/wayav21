@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import appleWalletIcon from './Wallet_App_icon_iOS_12.png'
 import googleWalletIcon from '../png-transparent-google-wallet-logo-thumbnail-tech-companies.png'
 
-const SUPABASE_URL = 'https://unnheqshkxpbflozechm.supabase.co'
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 /**
  * Customer landing — /w/:programId
@@ -17,6 +17,8 @@ export default function WalletEnrollPage({ lang = 'en' }) {
   const T = (en, ar) => (isAr ? ar : en)
 
   const programId = window.location.pathname.split('/w/')[1]?.split('/')[0]
+  // Enrollment token from ?t=... — required by wallet-public endpoints
+  const enrollmentToken = new URLSearchParams(window.location.search).get('t') || ''
 
   const [program, setProgram] = useState(null)
   const [shop, setShop] = useState(null)
@@ -68,15 +70,23 @@ export default function WalletEnrollPage({ lang = 'en' }) {
       setError(T('Please enter name and phone.', 'يرجى إدخال الاسم ورقم الهاتف.'))
       return
     }
+    if (!enrollmentToken) {
+      setError(T('This enrollment link is invalid or expired. Ask the merchant for a fresh QR.', 'رابط التسجيل غير صالح أو منتهي الصلاحية. اطلب من المتجر رمز QR جديد.'))
+      return
+    }
     setSubmitting(true)
     setError(null)
 
     const body = JSON.stringify({
       program_id: program.id,
-      shop_id: shop.id,
       customer_name: name.trim(),
       customer_phone: phone.trim(),
+      t: enrollmentToken,
     })
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-enrollment-token': enrollmentToken,
+    }
 
     try {
       // On desktop, fire both. On iOS, fire Apple. On Android, fire Google.
@@ -84,9 +94,7 @@ export default function WalletEnrollPage({ lang = 'en' }) {
       if (device === 'ios' || device === 'desktop') {
         calls.push(
           fetch(`${SUPABASE_URL}/functions/v1/apple-wallet-public`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body,
+            method: 'POST', headers, body,
           }).then(async (res) => {
             if (!res.ok) throw new Error(`Apple: ${res.status}`)
             const blob = await res.blob()
@@ -97,12 +105,11 @@ export default function WalletEnrollPage({ lang = 'en' }) {
       if (device === 'android' || device === 'desktop') {
         calls.push(
           fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body,
+            method: 'POST', headers, body,
           }).then(async (res) => {
             const json = await res.json()
             if (json.success) setGoogleSaveUrl(json.saveUrl)
+            else throw new Error(json.error || 'Google Wallet error')
           }).catch((err) => console.error('google', err))
         )
       }

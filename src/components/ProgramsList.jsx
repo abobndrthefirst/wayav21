@@ -110,13 +110,38 @@ function labelType(t, T) {
 function ProgramQR({ program, onClose, lang }) {
   const isAr = lang === 'ar'
   const T = (en, ar) => (isAr ? ar : en)
-  const url = `${window.location.origin}/w/${program.id}`
+  const [token, setToken] = useState(null)
+  const [tokenErr, setTokenErr] = useState(null)
+
+  // Mint the signed enrollment token so the /w/:programId link is accepted
+  // by wallet-public endpoints. Without ?t=... the enrollment will be refused.
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setTokenErr(null)
+      const { data, error } = await supabase.functions.invoke('mint-enrollment-token', {
+        body: { program_id: program.id },
+      })
+      if (cancelled) return
+      if (error || !data?.success) {
+        setTokenErr(error?.message || data?.error || 'Could not mint enrollment token')
+        return
+      }
+      setToken(data.token)
+    })()
+    return () => { cancelled = true }
+  }, [program.id])
+
+  const url = token
+    ? `${window.location.origin}/w/${program.id}?t=${encodeURIComponent(token)}`
+    : `${window.location.origin}/w/${program.id}`
   const color = program.card_color || '#10B981'
   const text = program.text_color || '#FFFFFF'
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=520x520&data=${encodeURIComponent(url)}&color=${color.replace('#', '')}&bgcolor=ffffff&margin=12`
   const qrPlain = `https://api.qrserver.com/v1/create-qr-code/?size=520x520&data=${encodeURIComponent(url)}&color=000000&bgcolor=ffffff&margin=12`
 
   const copy = async () => {
+    if (!token) return
     try { await navigator.clipboard.writeText(url); alert(T('Link copied', 'تم النسخ')) } catch {}
   }
 
@@ -243,11 +268,13 @@ function ProgramQR({ program, onClose, lang }) {
         <button className="lw-btn ghost" onClick={onClose}>{T('Back', 'رجوع')}</button>
       </div>
       <div className="pl-qr-wrap">
-        <img src={qr} alt="QR" className="pl-qr-img" />
-        <p className="pl-qr-hint">{T('Customers scan this with any phone. We auto-detect iOS or Android and route them to the right wallet.', 'العملاء يمسحون هذا الرمز. نتعرف تلقائياً على iPhone أو Android ونوجههم للمحفظة المناسبة.')}</p>
-        <code className="pl-qr-url">{url}</code>
+        {!token && !tokenErr && <p className="pl-qr-hint">{T('Preparing link…', 'جارٍ تجهيز الرابط…')}</p>}
+        {tokenErr && <p className="pl-qr-hint" style={{ color: '#c00' }}>{tokenErr}</p>}
+        {token && <img src={qr} alt="QR" className="pl-qr-img" />}
+        {token && <p className="pl-qr-hint">{T('Customers scan this with any phone. We auto-detect iOS or Android and route them to the right wallet.', 'العملاء يمسحون هذا الرمز. نتعرف تلقائياً على iPhone أو Android ونوجههم للمحفظة المناسبة.')}</p>}
+        {token && <code className="pl-qr-url">{url}</code>}
         <div className="pl-qr-actions">
-          <button onClick={copy} className="lw-btn primary">{T('Copy link', 'نسخ الرابط')}</button>
+          <button onClick={copy} className="lw-btn primary" disabled={!token}>{T('Copy link', 'نسخ الرابط')}</button>
         </div>
       </div>
 
@@ -262,8 +289,8 @@ function ProgramQR({ program, onClose, lang }) {
                 <div className="pl-poster-thumb-qr">▣</div>
                 <div className="pl-poster-thumb-tag">{p.label}</div>
               </div>
-              <button className="lw-btn primary" onClick={() => printPoster(p.build())}>
-                {T('Print / Save PDF', 'طباعة / حفظ PDF')}
+              <button className="lw-btn primary" onClick={() => printPoster(p.build())} disabled={!token}>
+                {token ? T('Print / Save PDF', 'طباعة / حفظ PDF') : T('Preparing…', 'جارٍ التجهيز…')}
               </button>
             </div>
           ))}

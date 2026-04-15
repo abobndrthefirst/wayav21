@@ -1,15 +1,26 @@
-import { useEffect, useRef, useState, createContext, useContext } from 'react'
+import { useEffect, useRef, useState, createContext, useContext, lazy, Suspense } from 'react'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { createClient } from '@supabase/supabase-js'
 // Analytics loaded via script tag in index.html
 import './styles.css'
 import './components/loyalty-wizard.css'
-import ProgramsList from './components/ProgramsList'
-import WalletEnrollPage from './components/WalletEnrollPage'
 
-/* ─── Supabase config ─── */
-const SUPABASE_URL = 'https://unnheqshkxpbflozechm.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVubmhlcXNoa3hwYmZsb3plY2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTkwNjksImV4cCI6MjA5MDQzNTA2OX0.XHAbOOdPtuwD0pJErxhBw9C3RJPouPeUhMS9hSThON0'
+// Lazy-load the heavy merchant + customer flows so the marketing landing
+// page doesn't ship a LoyaltyWizard / WalletEnrollPage bundle it never uses.
+const ProgramsList = lazy(() => import('./components/ProgramsList'))
+const WalletEnrollPage = lazy(() => import('./components/WalletEnrollPage'))
+
+const LazyFallback = () => (
+  <div style={{ padding: 48, textAlign: 'center', color: '#888' }}>Loading…</div>
+)
+
+/* ─── Supabase config (from Vite env) ─── */
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY env var. Add them to .env.local and Vercel project env.')
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
@@ -2829,7 +2840,9 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         )}
 
         {activeTab === 'cards' && (
-          <ProgramsList shop={shop} lang={lang} />
+          <Suspense fallback={<LazyFallback />}>
+            <ProgramsList shop={shop} lang={lang} />
+          </Suspense>
         )}
 
         {activeTab === 'settings' && (
@@ -3002,7 +3015,11 @@ function ProgramsPageWrapper({ lang, setLang, theme, setTheme, t }) {
       })
   }, [user, loading])
   if (loading || !shop) return <div style={{padding:60,textAlign:'center'}}>{err || 'Loading…'}</div>
-  return <ProgramsList shop={shop} lang={lang} />
+  return (
+    <Suspense fallback={<LazyFallback />}>
+      <ProgramsList shop={shop} lang={lang} />
+    </Suspense>
+  )
 }
 
 /* ─── App ─── */
@@ -3064,7 +3081,7 @@ export default function App() {
   if (page === 'loyalty') return <AuthProvider><LoyaltyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'settings') return <AuthProvider><SettingsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'wallet') return <WalletPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
-  if (page === 'enroll') return <WalletEnrollPage lang={lang} />
+  if (page === 'enroll') return <Suspense fallback={<LazyFallback />}><WalletEnrollPage lang={lang} /></Suspense>
   if (page === 'programs') return <AuthProvider><ProgramsPageWrapper lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
 
   return (
