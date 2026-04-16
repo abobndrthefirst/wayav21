@@ -101,7 +101,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       const res = await fetch(`${SUPABASE_URL}/functions/v1/apple-wallet-public`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shop_id: shop.id, customer_name: 'Test Preview', customer_phone: '0500000000' }),
+        body: JSON.stringify({ program_id: savedProgram.id, customer_name: 'Test Preview', customer_phone: '0500000000' }),
       })
       if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || 'Failed') }
       const blob = await res.blob()
@@ -122,7 +122,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       const res = await fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shop_id: shop.id, customer_name: 'Test Preview', customer_phone: '0500000000' }),
+        body: JSON.stringify({ program_id: savedProgram.id, customer_name: 'Test Preview', customer_phone: '0500000000' }),
       })
       const data = await res.json()
       if (data.success && data.saveUrl) { window.open(data.saveUrl, '_blank'); showToast(T('Google Wallet opened!', 'تم فتح محفظة جوجل!')) }
