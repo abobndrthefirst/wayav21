@@ -928,7 +928,7 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
     >
       <div className="nav-pill">
         <div className="nav-logo">
-          <Logo size={70} />
+          <Logo size={110} />
         </div>
         <div className="nav-links">
           <a href="#how">{t.nav.how}</a>
@@ -1884,7 +1884,7 @@ function Footer({ t }) {
     <footer className="footer">
       <div className="footer-content">
         <div className="footer-logo">
-          <Logo size={60} />
+          <Logo size={90} />
         </div>
 
         <div className="footer-center">
@@ -2105,7 +2105,7 @@ function LoginPage({ t, lang, setLang, theme, setTheme }) {
       </div>
 
       <motion.div className="auth-card" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <div className="auth-brand"><Logo size={72} /></div>
+        <div className="auth-brand"><Logo size={100} /></div>
         <h1 className="auth-title">{a.loginTitle}</h1>
         <p className="auth-subtitle">{a.loginSub}</p>
 
@@ -2206,7 +2206,7 @@ function SignupPage({ t, lang, setLang, theme, setTheme }) {
       </div>
 
       <motion.div className="auth-card" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <div className="auth-brand"><Logo size={72} /></div>
+        <div className="auth-brand"><Logo size={100} /></div>
         <h1 className="auth-title">{a.signupTitle}</h1>
         <p className="auth-subtitle">{a.signupSub}</p>
 
@@ -2316,7 +2316,7 @@ function SetupPage({ t, lang, setLang, theme, setTheme }) {
   return (
     <div className="auth-page">
       <div className="auth-top-bar">
-        <div className="auth-brand"><Logo size={72} /></div>
+        <div className="auth-brand"><Logo size={100} /></div>
         <div className="auth-top-actions">
           <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
             {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
@@ -2796,7 +2796,7 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
     setGenerating(false)
   }
 
-  if (loading) return <div className="auth-page"><div className="dash-loading"><Logo size={52} /></div></div>
+  if (loading) return <div className="auth-page"><div className="dash-loading"><Logo size={72} /></div></div>
   if (error && !shop) return (
     <div className="auth-page">
       <div className="auth-card" style={{ textAlign: 'center' }}>
@@ -2983,7 +2983,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
       })
   }, [user])
 
-  if (loadingShop) return <div className="auth-page"><div className="dash-loading"><Logo size={52} /></div></div>
+  if (loadingShop) return <div className="auth-page"><div className="dash-loading"><Logo size={72} /></div></div>
   if (!shop) return null
 
   const handleLogout = async () => { await signOut(); navigate('/') }
@@ -3013,7 +3013,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
       {/* Persistent Sidebar (LoyaPro-style) */}
       <aside className="sidebar sidebar-persistent">
         <div className="sidebar-header">
-          <div className="sidebar-brand"><Logo size={48} /><span className="sidebar-brand-name">Waya</span></div>
+          <div className="sidebar-brand"><Logo size={72} /><span className="sidebar-brand-name">Waya</span></div>
         </div>
         <div className="sidebar-shop-block">
           {shop.logo_url ? <img src={shop.logo_url} alt="" className="sidebar-logo" /> : <div className="sidebar-logo-ph"><Logo size={20} /></div>}
@@ -3043,7 +3043,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
       {/* Top nav */}
       <nav className="dash-nav">
         <div className="dash-nav-left">
-          <div className="dash-nav-brand"><Logo size={52} /></div>
+          <div className="dash-nav-brand"><Logo size={72} /></div>
         </div>
         <div className="dash-nav-right">
           <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
