@@ -609,26 +609,144 @@ const content = {
   },
 }
 
-/* ─── Reusable scroll-reveal wrapper ─── */
+/* ─── Apple-style scroll-reveal with blur ─── */
 function Reveal({ children, delay = 0, direction = 'up', className = '' }) {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const isInView = useInView(ref, { once: true, margin: '-60px' })
 
   const variants = {
     hidden: {
       opacity: 0,
-      y: direction === 'up' ? 60 : direction === 'down' ? -60 : 0,
-      x: direction === 'right' ? -60 : direction === 'left' ? 60 : 0,
-      scale: 0.97,
+      y: direction === 'up' ? 40 : direction === 'down' ? -40 : 0,
+      x: direction === 'right' ? -40 : direction === 'left' ? 40 : 0,
+      filter: 'blur(10px)',
     },
     visible: {
-      opacity: 1, y: 0, x: 0, scale: 1,
-      transition: { duration: 0.9, delay, ease: [0.25, 0.46, 0.45, 0.94] },
+      opacity: 1, y: 0, x: 0, filter: 'blur(0px)',
+      transition: {
+        duration: 0.8,
+        delay,
+        ease: [0.22, 1, 0.36, 1],
+      },
     },
   }
 
   return (
     <motion.div ref={ref} className={className} initial="hidden" animate={isInView ? 'visible' : 'hidden'} variants={variants}>
+      {children}
+    </motion.div>
+  )
+}
+
+/* ─── Apple-style text reveal (word by word) ─── */
+function TextReveal({ children, delay = 0, className = '' }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-60px' })
+
+  if (typeof children !== 'string') {
+    return <Reveal delay={delay} className={className}>{children}</Reveal>
+  }
+
+  const words = children.split(' ')
+
+  return (
+    <span ref={ref} className={className} style={{ display: 'inline' }}>
+      {words.map((word, i) => (
+        <span key={i} style={{ display: 'inline-block', overflow: 'hidden' }}>
+          <motion.span
+            style={{ display: 'inline-block' }}
+            initial={{ y: '100%', opacity: 0 }}
+            animate={isInView ? { y: 0, opacity: 1 } : { y: '100%', opacity: 0 }}
+            transition={{
+              duration: 0.5,
+              delay: delay + i * 0.04,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            {word}
+          </motion.span>
+          {i < words.length - 1 ? '\u00A0' : ''}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+/* ─── Counting number animation ─── */
+function CountUp({ value, duration = 2, delay = 0 }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-40px' })
+  const [display, setDisplay] = useState(value)
+  const hasRun = useRef(false)
+
+  useEffect(() => {
+    if (!isInView || hasRun.current) return
+    hasRun.current = true
+
+    const numericMatch = value.match(/[\d,.]+/)
+    if (!numericMatch) { setDisplay(value); return }
+
+    const numStr = numericMatch[0]
+    const target = parseFloat(numStr.replace(/,/g, ''))
+    const prefix = value.slice(0, numericMatch.index)
+    const suffix = value.slice(numericMatch.index + numStr.length)
+    const hasCommas = numStr.includes(',')
+    const decimals = numStr.includes('.') ? numStr.split('.')[1].length : 0
+
+    const startTime = performance.now() + delay * 1000
+    const animate = (now) => {
+      const elapsed = Math.max(0, now - startTime)
+      const progress = Math.min(elapsed / (duration * 1000), 1)
+      const eased = 1 - Math.pow(1 - progress, 4)
+      const current = eased * target
+      let formatted = decimals > 0 ? current.toFixed(decimals) : Math.round(current).toString()
+      if (hasCommas) formatted = Number(formatted).toLocaleString()
+      setDisplay(`${prefix}${formatted}${suffix}`)
+      if (progress < 1) requestAnimationFrame(animate)
+    }
+    requestAnimationFrame(animate)
+  }, [isInView, value, duration, delay])
+
+  return <span ref={ref}>{display}</span>
+}
+
+/* ─── Magnetic hover button ─── */
+function MagneticWrap({ children, strength = 0.3 }) {
+  const ref = useRef(null)
+  const [pos, setPos] = useState({ x: 0, y: 0 })
+
+  const handleMove = (e) => {
+    const rect = ref.current?.getBoundingClientRect()
+    if (!rect) return
+    const x = (e.clientX - rect.left - rect.width / 2) * strength
+    const y = (e.clientY - rect.top - rect.height / 2) * strength
+    setPos({ x, y })
+  }
+
+  const handleLeave = () => setPos({ x: 0, y: 0 })
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      animate={{ x: pos.x, y: pos.y }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20, mass: 0.5 }}
+      style={{ display: 'inline-block' }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+/* ─── Parallax scroll layer ─── */
+function ParallaxLayer({ children, speed = 0.5, className = '' }) {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const y = useTransform(scrollYProgress, [0, 1], [speed * 100, speed * -100])
+
+  return (
+    <motion.div ref={ref} className={className} style={{ y }}>
       {children}
     </motion.div>
   )
@@ -804,9 +922,9 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
   return (
     <motion.nav
       className={`navbar ${scrolled ? 'scrolled' : ''}`}
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+      initial={{ y: -40, opacity: 0, filter: 'blur(10px)' }}
+      animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+      transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="nav-pill">
         <div className="nav-logo">
@@ -927,54 +1045,88 @@ function SignupForm({ t, id }) {
 
 /* ─── Hero ─── */
 function Hero({ t }) {
-  const { scrollYProgress } = useScroll()
-  const y = useTransform(scrollYProgress, [0, 0.3], [0, -60])
-  const opacity = useTransform(scrollYProgress, [0, 0.25], [1, 0])
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  const y = useTransform(scrollYProgress, [0, 1], [0, -120])
+  const opacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
+  const scale = useTransform(scrollYProgress, [0, 0.6], [1, 0.95])
 
   return (
-    <section className="hero">
-      <div className="hero-glow" />
-      <div className="hero-glow-2" />
+    <section className="hero" ref={heroRef}>
+      <motion.div className="hero-glow" animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }} />
+      <motion.div className="hero-glow-2" animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }} />
 
-      <motion.div className="hero-inner" style={{ y, opacity }}>
-        <Reveal delay={0.2} direction="right" className="hero-image-side">
+      <motion.div className="hero-inner" style={{ y, opacity, scale }}>
+        <motion.div
+          className="hero-image-side"
+          initial={{ opacity: 0, x: -60, filter: 'blur(20px)' }}
+          animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        >
           <div className="hero-image-container">
             <motion.img
               src="/hero.png"
               alt="وايا"
               className="hero-image"
-              initial={{ scale: 1.05, opacity: 0 }}
+              initial={{ scale: 1.15, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
             />
-            <motion.div className="floating-bubble floating-bubble-1" animate={{ y: [0, -8, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
+            <motion.div
+              className="floating-bubble floating-bubble-1"
+              initial={{ opacity: 0, scale: 0, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
+              transition={{ opacity: { delay: 1.2, duration: 0.5 }, scale: { delay: 1.2, duration: 0.5, type: 'spring' }, y: { delay: 1.7, duration: 3.5, repeat: Infinity, ease: 'easeInOut' } }}
+            >
               <img src="/icon-monitoring.svg" alt="" width="24" height="24" />
             </motion.div>
-            <motion.div className="floating-bubble floating-bubble-2" animate={{ y: [0, 8, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}>
+            <motion.div
+              className="floating-bubble floating-bubble-2"
+              initial={{ opacity: 0, scale: 0, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: [0, 10, 0] }}
+              transition={{ opacity: { delay: 1.4, duration: 0.5 }, scale: { delay: 1.4, duration: 0.5, type: 'spring' }, y: { delay: 1.9, duration: 4, repeat: Infinity, ease: 'easeInOut' } }}
+            >
               <img src="/icon-favorite.svg" alt="" width="24" height="24" />
             </motion.div>
-            <motion.div className="floating-bubble floating-bubble-3" animate={{ y: [0, -6, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}>
+            <motion.div
+              className="floating-bubble floating-bubble-3"
+              initial={{ opacity: 0, scale: 0, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: [0, -8, 0] }}
+              transition={{ opacity: { delay: 1.6, duration: 0.5 }, scale: { delay: 1.6, duration: 0.5, type: 'spring' }, y: { delay: 2.1, duration: 4.5, repeat: Infinity, ease: 'easeInOut' } }}
+            >
               <img src="/icon-leaderboard.svg" alt="" width="24" height="24" />
             </motion.div>
           </div>
-        </Reveal>
+        </motion.div>
 
         <div className="hero-text-side">
-          <Reveal>
-            <h1 className="hero-title">
-              <span className="text-cream">{t.hero.title1} </span>
-              <span className="text-green">{t.hero.title2}</span>
-            </h1>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <p className="hero-subtitle">{t.hero.subtitle}</p>
-          </Reveal>
-          <Reveal delay={0.25}>
-            <div className="hero-free-badge">{t.hero.freeTrial}</div>
-          </Reveal>
-          <Reveal delay={0.3}>
+          <motion.h1 className="hero-title" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.01 }}>
+            <span className="text-cream"><TextReveal delay={0.1}>{t.hero.title1}</TextReveal> </span>
+            <span className="text-green hero-gradient-text"><TextReveal delay={0.3}>{t.hero.title2}</TextReveal></span>
+          </motion.h1>
+          <motion.p
+            className="hero-subtitle"
+            initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {t.hero.subtitle}
+          </motion.p>
+          <motion.div
+            className="hero-free-badge"
+            initial={{ opacity: 0, scale: 0.8, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+            transition={{ duration: 0.6, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {t.hero.freeTrial}
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.8, delay: 1, ease: [0.22, 1, 0.36, 1] }}
+          >
             <SignupForm t={t} id="hero-signup" />
-          </Reveal>
+          </motion.div>
         </div>
       </motion.div>
     </section>
@@ -987,9 +1139,11 @@ function StatsBar({ t }) {
     <section className="stats-bar-section">
       <div className="stats-bar-inner">
         {t.stats.map((stat, i) => (
-          <Reveal key={i} delay={i * 0.1}>
+          <Reveal key={i} delay={i * 0.12}>
             <div className="stats-bar-item">
-              <span className="stats-bar-value">{stat.value}</span>
+              <span className="stats-bar-value">
+                <CountUp value={stat.value} duration={2.5} delay={i * 0.15} />
+              </span>
               <span className="stats-bar-label">{stat.label}</span>
             </div>
           </Reveal>
@@ -1052,9 +1206,15 @@ function HowItWorks({ t }) {
 
       <div className="steps-grid steps-grid-5">
         {t.how.steps.map((step, i) => (
-          <Reveal key={i} delay={i * 0.12}>
-            <motion.div className="step-card" whileHover={{ y: -8, boxShadow: '0 20px 60px rgba(16,185,129,0.06)' }} transition={{ duration: 0.3 }}>
-              <div className="step-icon">{stepIcons[i]}</div>
+          <Reveal key={i} delay={i * 0.1}>
+            <motion.div
+              className="step-card"
+              whileHover={{ y: -10, boxShadow: '0 25px 60px rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.3)' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              <motion.div className="step-icon" whileHover={{ scale: 1.1, rotate: 5 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
+                {stepIcons[i]}
+              </motion.div>
               <h3 className="step-title">{step.title}</h3>
               <p className="step-desc">{step.desc}</p>
               <span className="step-number">{i + 1}</span>
@@ -1097,8 +1257,14 @@ function Features({ t }) {
       <div className="features-grid">
         {t.features.items.map((feat, i) => (
           <Reveal key={i} delay={i * 0.1}>
-            <motion.div className="feature-card" whileHover={{ y: -6 }} transition={{ duration: 0.3 }}>
-              <div className="feature-icon">{featureIcons[feat.icon]}</div>
+            <motion.div
+              className="feature-card"
+              whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.06)', borderColor: 'rgba(16,185,129,0.25)' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              <motion.div className="feature-icon" whileHover={{ scale: 1.12 }} transition={{ type: 'spring', stiffness: 400, damping: 12 }}>
+                {featureIcons[feat.icon]}
+              </motion.div>
               <h3 className="feature-title">{feat.title}</h3>
               <p className="feature-desc">{feat.desc}</p>
             </motion.div>
@@ -1181,15 +1347,15 @@ function Audience({ t }) {
 
       <div className="audience-grid">
         {t.audience.items.map((item, i) => (
-          <Reveal key={i} delay={i * 0.1}>
+          <Reveal key={i} delay={i * 0.08}>
             <motion.div
               className="audience-card"
-              whileHover={{ y: -8, scale: 1.03 }}
-              transition={{ duration: 0.3 }}
+              whileHover={{ y: -10, scale: 1.04, boxShadow: '0 20px 50px rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.35)' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 18 }}
             >
-              <div className="audience-icon-wrap">
+              <motion.div className="audience-icon-wrap" whileHover={{ scale: 1.15, rotate: -5 }} transition={{ type: 'spring', stiffness: 400, damping: 12 }}>
                 {audienceIcons[iconKeys[i]]}
-              </div>
+              </motion.div>
               <span className="audience-label">{item.label}</span>
             </motion.div>
           </Reveal>
@@ -1341,24 +1507,34 @@ function WalletCards({ t }) {
     { src: '/Apple Wallet Pass Kit Coupon.png', alt: 'Coupon card' },
   ]
 
+  const sectionRef = useRef(null)
+  const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
+  const rotations = [-6, 0, 6]
+
   return (
-    <section className="section wallet-section">
+    <section className="section wallet-section" ref={sectionRef}>
       <Reveal>
         <h2 className="section-title">{t.walletCards.title}</h2>
         <p className="section-subtitle">{t.walletCards.subtitle}</p>
       </Reveal>
 
-      <div className="wallet-cards-row">
+      <div className="wallet-cards-row" style={{ perspective: '1200px' }}>
         {cards.map((card, i) => (
-          <Reveal key={i} delay={i * 0.15}>
-            <motion.div
-              className="wallet-card-wrap"
-              whileHover={{ y: -12, rotateY: 5, scale: 1.03 }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
-            >
-              <img src={card.src} alt={card.alt} className="wallet-card-img" />
-            </motion.div>
-          </Reveal>
+          <motion.div
+            key={i}
+            className="wallet-card-wrap"
+            initial={{ opacity: 0, y: 80, rotateY: -15, scale: 0.85 }}
+            animate={isInView ? { opacity: 1, y: 0, rotateY: rotations[i], scale: 1 } : {}}
+            transition={{
+              duration: 1,
+              delay: 0.2 + i * 0.15,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            whileHover={{ y: -16, rotateY: 0, scale: 1.05, boxShadow: '0 30px 80px rgba(16,185,129,0.12)' }}
+            style={{ transformStyle: 'preserve-3d' }}
+          >
+            <img src={card.src} alt={card.alt} className="wallet-card-img" />
+          </motion.div>
         ))}
       </div>
     </section>
@@ -1576,9 +1752,15 @@ function SocialProof({ t }) {
 
       <div className="social-proof-grid">
         {t.socialProof.items.map((item, i) => (
-          <Reveal key={i} delay={i * 0.15}>
-            <motion.div className="social-proof-card" whileHover={{ y: -6 }} transition={{ duration: 0.3 }}>
-              <span className="social-proof-value">{item.value}</span>
+          <Reveal key={i} delay={i * 0.12}>
+            <motion.div
+              className="social-proof-card"
+              whileHover={{ y: -10, boxShadow: '0 20px 50px rgba(16,185,129,0.06)', borderColor: 'rgba(16,185,129,0.25)' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              <span className="social-proof-value">
+                <CountUp value={item.value} duration={2} delay={i * 0.2} />
+              </span>
               <span className="social-proof-label">{item.label}</span>
               <p className="social-proof-desc">{item.desc}</p>
             </motion.div>
@@ -1602,7 +1784,7 @@ function Pricing({ t }) {
 
       <Reveal delay={0.2}>
         <div className="pricing-cards">
-          <motion.div className={`pricing-card ${!annual ? 'pricing-active' : ''}`} onClick={() => setAnnual(false)} whileHover={{ y: -4 }} transition={{ duration: 0.3 }}>
+          <motion.div className={`pricing-card ${!annual ? 'pricing-active' : ''}`} onClick={() => setAnnual(false)} whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.08)' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
             <span className="pricing-plan-label">{t.pricing.monthly.label}</span>
             <div className="pricing-amount">
               <span className="price">{t.pricing.monthly.price}</span>
@@ -1621,7 +1803,7 @@ function Pricing({ t }) {
             </a>
           </motion.div>
 
-          <motion.div className={`pricing-card ${annual ? 'pricing-active' : ''}`} onClick={() => setAnnual(true)} whileHover={{ y: -4 }} transition={{ duration: 0.3 }}>
+          <motion.div className={`pricing-card ${annual ? 'pricing-active' : ''}`} onClick={() => setAnnual(true)} whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.08)' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
             <div className="pricing-plan-label-row">
               <span className="pricing-plan-label">{t.pricing.annual.label}</span>
               <span className="save-badge">{t.pricing.annual.badge}</span>
@@ -1652,7 +1834,7 @@ function Pricing({ t }) {
 function CTA({ t }) {
   return (
     <section className="cta-section" id="cta">
-      <div className="cta-glow" />
+      <motion.div className="cta-glow" animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }} />
       <Reveal>
         <h2 className="cta-title">{t.cta.title}</h2>
       </Reveal>
@@ -1660,7 +1842,14 @@ function CTA({ t }) {
         <p className="cta-subtitle">{t.cta.subtitle}</p>
       </Reveal>
       <Reveal delay={0.2}>
-        <div className="hero-free-badge" style={{ marginBottom: 16 }}>{t.hero.freeTrial}</div>
+        <motion.div
+          className="hero-free-badge"
+          style={{ marginBottom: 16 }}
+          animate={{ boxShadow: ['0 0 0 0 rgba(16,185,129,0)', '0 0 20px 4px rgba(16,185,129,0.15)', '0 0 0 0 rgba(16,185,129,0)'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          {t.hero.freeTrial}
+        </motion.div>
       </Reveal>
       <Reveal delay={0.3}>
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
@@ -2709,12 +2898,25 @@ function DesignerTab({ shop, lang }) {
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState(null)
+  const [createNew, setCreateNew] = useState(false)
+
+  const reload = () => supabase.from('loyalty_programs').select('*').eq('shop_id', shop.id).order('created_at', { ascending: false }).then(({ data }) => setPrograms(data || []))
 
   useEffect(() => {
     if (!shop?.id) return
-    supabase.from('loyalty_programs').select('*').eq('shop_id', shop.id).order('created_at', { ascending: false })
-      .then(({ data }) => { setPrograms(data || []); setLoading(false) })
+    reload().then(() => setLoading(false))
   }, [shop?.id])
+
+  if (createNew) {
+    return (
+      <PassDesignerPage
+        shop={shop}
+        lang={lang}
+        onBack={() => { setCreateNew(false); reload() }}
+        onCreated={(saved) => { setCreateNew(false); setSelected(saved); reload() }}
+      />
+    )
+  }
 
   if (selected) {
     return (
@@ -2722,21 +2924,19 @@ function DesignerTab({ shop, lang }) {
         program={selected}
         shop={shop}
         lang={lang}
-        onBack={() => { setSelected(null); supabase.from('loyalty_programs').select('*').eq('shop_id', shop.id).order('created_at', { ascending: false }).then(({ data }) => setPrograms(data || [])) }}
+        onBack={() => { setSelected(null); reload() }}
       />
     )
   }
 
   return (
     <div style={{ maxWidth: 600, margin: '0 auto' }} dir={isAr ? 'rtl' : 'ltr'}>
-      <h1 className="dash-title">{T('Pass Designer', 'مصمم البطاقة')}</h1>
-      <p style={{ color: '#666', marginBottom: 24, fontSize: 14 }}>{T('Select a loyalty card to customize its design.', 'اختر بطاقة ولاء لتخصيص تصميمها.')}</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <h1 className="dash-title" style={{ margin: 0 }}>{T('Pass Designer', 'مصمم البطاقة')}</h1>
+        <button className="lw-btn primary" onClick={() => setCreateNew(true)}>+ {T('New Card', 'بطاقة جديدة')}</button>
+      </div>
+      <p style={{ color: '#666', marginBottom: 24, fontSize: 14 }}>{T('Create a new card or select one to customize.', 'أنشئ بطاقة جديدة أو اختر واحدة لتخصيصها.')}</p>
       {loading && <div style={{ padding: 40, textAlign: 'center', color: '#888' }}>{T('Loading…', 'جارٍ التحميل…')}</div>}
-      {!loading && programs.length === 0 && (
-        <div style={{ padding: 40, textAlign: 'center', color: '#888', background: '#fff', borderRadius: 14 }}>
-          <p>{T('Create a loyalty card first from the "Loyalty Cards" tab.', 'أنشئ بطاقة ولاء أولاً من تبويب "بطاقات الولاء".')}</p>
-        </div>
-      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {programs.map(p => (
           <button

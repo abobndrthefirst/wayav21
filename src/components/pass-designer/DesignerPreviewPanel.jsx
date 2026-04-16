@@ -13,7 +13,7 @@ export default function DesignerPreviewPanel({ previewData, T, isAr }) {
     <div className="pd-preview-panel">
       <PlatformToggle value={platform} onChange={setPlatform} T={T} />
 
-      <PhoneMockup>
+      <PhoneMockup platform={platform}>
         <AnimatePresence mode="wait">
           {platform === 'apple' ? (
             <motion.div

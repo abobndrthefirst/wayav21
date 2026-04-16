@@ -1,20 +1,52 @@
-export default function PhoneMockup({ children }) {
+export function IPhoneFrame({ children }) {
   return (
-    <div className="pd-phone">
-      <div className="pd-phone-screen">
-        <div className="pd-phone-island" />
-        <div className="pd-phone-status">
-          <span>9:41</span>
-          <div className="pd-phone-status-icons">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 11h2v3H1zM5 8h2v6H5zM9 5h2v9H9zM13 2h2v12h-2z"/></svg>
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 3C5.5 3 3.3 4 1.7 5.7l1.4 1.4C4.5 5.7 6.1 5 8 5s3.5.7 4.9 2.1l1.4-1.4C12.7 4 10.5 3 8 3zm0 4c-1.4 0-2.6.5-3.5 1.4l1.4 1.4c.6-.6 1.3-.8 2.1-.8s1.5.3 2.1.8l1.4-1.4C10.6 7.5 9.4 7 8 7zm0 4c-.5 0-1 .2-1.4.6L8 13l1.4-1.4C9 11.2 8.5 11 8 11z"/></svg>
-            <svg viewBox="0 0 20 12" fill="currentColor"><rect x="0" y="1" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1" fill="none"/><rect x="1.5" y="2.5" width="13" height="7" rx="1" /><rect x="17" y="4" width="2.5" height="4" rx="1" /></svg>
+    <div className="pd-iphone">
+      <div className="pd-iphone-btns">
+        <span className="pd-iphone-btn-silent" />
+        <span className="pd-iphone-btn-vol1" />
+        <span className="pd-iphone-btn-vol2" />
+        <span className="pd-iphone-btn-power" />
+      </div>
+      <div className="pd-iphone-screen">
+        <div className="pd-iphone-island" />
+        <div className="pd-iphone-status">
+          <span className="pd-iphone-time">9:41</span>
+          <div className="pd-iphone-status-r">
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="4" width="3" height="8" rx="1" opacity=".3"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" opacity=".5"/><rect x="9" y="1" width="3" height="11" rx="1" opacity=".7"/><rect x="13.5" y="0" width="2.5" height="12" rx="1"/></svg>
+            <svg width="15" height="12" viewBox="0 0 15 12" fill="currentColor"><path d="M7.5 3.6c1.5 0 2.8.6 3.8 1.5l1.1-1.1C11 2.6 9.3 1.8 7.5 1.8S4 2.6 2.6 4l1.1 1.1C4.7 4.2 6 3.6 7.5 3.6zm0 3c.8 0 1.5.3 2 .8l1.1-1.1c-.8-.8-1.9-1.3-3.1-1.3s-2.3.5-3.1 1.3L5.5 7.4c.5-.5 1.2-.8 2-.8zM7.5 9c-.5 0-.9.4-.9.9s.4.9.9.9.9-.4.9-.9-.4-.9-.9-.9z"/></svg>
+            <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x=".5" y=".5" width="20" height="11" rx="2.5" stroke="currentColor" strokeWidth="1" fill="none" opacity=".35"/><rect x="2" y="2" width="17" height="8" rx="1.5"/><rect x="22" y="3.5" width="2" height="5" rx="1" opacity=".4"/></svg>
           </div>
         </div>
-        <div className="pd-phone-content">
+        <div className="pd-iphone-content">
           {children}
         </div>
       </div>
     </div>
   )
+}
+
+export function PixelFrame({ children }) {
+  return (
+    <div className="pd-pixel">
+      <div className="pd-pixel-screen">
+        <div className="pd-pixel-cam" />
+        <div className="pd-pixel-status">
+          <span className="pd-pixel-time">9:41</span>
+          <div className="pd-pixel-status-r">
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="4" width="3" height="8" rx="1" opacity=".3"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" opacity=".5"/><rect x="9" y="1" width="3" height="11" rx="1" opacity=".7"/><rect x="13.5" y="0" width="2.5" height="12" rx="1"/></svg>
+            <svg width="15" height="12" viewBox="0 0 15 12" fill="currentColor"><path d="M7.5 3.6c1.5 0 2.8.6 3.8 1.5l1.1-1.1C11 2.6 9.3 1.8 7.5 1.8S4 2.6 2.6 4l1.1 1.1C4.7 4.2 6 3.6 7.5 3.6zm0 3c.8 0 1.5.3 2 .8l1.1-1.1c-.8-.8-1.9-1.3-3.1-1.3s-2.3.5-3.1 1.3L5.5 7.4c.5-.5 1.2-.8 2-.8zM7.5 9c-.5 0-.9.4-.9.9s.4.9.9.9.9-.4.9-.9-.4-.9-.9-.9z"/></svg>
+            <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x=".5" y=".5" width="20" height="11" rx="2.5" stroke="currentColor" strokeWidth="1" fill="none" opacity=".35"/><rect x="2" y="2" width="17" height="8" rx="1.5"/><rect x="22" y="3.5" width="2" height="5" rx="1" opacity=".4"/></svg>
+          </div>
+        </div>
+        <div className="pd-pixel-content">
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function PhoneMockup({ platform, children }) {
+  if (platform === 'google') return <PixelFrame>{children}</PixelFrame>
+  return <IPhoneFrame>{children}</IPhoneFrame>
 }

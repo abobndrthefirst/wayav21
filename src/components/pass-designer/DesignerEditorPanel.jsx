@@ -9,11 +9,12 @@ export default function DesignerEditorPanel({
   logoUrl, setLogoUrl, backgroundUrl, setBackgroundUrl,
   rewardIconUrl, setRewardIconUrl, rewardTitle, setRewardTitle,
   rewardDescription, setRewardDescription,
-  barcodeType, setBarcodeType, T,
+  barcodeType, setBarcodeType, T, embedded,
 }) {
+  const Wrap = embedded ? 'div' : 'div'
   return (
-    <div className="pd-editor">
-      <h3 className="pd-section-title" style={{ borderTop: 'none', paddingTop: 0 }}>
+    <div className={embedded ? 'pd-editor-inner' : 'pd-editor'}>
+      <h3 className="pd-section-title">
         {T('Colors', 'الألوان')}
       </h3>
 
