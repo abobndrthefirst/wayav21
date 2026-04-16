@@ -2179,6 +2179,24 @@ function LoyaltyTab({ t, lang, shop, user }) {
   const [copied, setCopied] = useState(false)
   const [testName, setTestName] = useState(lang === 'ar' ? 'أحمد علي' : 'Ahmed Ali')
   const [testPhone, setTestPhone] = useState('0551234567')
+  const [enrollLink, setEnrollLink] = useState(null)
+
+  useEffect(() => {
+    if (!shop?.id) return
+    supabase.from('loyalty_programs').select('id').eq('shop_id', shop.id).eq('is_active', true).limit(1).single()
+      .then(async ({ data: prog }) => {
+        if (!prog) return
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) return
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/mint-enrollment-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+          body: JSON.stringify({ program_id: prog.id }),
+        })
+        const json = await res.json()
+        if (json.success) setEnrollLink(`https://www.trywaya.com/w/${prog.id}?t=${json.token}`)
+      })
+  }, [shop?.id])
 
   const generateApplePass = async () => {
     setAppleLoading(true)
@@ -2247,8 +2265,8 @@ function LoyaltyTab({ t, lang, shop, user }) {
   }
 
   const copyCustomerLink = () => {
-    const link = `https://www.trywaya.com/wallet/${shop.id}`
-    navigator.clipboard.writeText(link)
+    if (!enrollLink) return
+    navigator.clipboard.writeText(enrollLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -2282,7 +2300,7 @@ function LoyaltyTab({ t, lang, shop, user }) {
         <div className="wallet-customer-link">
           <label>{t.loyaltyPage.walletCustomerLink}</label>
           <div className="wallet-link-row">
-            <input type="text" readOnly value={`trywaya.com/wallet/${shop.id}`} className="wallet-link-input" dir="ltr" />
+            <input type="text" readOnly value={enrollLink ? enrollLink.replace('https://www.', '') : (lang === 'ar' ? 'جاري التحميل...' : 'Loading...')} className="wallet-link-input" dir="ltr" />
             <button className="wallet-copy-btn" onClick={copyCustomerLink}>
               {copied ? t.loyaltyPage.walletCopied : t.loyaltyPage.walletCopyLink}
             </button>
@@ -2351,27 +2369,47 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [submitted, setSubmitted] = useState(false)
-
-  const shopId = window.location.pathname.split('/wallet/')[1]
+  const [programId, setProgramId] = useState(null)
+  const [enrollToken, setEnrollToken] = useState(null)
 
   useEffect(() => {
-    if (!shopId) { setError('Invalid link'); setLoading(false); return }
-    supabase.from('shops').select('*').eq('id', shopId).single()
-      .then(({ data, error: err }) => {
-        if (err || !data) { setError(lang === 'ar' ? 'المتجر غير موجود' : 'Shop not found'); }
-        else { setShop(data) }
-        setLoading(false)
-      })
-  }, [shopId])
+    const path = window.location.pathname
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('t')
+
+    if (path.startsWith('/w/')) {
+      const pId = path.split('/w/')[1]
+      if (!pId) { setError('Invalid link'); setLoading(false); return }
+      setProgramId(pId)
+      setEnrollToken(token)
+      supabase.from('loyalty_programs').select('*, shop:shops(*)').eq('id', pId).single()
+        .then(({ data, error: err }) => {
+          if (err || !data) { setError(lang === 'ar' ? 'البرنامج غير موجود' : 'Program not found') }
+          else { setShop(data.shop) }
+          setLoading(false)
+        })
+    } else {
+      const shopId = path.split('/wallet/')[1]
+      if (!shopId) { setError('Invalid link'); setLoading(false); return }
+      supabase.from('shops').select('*').eq('id', shopId).single()
+        .then(async ({ data: shopData, error: err }) => {
+          if (err || !shopData) { setError(lang === 'ar' ? 'المتجر غير موجود' : 'Shop not found'); setLoading(false); return }
+          setShop(shopData)
+          const { data: prog } = await supabase.from('loyalty_programs').select('id').eq('shop_id', shopId).eq('is_active', true).limit(1).single()
+          if (prog) setProgramId(prog.id)
+          setLoading(false)
+        })
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!name || !phone) return
+    if (!name || !phone || !programId) return
     setGenerating(true)
     try {
-      const body = JSON.stringify({ shop_id: shopId, customer_name: name, customer_phone: phone })
+      const bodyObj = { program_id: programId, customer_name: name, customer_phone: phone, enrollment_token: enrollToken }
+      const body = JSON.stringify(bodyObj)
 
-      // Fire Google + Apple in parallel
       const [googleRes, appleRes] = await Promise.all([
         fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
           method: 'POST',
@@ -2384,7 +2422,10 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
           headers: { 'Content-Type': 'application/json' },
           body,
         }).then(async r => {
-          if (!r.ok) return { success: false }
+          if (!r.ok) {
+            const errJson = await r.json().catch(() => ({}))
+            return { success: false, error: errJson.error }
+          }
           const blob = await r.blob()
           return { success: true, blobUrl: URL.createObjectURL(blob) }
         }).catch(() => ({ success: false })),
@@ -2709,6 +2750,29 @@ function AuthRedirect() {
   return null
 }
 
+function HomeGate({ lang, setLang, theme, setTheme, t }) {
+  const { user, loading } = useAuth()
+  if (loading) return <div className="auth-page"><div className="dash-loading"><Logo size={40} /></div></div>
+  return (
+    <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+      <Hero t={t} />
+      <StatsBar t={t} />
+      <HowItWorks t={t} />
+      <Audience t={t} />
+      <ProductDemo t={t} />
+      <Features t={t} />
+      <WalletCards t={t} />
+      <Comparison t={t} />
+      <SocialProof t={t} />
+      <Calculator t={t} lang={lang} />
+      <Pricing t={t} />
+      <CTA t={t} />
+      <Footer t={t} />
+    </div>
+  )
+}
+
 /* ─── App ─── */
 export default function App() {
   const [lang, setLang] = useState('ar')
@@ -2731,7 +2795,7 @@ export default function App() {
       if (p === '/data') return 'data'
       if (p === '/loyalty') return 'loyalty'
       if (p === '/settings') return 'settings'
-      if (p.startsWith('/wallet/')) return 'wallet'
+      if (p.startsWith('/wallet/') || p.startsWith('/w/')) return 'wallet'
       return 'home'
     }
     setPage(routePath(path))
@@ -2770,22 +2834,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AuthRedirect />
-      <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
-        <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
-        <Hero t={t} />
-        <StatsBar t={t} />
-        <HowItWorks t={t} />
-        <Audience t={t} />
-        <ProductDemo t={t} />
-        <Features t={t} />
-        <WalletCards t={t} />
-        <Comparison t={t} />
-        <SocialProof t={t} />
-        <Calculator t={t} lang={lang} />
-        <Pricing t={t} />
-        <CTA t={t} />
-        <Footer t={t} />
-      </div>
+      <HomeGate lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
     </AuthProvider>
   )
 }
