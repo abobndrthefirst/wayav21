@@ -1,3 +1,4 @@
 {
+  "outputDirectory": "wayawebv2/dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
