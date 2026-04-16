@@ -45,3 +45,4 @@ android/app/upload-keystore.jks
 # Secrets
 *.env
 .env
+env.json

@@ -20,11 +20,11 @@ dependencies:
   google_sign_in: ^6.2.1
 
   # QR / barcode scanning (MLKit under the hood — fast, reliable)
-  mobile_scanner: ^5.1.1
+  mobile_scanner: ^7.2.0
 
   # Misc
   shared_preferences: ^2.2.3
-  intl: ^0.19.0
+  intl: ^0.20.2
   cupertino_icons: ^1.0.8
   uuid: ^4.4.0
 
@@ -32,9 +32,20 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
   assets:
     - assets/
   generate: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo.png"
+  remove_alpha_ios: true
+  background_color_ios: "#FFFFFF"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/logo.png"
+  min_sdk_android: 21

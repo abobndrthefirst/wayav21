@@ -50,15 +50,15 @@ In the Supabase dashboard → Authentication → Providers → Google, enable Go
 
 ## 3. Run
 
-Pass the config via `--dart-define`:
+Copy the example config and fill in real values (the file is gitignored):
 
 ```bash
-flutter run \
-  --dart-define=SUPABASE_URL=https://YOUR-PROJECT.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=eyJhbGci... \
-  --dart-define=GOOGLE_WEB_CLIENT_ID=XXXXXXXXXX-web.apps.googleusercontent.com \
-  --dart-define=GOOGLE_IOS_CLIENT_ID=XXXXXXXXXX-ios.apps.googleusercontent.com
+cp env.example.json env.json
+# edit env.json with your Supabase URL + anon key and Google client IDs
+flutter run --dart-define-from-file=env.json
 ```
+
+`env.json` is ignored by git. `env.example.json` is the committed template.
 
 On iOS, open `ios/Runner.xcworkspace` in Xcode once to set your Team and bundle identifier before the first build.
 
@@ -67,11 +67,7 @@ On iOS, open `ios/Runner.xcworkspace` in Xcode once to set your Team and bundle 
 ### iOS / TestFlight
 
 ```bash
-flutter build ipa \
-  --dart-define=SUPABASE_URL=... \
-  --dart-define=SUPABASE_ANON_KEY=... \
-  --dart-define=GOOGLE_WEB_CLIENT_ID=... \
-  --dart-define=GOOGLE_IOS_CLIENT_ID=...
+flutter build ipa --dart-define-from-file=env.json
 ```
 
 Then upload `build/ios/ipa/*.ipa` via Transporter or `xcrun altool`.
@@ -79,7 +75,7 @@ Then upload `build/ios/ipa/*.ipa` via Transporter or `xcrun altool`.
 ### Android
 
 ```bash
-flutter build appbundle --dart-define=...
+flutter build appbundle --dart-define-from-file=env.json
 ```
 
 Upload the `.aab` to Google Play Console.
