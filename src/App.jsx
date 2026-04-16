@@ -13,6 +13,7 @@ import {
 import './styles.css'
 import './components/loyalty-wizard.css'
 import './components/notifications-panel.css'
+import './components/pass-designer/pass-designer.css'
 
 // Lazy-load the heavy merchant + customer flows so the marketing landing
 // page doesn't ship a LoyaltyWizard / WalletEnrollPage bundle it never uses.

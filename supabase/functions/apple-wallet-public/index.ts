@@ -273,12 +273,24 @@ Deno.serve(async (req: Request) => {
       foregroundColor: fgRgb,
       backgroundColor: bgRgb,
       labelColor: fgRgb,
-      barcodes: [{
-        message: pass_row.apple_serial,
-        format: "PKBarcodeFormatQR",
-        messageEncoding: "iso-8859-1",
-        altText: input.customer_name,
-      }],
+      ...(() => {
+        const bt = program.barcode_type || "QR";
+        if (bt === "NONE") return {};
+        const formatMap: Record<string, string> = {
+          QR: "PKBarcodeFormatQR",
+          CODE128: "PKBarcodeFormatCode128",
+          AZTEC: "PKBarcodeFormatAztec",
+          PDF417: "PKBarcodeFormatPDF417",
+        };
+        return {
+          barcodes: [{
+            message: pass_row.apple_serial,
+            format: formatMap[bt] || "PKBarcodeFormatQR",
+            messageEncoding: "iso-8859-1",
+            altText: input.customer_name,
+          }],
+        };
+      })(),
       webServiceURL,
       authenticationToken: plaintextAuthToken, // plaintext only leaves server in the pass file
       [passKey]: { ...fields, backFields },

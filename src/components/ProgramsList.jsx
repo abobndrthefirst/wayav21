@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { supabase } from '../lib/supabase'
 import LoyaltyWizard from './LoyaltyWizard'
+
+const PassDesignerPage = lazy(() => import('./pass-designer/PassDesignerPage'))
 
 /**
  * Programs list — shows all loyalty programs for a shop.
@@ -14,6 +16,7 @@ export default function ProgramsList({ shop, lang = 'en' }) {
   const [wizardFor, setWizardFor] = useState(null) // null | 'new' | program object
   const [qrFor, setQrFor] = useState(null)
   const [customersFor, setCustomersFor] = useState(null)
+  const [designerFor, setDesignerFor] = useState(null)
 
   const load = async () => {
     setLoading(true)
@@ -59,6 +62,19 @@ export default function ProgramsList({ shop, lang = 'en' }) {
     return <ProgramCustomers program={customersFor} onClose={() => setCustomersFor(null)} lang={lang} />
   }
 
+  if (designerFor) {
+    return (
+      <Suspense fallback={<div style={{ padding: 48, textAlign: 'center', color: '#888' }}>Loading…</div>}>
+        <PassDesignerPage
+          program={designerFor}
+          shop={shop}
+          lang={lang}
+          onBack={() => { setDesignerFor(null); load() }}
+        />
+      </Suspense>
+    )
+  }
+
   return (
     <div className="pl-shell" dir={isAr ? 'rtl' : 'ltr'}>
       <div className="pl-header">
@@ -86,6 +102,7 @@ export default function ProgramsList({ shop, lang = 'en' }) {
               {p.expires_at && <span>· {T('Expires', 'ينتهي')} {new Date(p.expires_at).toLocaleDateString()}</span>}
             </div>
             <div className="pl-card-actions">
+              <button onClick={() => setDesignerFor(p)} className="lw-btn primary sm">{T('Design', 'تصميم')}</button>
               <button onClick={() => setQrFor(p)} className="lw-btn primary sm">QR</button>
               <button onClick={() => setCustomersFor(p)} className="lw-btn ghost sm">{T('Customers', 'العملاء')}</button>
               <button onClick={() => setWizardFor(p)} className="lw-btn ghost sm">{T('Edit', 'تعديل')}</button>

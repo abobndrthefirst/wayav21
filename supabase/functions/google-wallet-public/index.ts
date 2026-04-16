@@ -187,7 +187,12 @@ Deno.serve(async (req: Request) => {
       state: "ACTIVE",
       accountId: input.customer_phone,
       accountName: input.customer_name,
-      barcode: { type: "QR_CODE", value: objectId, alternateText: input.customer_name },
+      ...(() => {
+        const bt = programWithShopName.barcode_type || "QR";
+        if (bt === "NONE") return {};
+        const typeMap: Record<string, string> = { QR: "QR_CODE", CODE128: "CODE_128", AZTEC: "AZTEC", PDF417: "PDF_417" };
+        return { barcode: { type: typeMap[bt] || "QR_CODE", value: objectId, alternateText: input.customer_name } };
+      })(),
       textModulesData: textModules,
     };
     if (linksModule.uris.length > 0) loyaltyObject.linksModuleData = linksModule;

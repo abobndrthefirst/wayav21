@@ -1,0 +1,653 @@
+/* ─── Pass Designer ─── */
+
+/* Page layout */
+.pd-page {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 20px 32px;
+  animation: pd-fadein .4s ease;
+}
+@keyframes pd-fadein {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.pd-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 8px;
+}
+.pd-back:hover { color: #111; }
+.pd-back svg { width: 18px; height: 18px; }
+.pd-title {
+  margin: 0 0 24px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111;
+}
+
+/* Two-column grid */
+.pd-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .pd-grid { grid-template-columns: 1fr; }
+  .pd-preview-panel { order: -1; }
+}
+
+/* ─── Editor Panel (left) ─── */
+.pd-editor {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.05);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.pd-section-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f1f3;
+}
+.pd-section-title:first-child { border-top: none; padding-top: 0; }
+.pd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pd-field > label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+.pd-field small {
+  color: #888;
+  font-size: 11px;
+}
+
+/* ─── Color Picker ─── */
+.pd-color-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.pd-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform .12s ease, box-shadow .12s ease;
+  flex-shrink: 0;
+}
+.pd-swatch:hover { transform: scale(1.1); }
+.pd-swatch.sel {
+  border-color: #0f172a;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px rgba(15,23,42,.12);
+}
+.pd-hex-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #f4f6f8;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: monospace;
+  color: #555;
+}
+.pd-hex-input {
+  width: 62px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: monospace;
+  color: #333;
+  outline: none;
+  padding: 2px 0;
+}
+.pd-color-native {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid #ddd;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.pd-color-native::-webkit-color-swatch-wrapper { padding: 0; }
+.pd-color-native::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+/* ─── Barcode Selector ─── */
+.pd-barcode-wrap { position: relative; }
+.pd-barcode-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e0e3e8;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: border-color .15s;
+}
+.pd-barcode-btn:hover { border-color: #10B981; }
+.pd-barcode-btn svg { width: 24px; height: 24px; flex-shrink: 0; }
+.pd-barcode-btn .pd-chevron {
+  margin-inline-start: auto;
+  width: 16px;
+  height: 16px;
+  color: #999;
+  transition: transform .2s;
+}
+.pd-barcode-btn.open .pd-chevron { transform: rotate(180deg); }
+.pd-barcode-dd {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
+  z-index: 50;
+  overflow: hidden;
+  padding: 4px;
+}
+.pd-barcode-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  border-radius: 8px;
+  transition: background .1s;
+}
+.pd-barcode-opt:hover { background: #f0fdf4; }
+.pd-barcode-opt.active { background: #d1fae5; font-weight: 600; }
+.pd-barcode-opt svg { width: 24px; height: 24px; flex-shrink: 0; }
+
+/* ─── Drag-Drop Uploader ─── */
+.pd-uploader {
+  position: relative;
+  border: 2px dashed #d6dae0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fafbfc;
+}
+.pd-uploader:hover { border-color: #a7f3d0; background: #f0fdf4; }
+.pd-uploader.dragging {
+  border-color: #10B981;
+  background: #ecfdf5;
+  box-shadow: 0 0 0 4px rgba(16,185,129,.12);
+}
+.pd-uploader.has-file {
+  border-style: solid;
+  border-color: #e5e8ec;
+  padding: 8px;
+  cursor: default;
+}
+.pd-uploader-icon {
+  width: 32px;
+  height: 32px;
+  color: #aaa;
+}
+.pd-uploader-text {
+  font-size: 13px;
+  color: #777;
+}
+.pd-uploader-formats {
+  font-size: 11px;
+  color: #aaa;
+}
+.pd-uploader-thumb {
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.pd-uploader-remove {
+  position: absolute;
+  top: 6px;
+  inset-inline-end: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.pd-uploader-remove:hover { background: rgba(0,0,0,.8); }
+.pd-uploader-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e5e8ec;
+  border-top-color: #10B981;
+  border-radius: 50%;
+  animation: pd-spin .7s linear infinite;
+}
+@keyframes pd-spin { to { transform: rotate(360deg); } }
+
+/* ─── Field Editor ─── */
+.pd-field-input {
+  padding: 10px 12px;
+  border: 1.5px solid #d6dae0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .2s;
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+}
+.pd-field-input:focus { border-color: #10B981; }
+.pd-char-count {
+  font-size: 11px;
+  text-align: end;
+  color: #aaa;
+}
+.pd-char-count.warn { color: #f59e0b; }
+.pd-char-count.over { color: #ef4444; }
+
+/* ─── Preset Icon Picker ─── */
+.pd-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 6px;
+}
+.pd-icon-tile {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.pd-icon-tile:hover { transform: translateY(-1px); border-color: #c7d2fe; }
+.pd-icon-tile.sel { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16,185,129,.15); }
+
+/* ─── Preview Panel (right) ─── */
+.pd-preview-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  position: sticky;
+  top: 24px;
+}
+
+/* ─── Platform Toggle ─── */
+.pd-toggle {
+  display: flex;
+  position: relative;
+  background: #f0f1f3;
+  border-radius: 999px;
+  padding: 4px;
+  gap: 0;
+}
+.pd-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #777;
+  border-radius: 999px;
+  position: relative;
+  z-index: 2;
+  transition: color .2s;
+  white-space: nowrap;
+}
+.pd-toggle-btn.active { color: #111; }
+.pd-toggle-btn svg { width: 18px; height: 18px; }
+.pd-toggle-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  z-index: 1;
+}
+
+/* ─── Phone Mockup ─── */
+.pd-phone {
+  width: 300px;
+  background: #1a1a1a;
+  border-radius: 44px;
+  padding: 12px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.06) inset,
+    0 0 0 1px rgba(0,0,0,.12),
+    0 20px 60px rgba(0,0,0,.15),
+    0 4px 16px rgba(0,0,0,.08);
+  position: relative;
+}
+.pd-phone-screen {
+  background: #f2f2f7;
+  border-radius: 34px;
+  overflow: hidden;
+  position: relative;
+}
+.pd-phone-island {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 24px;
+  background: #1a1a1a;
+  border-radius: 20px;
+  z-index: 10;
+}
+.pd-phone-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+}
+.pd-phone-status-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pd-phone-status-icons svg { width: 16px; height: 16px; }
+.pd-phone-content {
+  padding: 4px 12px 24px;
+}
+
+/* ─── Pass Card (inside phone) ─── */
+.pd-pass {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
+}
+.pd-pass-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 200px;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+}
+.pd-pass-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(0,0,0,.4), rgba(0,0,0,.5));
+  pointer-events: none;
+}
+.pd-pass-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+.pd-pass-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pd-pass-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: rgba(255,255,255,.2);
+  flex-shrink: 0;
+}
+.pd-pass-logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+}
+.pd-pass-org {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+.pd-pass-balance-area {
+  text-align: end;
+}
+.pd-pass-balance-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  opacity: .8;
+}
+.pd-pass-balance-val {
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+/* Middle area */
+.pd-pass-mid {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+.pd-pass-hero-img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+/* Fields row */
+.pd-pass-fields {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+.pd-pass-field {}
+.pd-pass-field-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  opacity: .75;
+}
+.pd-pass-field-value {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Barcode area */
+.pd-pass-barcode {
+  background: rgba(255,255,255,.92);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+.pd-pass-barcode svg {
+  width: 100%;
+  max-height: 50px;
+}
+.pd-pass-barcode-hint {
+  font-size: 10px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Stamps */
+.pd-stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+.pd-stamp {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  background: rgba(255,255,255,.1);
+}
+.pd-stamp.filled { background: rgba(255,255,255,.85); color: #111; }
+.pd-stamp img { width: 65%; height: 65%; object-fit: contain; }
+
+/* Google-specific overrides */
+.pd-pass-google .pd-pass-body {
+  gap: 6px;
+}
+.pd-pass-google .pd-pass-logo {
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+}
+.pd-pass-google .pd-pass-mid {
+  padding: 8px 0;
+}
+.pd-pass-google .pd-pass-balance-val {
+  font-size: 28px;
+}
+
+/* ─── Action Bar ─── */
+.pd-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #eef0f3;
+  flex-wrap: wrap;
+}
+.pd-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .1s, opacity .2s, box-shadow .15s;
+}
+.pd-action-btn:disabled { opacity: .5; cursor: not-allowed; }
+.pd-action-btn:active:not(:disabled) { transform: scale(.97); }
+.pd-action-btn svg { width: 18px; height: 18px; }
+.pd-action-btn.save {
+  background: #10B981;
+  color: #fff;
+}
+.pd-action-btn.save:hover:not(:disabled) { background: #059669; box-shadow: 0 4px 14px rgba(16,185,129,.3); }
+.pd-action-btn.apple {
+  background: #000;
+  color: #fff;
+}
+.pd-action-btn.apple:hover:not(:disabled) { box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.pd-action-btn.google {
+  background: #fff;
+  color: #333;
+  border: 1.5px solid #ddd;
+}
+.pd-action-btn.google:hover:not(:disabled) { border-color: #4285F4; box-shadow: 0 4px 14px rgba(66,133,244,.15); }
+.pd-action-btn.ghost {
+  background: transparent;
+  color: #555;
+  border: 1.5px solid #d6dae0;
+}
+
+/* ─── Feedback ─── */
+.pd-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #065f46;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  z-index: 100;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 640px) {
+  .pd-phone { width: 260px; border-radius: 36px; padding: 10px; }
+  .pd-phone-screen { border-radius: 28px; }
+  .pd-phone-island { width: 70px; height: 20px; top: 10px; }
+  .pd-editor { padding: 18px; }
+  .pd-actions { justify-content: stretch; }
+  .pd-action-btn { flex: 1; justify-content: center; }
+}
