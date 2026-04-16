@@ -334,8 +334,8 @@ export default function AffordanceBento() {
   const [menuOpen, setMenuOpen] = useState(false);
   const t = lang === 'ar' ? AR : EN;
   const isRtl = lang === 'ar';
-  const waitlistRef = useRef<HTMLElement>(null);
-  const howItWorksRef = useRef<HTMLElement>(null);
+  const waitlistRef = useRef<HTMLDivElement>(null);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
 
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 

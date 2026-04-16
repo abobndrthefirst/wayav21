@@ -21,12 +21,11 @@ export function RevenueBleed() {
   const [lostRevenue, setLostRevenue] = useState(0);
 
   useEffect(() => {
-    if (visibleRows < customers.length) {
-      const timer = setTimeout(() => {
-        setVisibleRows(prev => prev + 1);
-      }, 800);
-      return () => clearTimeout(timer);
-    }
+    if (visibleRows >= customers.length) return;
+    const timer = setTimeout(() => {
+      setVisibleRows(prev => prev + 1);
+    }, 800);
+    return () => clearTimeout(timer);
   }, [visibleRows]);
 
   useEffect(() => {

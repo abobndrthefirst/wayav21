@@ -39,15 +39,18 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   Future<void> _onDetect(BarcodeCapture capture, Rect frameRect, Size viewSize) async {
     if (_locked) return;
+    final imageSize = capture.size;
     for (final b in capture.barcodes) {
       final raw = b.rawValue;
       if (raw == null) continue;
 
-      // Only accept codes whose visual bounds sit inside our frame.
-      // mobile_scanner gives corners in the view's coordinate space.
+      // Corners are in camera-image coordinates; scale to view coordinates.
       final corners = b.corners;
-      if (corners.isNotEmpty) {
-        final codeRect = _boundingBox(corners);
+      if (corners.isNotEmpty && imageSize.width > 0 && imageSize.height > 0) {
+        final scaleX = viewSize.width / imageSize.width;
+        final scaleY = viewSize.height / imageSize.height;
+        final scaled = corners.map((c) => Offset(c.dx * scaleX, c.dy * scaleY)).toList();
+        final codeRect = _boundingBox(scaled);
         if (!frameRect.contains(codeRect.center)) continue;
       }
 
