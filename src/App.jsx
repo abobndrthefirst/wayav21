@@ -2140,36 +2140,36 @@ function LoginPage({ t, lang, setLang, theme, setTheme }) {
         </div>
       </div>
 
-      <motion.div className="auth-card" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <div className="auth-brand"><Logo size={100} /></div>
-        <h1 className="auth-title">{a.loginTitle}</h1>
-        <p className="auth-subtitle">{a.loginSub}</p>
+      <motion.div className="auth-card" initial={{ opacity: 0, y: 30, filter: 'blur(12px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
+        <motion.div className="auth-brand" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}><Logo size={100} /></motion.div>
+        <motion.h1 className="auth-title" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>{a.loginTitle}</motion.h1>
+        <motion.p className="auth-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }}>{a.loginSub}</motion.p>
 
-        <button onClick={handleGoogle} className="auth-google-btn">
+        <motion.button onClick={handleGoogle} className="auth-google-btn" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5 }} whileHover={{ scale: 1.01, borderColor: 'rgba(255,255,255,0.25)' }} whileTap={{ scale: 0.98 }}>
           <GoogleIcon /><span>{a.googleBtn}</span>
-        </button>
+        </motion.button>
 
         <div className="auth-divider"><span>{a.or}</span></div>
 
         <form onSubmit={handleLogin} className="auth-form">
-          <div className="auth-field">
+          <motion.div className="auth-field" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.4 }}>
             <label>{a.email}</label>
             <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError('') }}
               placeholder={a.emailPh} dir="ltr" />
-          </div>
-          <div className="auth-field">
+          </motion.div>
+          <motion.div className="auth-field" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45, duration: 0.4 }}>
             <label>{a.password}</label>
             <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError('') }}
               placeholder={a.passwordPh} dir="ltr" />
-          </div>
+          </motion.div>
           <button type="button" onClick={handleForgot} className="auth-forgot">{a.forgot}</button>
-          {error && <p className="auth-error">{error}</p>}
-          <button type="submit" disabled={loading} className="auth-submit-btn">
+          <AnimatePresence>{error && <motion.p className="auth-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{error}</motion.p>}</AnimatePresence>
+          <motion.button type="submit" disabled={loading} className="auth-submit-btn" whileHover={{ scale: 1.02, boxShadow: '0 8px 30px rgba(16,185,129,0.25)' }} whileTap={{ scale: 0.97 }}>
             {loading ? a.logging : a.loginBtn}
-          </button>
+          </motion.button>
         </form>
 
-        <p className="auth-switch">{a.noAccount} <button onClick={() => navigate('/signup')}>{a.goSignup}</button></p>
+        <motion.p className="auth-switch" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.5 }}>{a.noAccount} <button onClick={() => navigate('/signup')}>{a.goSignup}</button></motion.p>
       </motion.div>
     </div>
   )
@@ -2728,12 +2728,12 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           <div className="sidebar-shop-info"><div className="sidebar-shop-name">{shopName}</div><div className="sidebar-shop-type">{shop.type}</div></div>
         </div>
         <div className="sidebar-menu">
-          {menuItems.map(item => (
-            <button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => setActiveTab(item.id)}>
+          {menuItems.map((item, i) => (
+            <motion.button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => setActiveTab(item.id)} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] }} whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
               <span className="sidebar-item-icon">{item.icon}</span>
               <span className="sidebar-item-label">{item.label}</span>
               {chev}
-            </button>
+            </motion.button>
           ))}
         </div>
         <div className="sidebar-footer">
@@ -2778,40 +2778,40 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
 
             <div className="data-stats-grid">
               {demoData.stats.map((s, i) => (
-                <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+                <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}>
                   <div className="data-stat-icon-wrap">{statIcons[i]}</div>
-                  <div className="data-stat-value">{s.value}</div>
+                  <div className="data-stat-value"><CountUp value={s.value} duration={2} delay={i * 0.15} /></div>
                   <div className="data-stat-label">{d.statLabels[s.key]}</div>
                   <div className="data-stat-change">{s.change}</div>
                 </motion.div>
               ))}
             </div>
 
-            <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <motion.section className="dash-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
               <h2>{d.journey}</h2>
               <div className="dash-journey">
                 {[d.step1, d.step2, d.step3, d.step4].map((label, i) => (
-                  <div key={i} className="dash-journey-step">
+                  <motion.div key={i} className="dash-journey-step" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 + i * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
                     <div className="dash-journey-num">{i + 1}</div>
                     <span className="dash-journey-label">{label}</span>
                     {i < 3 && <div className="dash-journey-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2"><path d={lang === 'ar' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}/></svg></div>}
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </motion.section>
 
-            <motion.section className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <motion.section className="dash-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: 0.4, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
               <h2>{d.activity}</h2>
               <div className="dash-activity-list">
-                {demoData.activity.map(a => (
-                  <div key={a.id} className="dash-activity-item">
+                {demoData.activity.map((a, i) => (
+                  <motion.div key={a.id} className="dash-activity-item" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
                     <div className="dash-activity-badge">{a.action === 'reward' ? '🎁' : '📱'}</div>
                     <div className="dash-activity-info">
                       <span className="dash-activity-name">{a.name}</span>
                       <span className="dash-activity-action">{a.action === 'reward' ? d.reward : d.scan} · {a.points} {d.pointsEarned}</span>
                     </div>
                     <span className="dash-activity-time">{a.time}</span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </motion.section>
@@ -2843,9 +2843,9 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
                 { label: t.dataPage.rewardsRedeemed, value: '3,891', icon: '🎁', color: '#F59E0B' },
                 { label: t.dataPage.totalPoints, value: '25,296', icon: '⭐', color: '#8B5CF6' },
               ].map((sc, i) => (
-                <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+                <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}>
                   <div className="data-stat-icon" style={{ background: sc.color + '18', color: sc.color }}>{sc.icon}</div>
-                  <div className="data-stat-value">{sc.value}</div>
+                  <div className="data-stat-value"><CountUp value={sc.value} duration={2} delay={i * 0.15} /></div>
                   <div className="data-stat-label">{sc.label}</div>
                 </motion.div>
               ))}
