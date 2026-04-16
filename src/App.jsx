@@ -308,6 +308,8 @@ const content = {
     pricing: {
       badge: 'الأسعار',
       title: 'سعر واضح. بدون مفاجآت. وعائد تحسبه.',
+      foundingBanner: 'مجاناً بالكامل لأول شهرين للمشاريع الجديدة',
+      foundingSub: 'ابدأ بدون أي تكلفة — ادفع بس لما تشوف النتائج',
       monthly: {
         label: 'الخطة الشهرية',
         price: '٧٥',
@@ -316,10 +318,11 @@ const content = {
       },
       annual: {
         label: 'الخطة السنوية',
-        badge: 'الأكثر توفيراً',
-        price: '٥٥',
+        badge: 'خصم ٥٠٪',
+        price: '٣٧',
+        oldPrice: '٧٥',
         unit: 'ر.س / شهر',
-        note: 'يُفوتر ١،٤٢٨ ر.س سنوياً — توفير ٣٥٨ ر.س',
+        note: 'يُفوتر ٤٥٠ ر.س سنوياً — توفير ٤٥٠ ر.س',
       },
       features: [
         'حملات غير محدودة',
@@ -570,6 +573,8 @@ const content = {
     pricing: {
       badge: 'Pricing',
       title: 'Clear pricing. No surprises. Measurable ROI.',
+      foundingBanner: 'Completely FREE for 2 months for founding businesses',
+      foundingSub: 'Start at zero cost — only pay when you see results',
       monthly: {
         label: 'Monthly Plan',
         price: '75',
@@ -578,10 +583,11 @@ const content = {
       },
       annual: {
         label: 'Annual Plan',
-        badge: 'Best Value',
-        price: '55',
+        badge: '50% OFF',
+        price: '37',
+        oldPrice: '75',
         unit: 'SAR / month',
-        note: 'Billed 1,428 SAR/year — save 358 SAR',
+        note: 'Billed 450 SAR/year — save 450 SAR',
       },
       features: [
         'Unlimited campaigns',
@@ -1774,13 +1780,29 @@ function SocialProof({ t }) {
 
 /* ─── Pricing ─── */
 function Pricing({ t }) {
-  const [annual, setAnnual] = useState(false)
+  const [annual, setAnnual] = useState(true)
 
   return (
     <section className="section" id="pricing">
       <Reveal>
         <div className="section-badge">{t.pricing.badge}</div>
         <h2 className="section-title">{t.pricing.title}</h2>
+      </Reveal>
+
+      <Reveal delay={0.1}>
+        <motion.div
+          className="founding-banner"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <span className="founding-icon">🎁</span>
+          <div className="founding-text">
+            <strong>{t.pricing.foundingBanner}</strong>
+            <span>{t.pricing.foundingSub}</span>
+          </div>
+        </motion.div>
       </Reveal>
 
       <Reveal delay={0.2}>
@@ -1804,12 +1826,15 @@ function Pricing({ t }) {
             </a>
           </motion.div>
 
-          <motion.div className={`pricing-card ${annual ? 'pricing-active' : ''}`} onClick={() => setAnnual(true)} whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.08)' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
+          <motion.div className={`pricing-card pricing-card-featured ${annual ? 'pricing-active' : ''}`} onClick={() => setAnnual(true)} whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.08)' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
             <div className="pricing-plan-label-row">
               <span className="pricing-plan-label">{t.pricing.annual.label}</span>
               <span className="save-badge">{t.pricing.annual.badge}</span>
             </div>
             <div className="pricing-amount">
+              {t.pricing.annual.oldPrice && (
+                <span className="price-old">{t.pricing.annual.oldPrice}</span>
+              )}
               <span className="price">{t.pricing.annual.price}</span>
               <span className="price-label">{t.pricing.annual.unit}</span>
             </div>
