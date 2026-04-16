@@ -683,13 +683,14 @@ function CountUp({ value, duration = 2, delay = 0 }) {
     if (!isInView || hasRun.current) return
     hasRun.current = true
 
-    const numericMatch = value.match(/[\d,.]+/)
+    const numericMatch = value.match(/^([^0-9]*)([\d,.]+)(.*)$/)
     if (!numericMatch) { setDisplay(value); return }
 
-    const numStr = numericMatch[0]
+    const prefix = numericMatch[1]
+    const numStr = numericMatch[2]
+    const suffix = numericMatch[3]
     const target = parseFloat(numStr.replace(/,/g, ''))
-    const prefix = value.slice(0, numericMatch.index)
-    const suffix = value.slice(numericMatch.index + numStr.length)
+    if (isNaN(target)) { setDisplay(value); return }
     const hasCommas = numStr.includes(',')
     const decimals = numStr.includes('.') ? numStr.split('.')[1].length : 0
 
@@ -2395,343 +2396,6 @@ function AppleWalletIcon() {
   )
 }
 
-/* ─── Loyalty Tab with Google Wallet + Apple Wallet ─── */
-function LoyaltyTab({ t, lang, shop, user }) {
-  const [walletUrl, setWalletUrl] = useState(null)
-  const [walletLoading, setWalletLoading] = useState(false)
-  const [walletError, setWalletError] = useState(null)
-  const [appleLoading, setAppleLoading] = useState(false)
-  const [appleError, setAppleError] = useState(null)
-  const [copied, setCopied] = useState(false)
-
-  // Editable settings
-  const [pointsPerVisit, setPointsPerVisit] = useState(shop.points_per_visit || 1)
-  const [rewardThreshold, setRewardThreshold] = useState(shop.reward_threshold || 10)
-  const [rewardDesc, setRewardDesc] = useState(shop.reward_description || '')
-  const [cardColor, setCardColor] = useState(shop.card_color || '#10B981')
-  const [logoUrl, setLogoUrl] = useState(shop.logo_url || null)
-  const [logoUploading, setLogoUploading] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [saveStatus, setSaveStatus] = useState(null)
-  const [generated, setGenerated] = useState(false)
-
-  const colorPresets = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6', '#1a1a2e', '#6366F1', '#D97706']
-  const walletLink = `https://www.trywaya.com/wallet/${shop.id}`
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(walletLink)}&color=${cardColor.replace('#', '')}&bgcolor=ffffff&margin=10`
-
-  const handleLogoUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    if (file.size > 1024 * 1024) { alert(lang === 'ar' ? 'الحجم أكبر من 1MB' : 'File too large (max 1MB)'); return }
-    if (!file.type.startsWith('image/')) return
-
-    setLogoUploading(true)
-    const ext = file.name.split('.').pop()
-    const path = `${shop.id}/logo.${ext}`
-
-    const { error: uploadErr } = await supabase.storage.from('shop-logos').upload(path, file, { upsert: true })
-    if (uploadErr) { console.error(uploadErr); setLogoUploading(false); return }
-
-    const { data: { publicUrl } } = supabase.storage.from('shop-logos').getPublicUrl(path)
-    setLogoUrl(publicUrl)
-    await supabase.from('shops').update({ logo_url: publicUrl }).eq('id', shop.id)
-    shop.logo_url = publicUrl
-    setLogoUploading(false)
-  }
-
-  const handleSaveAndGenerate = async () => {
-    setSaving(true)
-    setSaveStatus(null)
-    const { error } = await supabase.from('shops').update({
-      points_per_visit: pointsPerVisit,
-      reward_threshold: rewardThreshold,
-      reward_description: rewardDesc,
-      card_color: cardColor,
-    }).eq('id', shop.id)
-
-    if (!error) {
-      shop.points_per_visit = pointsPerVisit
-      shop.reward_threshold = rewardThreshold
-      shop.reward_description = rewardDesc
-      shop.card_color = cardColor
-      setSaveStatus('saved')
-      setGenerated(true)
-      setTimeout(() => setSaveStatus(null), 2000)
-    }
-    setSaving(false)
-  }
-
-  const generateTestPass = async () => {
-    setWalletLoading(true)
-    setWalletError(null)
-    setWalletUrl(null)
-    try {
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shop_id: shop.id, customer_name: user?.email?.split('@')[0] || 'Test', customer_phone: '0500000000' }),
-      })
-      const data = await res.json()
-      if (data.success) { setWalletUrl(data.saveUrl) }
-      else { setWalletError(data.error || t.loyaltyPage.walletError) }
-    } catch (err) { setWalletError(err.message) }
-    setWalletLoading(false)
-  }
-
-  const generateAppleTestPass = async () => {
-    setAppleLoading(true)
-    setAppleError(null)
-    try {
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/apple-wallet-public`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ shop_id: shop.id, customer_name: user?.email?.split('@')[0] || 'Test', customer_phone: '0500000000' }),
-      })
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}))
-        throw new Error(errJson.error || 'Failed to generate Apple Wallet pass')
-      }
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${shop.name.replace(/[^\w]/g, '_')}.pkpass`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      setAppleError(err.message)
-    }
-    setAppleLoading(false)
-  }
-
-  const copyCustomerLink = () => {
-    navigator.clipboard.writeText(walletLink)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const downloadPDF = () => {
-    const rewardText = rewardDesc || `Collect ${rewardThreshold} points for a reward`
-    const rewardTextAr = rewardDesc || `اجمع ${rewardThreshold} نقطة واحصل على مكافأة`
-    const logoImg = logoUrl ? `<img src="${logoUrl}" style="width:80px;height:80px;border-radius:20px;object-fit:cover;margin-bottom:12px;" crossorigin="anonymous"/>` : ''
-
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${shop.name} - Loyalty Card</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter','Noto Sans Arabic',sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:40px}
-.poster{width:600px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 4px 30px rgba(0,0,0,0.08)}
-.poster-header{background:${cardColor};padding:48px 40px 40px;text-align:center;color:#fff;position:relative;overflow:hidden}
-.poster-header::after{content:'';position:absolute;top:-60%;right:-15%;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,0.08)}
-.poster-logo{position:relative;z-index:1}
-.poster-name{font-size:2rem;font-weight:800;margin-top:8px;position:relative;z-index:1}
-.poster-issuer{font-size:0.9rem;opacity:0.8;margin-top:4px;position:relative;z-index:1}
-.poster-body{padding:40px}
-.poster-qr{text-align:center;margin-bottom:32px}
-.poster-qr img{width:240px;height:240px;border-radius:12px;border:3px solid ${cardColor}20}
-.poster-instructions{display:flex;flex-direction:column;gap:24px}
-.poster-lang{text-align:center}
-.poster-lang h3{font-size:1.1rem;color:#333;margin-bottom:8px}
-.poster-steps{list-style:none;display:flex;justify-content:center;gap:16px;margin-top:12px}
-.poster-step{display:flex;flex-direction:column;align-items:center;gap:6px;width:120px;text-align:center}
-.poster-step-num{width:32px;height:32px;border-radius:50%;background:${cardColor};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem}
-.poster-step-text{font-size:0.8rem;color:#666;line-height:1.4}
-.poster-reward{text-align:center;margin-top:24px;padding:16px 20px;background:${cardColor}10;border-radius:14px;border:1.5px solid ${cardColor}25}
-.poster-reward p{color:${cardColor};font-weight:700;font-size:1rem}
-.poster-divider{width:60%;margin:24px auto;border:none;border-top:1px solid #eee}
-.poster-footer{text-align:center;padding:0 40px 32px;color:#aaa;font-size:0.75rem}
-.poster-footer span{color:${cardColor};font-weight:600}
-.ar{direction:rtl;font-family:'Noto Sans Arabic','Inter',sans-serif}
-@media print{body{background:#fff;padding:0}.poster{box-shadow:none;width:100%;border-radius:0}}
-</style></head><body>
-<div class="poster">
-  <div class="poster-header">
-    <div class="poster-logo">${logoImg}</div>
-    <div class="poster-name">${shop.name}</div>
-    <div class="poster-issuer">Loyalty Program | برنامج الولاء</div>
-  </div>
-  <div class="poster-body">
-    <div class="poster-qr"><img src="${qrUrl}" alt="QR Code"/></div>
-
-    <div class="poster-instructions">
-      <div class="poster-lang ar">
-        <h3>امسح الكود وأضف بطاقة الولاء</h3>
-        <ol class="poster-steps">
-          <li class="poster-step"><div class="poster-step-num">١</div><div class="poster-step-text">امسح الكود بكاميرا جوالك</div></li>
-          <li class="poster-step"><div class="poster-step-num">٢</div><div class="poster-step-text">أدخل اسمك ورقم جوالك</div></li>
-          <li class="poster-step"><div class="poster-step-num">٣</div><div class="poster-step-text">أضف البطاقة لمحفظة قوقل</div></li>
-        </ol>
-      </div>
-
-      <hr class="poster-divider"/>
-
-      <div class="poster-lang">
-        <h3>Scan & Add Your Loyalty Card</h3>
-        <ol class="poster-steps">
-          <li class="poster-step"><div class="poster-step-num">1</div><div class="poster-step-text">Scan the QR code with your phone</div></li>
-          <li class="poster-step"><div class="poster-step-num">2</div><div class="poster-step-text">Enter your name & phone number</div></li>
-          <li class="poster-step"><div class="poster-step-num">3</div><div class="poster-step-text">Add card to Google Wallet</div></li>
-        </ol>
-      </div>
-    </div>
-
-    <div class="poster-reward">
-      <p class="ar">${rewardTextAr}</p>
-      <p style="margin-top:4px;font-size:0.85rem;color:#666">${rewardText}</p>
-    </div>
-  </div>
-  <div class="poster-footer">Powered by <span>Waya</span> — trywaya.com</div>
-</div>
-<script>setTimeout(()=>window.print(),500)<\/script>
-</body></html>`
-
-    const blob = new Blob([html], { type: 'text/html' })
-    const url = URL.createObjectURL(blob)
-    window.open(url, '_blank')
-  }
-
-  return (
-    <>
-      <h1 className="dash-title">{t.loyaltyPage.title}</h1>
-
-      {/* Step 1: Card Design + Preview */}
-      <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="loyalty-step-header">
-          <div className="loyalty-step-num">1</div>
-          <h2>{t.loyaltyPage.cardDesign}</h2>
-        </div>
-
-        {/* Live Preview */}
-        <div className="card-preview-wrap">
-          <div className="card-preview" style={{ background: cardColor }}>
-            <div className="card-preview-top">
-              {logoUrl ? <img src={logoUrl} alt="" className="card-preview-logo" /> : <div className="card-preview-logo-ph"><Logo size={20} /></div>}
-              <div className="card-preview-info">
-                <div className="card-preview-name">{shop.name}</div>
-                <div className="card-preview-issuer">Waya</div>
-              </div>
-            </div>
-            <div className="card-preview-points">
-              <div className="card-preview-pts-value">0</div>
-              <div className="card-preview-pts-label">Points</div>
-            </div>
-            <div className="card-preview-reward">{rewardDesc || (lang === 'ar' ? `اجمع ${rewardThreshold} نقاط واحصل على مكافأة` : `Collect ${rewardThreshold} points for a reward`)}</div>
-          </div>
-        </div>
-
-        <div className="auth-form" style={{ gap: 18, marginTop: 20 }}>
-          {/* Logo Upload */}
-          <div className="auth-field">
-            <label>{t.loyaltyPage.cardLogo}</label>
-            <div className="logo-upload-row">
-              {logoUrl ? <img src={logoUrl} alt="" className="logo-upload-preview" /> : <div className="logo-upload-placeholder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>}
-              <div>
-                <label className="logo-upload-btn">
-                  {logoUploading ? '...' : t.loyaltyPage.cardLogoUpload}
-                  <input type="file" accept="image/png,image/jpeg" onChange={handleLogoUpload} hidden disabled={logoUploading} />
-                </label>
-                <p className="logo-upload-hint">{t.loyaltyPage.cardLogoHint}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Color Picker */}
-          <div className="auth-field">
-            <label>{t.loyaltyPage.cardColor}</label>
-            <div className="color-picker-row">
-              {colorPresets.map(c => (
-                <button key={c} className={`color-swatch ${cardColor === c ? 'active' : ''}`} style={{ background: c }} onClick={() => setCardColor(c)} />
-              ))}
-              <label className="color-custom">
-                <input type="color" value={cardColor} onChange={e => setCardColor(e.target.value)} />
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-              </label>
-            </div>
-          </div>
-
-          {/* Reward Settings inline */}
-          <div className="setup-row">
-            <div className="auth-field"><label>{t.loyaltyPage.pointsPerVisit}</label><input type="number" value={pointsPerVisit} onChange={e => setPointsPerVisit(Number(e.target.value))} /></div>
-            <div className="auth-field"><label>{t.loyaltyPage.rewardAt}</label><div className="setup-reward-input"><input type="number" value={rewardThreshold} onChange={e => setRewardThreshold(Number(e.target.value))} /><span>{t.loyaltyPage.points}</span></div></div>
-          </div>
-          <div className="auth-field"><label>{t.loyaltyPage.rewardDesc}</label><input type="text" value={rewardDesc} onChange={e => setRewardDesc(e.target.value)} placeholder={t.loyaltyPage.rewardDescPh} /></div>
-
-          <button className="auth-submit-btn loyalty-generate-btn" onClick={handleSaveAndGenerate} disabled={saving}>
-            {saving ? t.loyaltyPage.saving : saveStatus === 'saved' ? t.loyaltyPage.saved : (lang === 'ar' ? 'حفظ وإنشاء الكود' : 'Save & Generate QR Code')}
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Step 2: QR Code + Download (appears after generating) */}
-      {generated && (
-        <motion.div className="dash-card wallet-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="loyalty-step-header">
-            <div className="loyalty-step-num">2</div>
-            <h2>{lang === 'ar' ? 'كود العملاء' : 'Customer QR Code'}</h2>
-          </div>
-
-          {/* QR Code */}
-          <div className="wallet-qr-section">
-            <div className="wallet-qr-wrapper">
-              <img src={qrUrl} alt="QR Code" className="wallet-qr-img" />
-            </div>
-            <p className="wallet-qr-hint">{lang === 'ar' ? 'العميل يمسح الكود ← يدخل بياناته ← يضيف البطاقة لمحفظة قوقل' : 'Customer scans → enters info → adds card to Google Wallet'}</p>
-          </div>
-
-          {/* Action buttons */}
-          <div className="wallet-actions">
-            <button className="wallet-download-btn" onClick={downloadPDF}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              {lang === 'ar' ? 'تحميل ملصق للطباعة' : 'Download Printable Poster'}
-            </button>
-
-            <button className="wallet-test-btn" onClick={generateTestPass} disabled={walletLoading}>
-              <GoogleWalletIcon />
-              {walletLoading ? t.loyaltyPage.walletGenerating : (lang === 'ar' ? 'جرّب بنفسك' : 'Try it Yourself')}
-            </button>
-
-            <button
-              className="wallet-test-btn wallet-test-btn-apple"
-              onClick={generateAppleTestPass}
-              disabled={appleLoading}
-              style={{ background: '#000', color: '#fff' }}
-            >
-              <AppleWalletIcon />
-              {appleLoading
-                ? (lang === 'ar' ? 'جاري الإنشاء...' : 'Generating...')
-                : (lang === 'ar' ? 'بطاقة Apple Wallet' : 'Try Apple Wallet')}
-            </button>
-          </div>
-
-          {walletUrl && (
-            <motion.div className="wallet-success" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-              <a href={walletUrl} target="_blank" rel="noopener noreferrer" className="wallet-add-btn">
-                <img src="https://developers.google.com/static/wallet/images/web/en_add_to_google_wallet_wallet-button.png" alt="Add to Google Wallet" style={{ height: 48 }} />
-              </a>
-            </motion.div>
-          )}
-
-          {walletError && <div className="wallet-error">{walletError}</div>}
-          {appleError && <div className="wallet-error">{appleError}</div>}
-
-          {/* Share link */}
-          <div className="wallet-customer-link">
-            <label>{t.loyaltyPage.walletCustomerLink}</label>
-            <div className="wallet-link-row">
-              <input type="text" readOnly value={`trywaya.com/wallet/${shop.id}`} className="wallet-link-input" dir="ltr" />
-              <button className="wallet-copy-btn" onClick={copyCustomerLink}>
-                {copied ? t.loyaltyPage.walletCopied : t.loyaltyPage.walletCopyLink}
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </>
-  )
-}
-
 /* ─── Customer-Facing Wallet Page ─── */
 function WalletPage({ lang, setLang, theme, setTheme }) {
   const [shop, setShop] = useState(null)
@@ -2992,7 +2656,6 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const menuItems = [
     { id: 'home', label: d.navHome, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> },
     { id: 'data', label: d.navData, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
-    { id: 'loyalty', label: d.navLoyalty, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> },
     { id: 'cards', label: d.navCards, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h4"/></svg> },
     { id: 'designer', label: d.navDesigner, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
     { id: 'notifications', label: lang === 'ar' ? 'الإشعارات' : 'Notifications', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
@@ -3148,10 +2811,6 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           </>
         )}
 
-        {activeTab === 'loyalty' && (
-          <LoyaltyTab t={t} lang={lang} shop={shop} user={user} />
-        )}
-
         {activeTab === 'cards' && (
           <Suspense fallback={<LazyFallback />}>
             <ProgramsList shop={shop} lang={lang} />
@@ -3192,8 +2851,29 @@ function MerchantProfileCard({ shop, setShop, t, lang }) {
   const [address, setAddress] = useState(shop.address || '')
   const [shopType, setShopType] = useState(shop.type || '')
   const [locations, setLocations] = useState(Array.isArray(shop.locations) ? shop.locations : [])
+  const [logoUrl, setLogoUrl] = useState(shop.logo_url || null)
+  const [logoUploading, setLogoUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState(null)
+
+  const handleLogoChange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) { alert(isAr ? 'الحجم أكبر من 2MB' : 'File too large (max 2MB)'); return }
+    if (!file.type.startsWith('image/')) return
+    setLogoUploading(true)
+    const ext = file.name.split('.').pop()
+    const path = `${shop.id}/logo.${ext}`
+    const { error: uploadErr } = await supabase.storage.from('shop-logos').upload(path, file, { upsert: true })
+    if (uploadErr) { console.error(uploadErr); setLogoUploading(false); return }
+    const { data: { publicUrl } } = supabase.storage.from('shop-logos').getPublicUrl(path)
+    const timestamped = publicUrl + '?t=' + Date.now()
+    setLogoUrl(timestamped)
+    await supabase.from('shops').update({ logo_url: timestamped }).eq('id', shop.id)
+    shop.logo_url = timestamped
+    setShop({ ...shop, logo_url: timestamped })
+    setLogoUploading(false)
+  }
 
   const addLocation = () => setLocations([...locations, { name: '', latitude: '', longitude: '', relevant_text: '' }])
   const removeLocation = (i) => setLocations(locations.filter((_, idx) => idx !== i))
@@ -3246,6 +2926,21 @@ function MerchantProfileCard({ shop, setShop, t, lang }) {
     <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
       <h2>{t.settingsPage.shopInfo}</h2>
       <div className="auth-form" style={{ gap: 18 }}>
+        <div className="auth-field">
+          <label>{T('Shop Logo', 'شعار المتجر')}</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ width: 72, height: 72, borderRadius: 14, border: '2px dashed #d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: '#f9fafb', flexShrink: 0 }}>
+              {logoUrl ? <img src={logoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 28, color: '#d1d5db' }}>+</span>}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label className="auth-btn" style={{ cursor: 'pointer', fontSize: 13, padding: '6px 16px', textAlign: 'center', opacity: logoUploading ? 0.6 : 1 }}>
+                {logoUploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'تغيير الشعار' : 'Change Logo')}
+                <input type="file" accept="image/*" onChange={handleLogoChange} style={{ display: 'none' }} disabled={logoUploading} />
+              </label>
+              <small style={{ color: '#6b7280' }}>{T('PNG or JPG, max 2MB', 'PNG أو JPG، أقصى حجم ٢ ميقا')}</small>
+            </div>
+          </div>
+        </div>
         <div className="auth-field">
           <label>{T('Business name', 'اسم النشاط')}</label>
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
@@ -3301,7 +2996,6 @@ function MerchantProfileCard({ shop, setShop, t, lang }) {
 
 /* ─── DataPage, LoyaltyPage, SettingsPage now handled inside DashboardPage tabs ─── */
 function DataPage(props) { return <DashboardPage {...props} /> }
-function LoyaltyPage(props) { return <DashboardPage {...props} /> }
 function SettingsPage(props) { return <DashboardPage {...props} /> }
 
 /* ─── Auth Redirect (redirects logged-in users away from landing/login/signup) ─── */
@@ -3423,7 +3117,6 @@ export default function App() {
     if (p === '/setup') return 'setup'
     if (p === '/dashboard') return 'dashboard'
     if (p === '/data') return 'data'
-    if (p === '/loyalty') return 'loyalty'
     if (p === '/settings') return 'settings'
     if (p === '/admin/events') return 'admin-events'
     if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
@@ -3466,7 +3159,6 @@ export default function App() {
   if (page === 'setup') return <AuthProvider><SetupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'dashboard') return <AuthProvider><DashboardPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'data') return <AuthProvider><DataPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
-  if (page === 'loyalty') return <AuthProvider><LoyaltyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'settings') return <AuthProvider><SettingsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'wallet') return <WalletPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
   if (page === 'enroll') return <Suspense fallback={<LazyFallback />}><WalletEnrollPage lang={lang} /></Suspense>
