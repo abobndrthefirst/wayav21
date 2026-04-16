@@ -167,7 +167,7 @@ const content = {
       title1: 'عميلك اللي يرجع',
       title2: 'يسوى أكثر من عشرة جدد',
       subtitle: 'وايا يحوّل زيارة وحدة إلى علاقة طويلة. برنامج ولاء جاهز، يشتغل من أول يوم — بدون جهاز مخصص، بدون تعقيد، وبدون ما تحتاج فريق تقني.',
-      freeTrial: 'اول أسبوعين مجاناً — بدون أي التزام — جربها بنفسك',
+      freeTrial: 'أول شهرين مجاناً للمشاريع الجديدة — بدون أي التزام — جربها بنفسك',
       inputPlaceholder: 'إيميلك أو رقم جوالك',
       storeNamePlaceholder: 'اسم متجرك',
       industryPlaceholder: 'نوع النشاط',
@@ -432,7 +432,7 @@ const content = {
       title1: 'A returning customer',
       title2: 'is worth more than ten new ones',
       subtitle: 'Waya turns a single visit into a lasting relationship. A ready-made loyalty program that works from day one — no extra device, no complexity, and no tech team needed.',
-      freeTrial: 'First 2 weeks free — no commitment at all — try it yourself',
+      freeTrial: 'First 2 months FREE for founding businesses — no commitment — try it yourself',
       inputPlaceholder: 'Your email or phone number',
       storeNamePlaceholder: 'Your store name',
       industryPlaceholder: 'Industry',
@@ -761,7 +761,7 @@ function ParallaxLayer({ children, speed = 0.5, className = '' }) {
 
 /* ─── Logo ─── */
 function Logo({ size = 34 }) {
-  return <img src="/waya-logo.png" alt="وايا" style={{ width: size, height: 'auto' }} />
+  return <img src="/waya-logo.png" alt="وايا" style={{ height: size, width: 'auto' }} />
 }
 
 /* ─── Icons ─── */
@@ -935,7 +935,7 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
     >
       <div className="nav-pill">
         <div className="nav-logo">
-          <Logo size={110} />
+          <Logo size={44} />
         </div>
         <div className="nav-links">
           <a href="#how">{t.nav.how}</a>
@@ -2030,8 +2030,8 @@ function TermsPage({ lang, setLang, theme, setTheme, t }) {
 
         <h2>{isAr ? 'الاشتراك والدفع' : 'Subscription & Payment'}</h2>
         <p>{isAr
-          ? 'الخطة الشهرية بسعر ٧٥ ر.س/شهر والخطة السنوية بسعر ٥٥ ر.س/شهر (تُفوتر سنوياً). أول أسبوعين مجاناً. يمكنك إلغاء اشتراكك في أي وقت. بعد الإلغاء، ستستمر الخدمة حتى نهاية فترة الفوترة الحالية.'
-          : 'The monthly plan is 75 SAR/month and the annual plan is 55 SAR/month (billed annually). First 2 weeks are free. You can cancel your subscription at any time. After cancellation, the service continues until the end of the current billing period.'
+          ? 'الخطة الشهرية بسعر ٧٥ ر.س/شهر والخطة السنوية بسعر ٣٧ ر.س/شهر (خصم ٥٠٪، تُفوتر سنوياً). أول شهرين مجاناً للمشاريع الجديدة. يمكنك إلغاء اشتراكك في أي وقت. بعد الإلغاء، ستستمر الخدمة حتى نهاية فترة الفوترة الحالية.'
+          : 'The monthly plan is 75 SAR/month and the annual plan is 37 SAR/month (50% off, billed annually). First 2 months are completely FREE for founding businesses. You can cancel your subscription at any time. After cancellation, the service continues until the end of the current billing period.'
         }</p>
 
         <h2>{isAr ? 'الاستخدام المقبول' : 'Acceptable Use'}</h2>
