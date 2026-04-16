@@ -1,3 +1,16 @@
+.np-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  color: #6b7280;
+}
+.np-locked-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+.np-locked h2 { font-size: 24px; color: #1f2937; margin: 0 0 8px; }
+.np-locked p { font-size: 18px; color: #9ca3af; margin: 0; }
+
 .np-panel { display: flex; flex-direction: column; gap: 24px; padding: 8px 0; }
 
 .np-quota {
