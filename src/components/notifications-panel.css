@@ -1,37 +1,37 @@
 .np-panel { display: flex; flex-direction: column; gap: 24px; padding: 8px 0; }
 
 .np-quota {
-  background: var(--surface, #0f1112);
-  border: 1px solid var(--border, #222);
+  background: #fff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 16px;
 }
 .np-quota-row { display: flex; gap: 24px; flex-wrap: wrap; }
 .np-quota-item { display: flex; flex-direction: column; gap: 4px; }
-.np-quota-label { font-size: 12px; color: var(--muted, #888); text-transform: uppercase; letter-spacing: 0.4px; }
+.np-quota-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; }
 .np-quota-item strong { font-size: 18px; }
 .np-tier { padding: 2px 10px; border-radius: 999px; font-size: 12px; width: fit-content; }
-.np-tier-free       { background: #2a2a2a; color: #ddd; }
+.np-tier-free       { background: #f3f4f6; color: #374151; }
 .np-tier-starter    { background: #1b3a5f; color: #9ecbff; }
 .np-tier-gold       { background: #4a3a12; color: #ffd774; }
 .np-tier-enterprise { background: #3b1a4a; color: #d19bff; }
 .np-quota-warn { margin-top: 10px; color: #f87171; font-size: 14px; }
 
 .np-compose {
-  background: var(--surface, #0f1112);
-  border: 1px solid var(--border, #222);
+  background: #fff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
 }
 .np-compose h3 { margin: 0 0 16px; }
 .np-label { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; position: relative; }
-.np-label span { font-size: 13px; color: var(--muted, #aaa); }
+.np-label span { font-size: 13px; color: #4b5563; }
 .np-label input, .np-label textarea, .np-label select {
-  background: #0a0b0c;
-  border: 1px solid #2a2a2a;
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px 12px;
-  color: inherit;
+  color: #1f2937;
   font: inherit;
   width: 100%;
   box-sizing: border-box;
@@ -39,8 +39,9 @@
 .np-label input:focus, .np-label textarea:focus, .np-label select:focus {
   outline: none;
   border-color: #4a90e2;
+  background: #fff;
 }
-.np-counter { position: absolute; right: 8px; top: 2px; font-size: 11px; color: var(--muted, #666); }
+.np-counter { position: absolute; right: 8px; top: 2px; font-size: 11px; color: #9ca3af; }
 .np-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 640px) { .np-row { grid-template-columns: 1fr; } }
 
@@ -63,8 +64,8 @@
 .np-coming h3 { margin: 0 0 12px; }
 .np-coming-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .np-cs-card {
-  background: var(--surface, #0f1112);
-  border: 1px dashed #333;
+  background: #fff;
+  border: 1px dashed #d1d5db;
   border-radius: 10px;
   padding: 16px;
   position: relative;
@@ -72,23 +73,23 @@
 }
 .np-cs-icon { font-size: 28px; margin-bottom: 6px; }
 .np-cs-card strong { display: block; margin-bottom: 6px; }
-.np-cs-card p { font-size: 13px; color: var(--muted, #999); margin: 0 0 10px; line-height: 1.4; }
+.np-cs-card p { font-size: 13px; color: #6b7280; margin: 0 0 10px; line-height: 1.4; }
 .np-cs-tag {
   display: inline-block;
-  background: #2a2a2a; color: #aaa;
+  background: #f3f4f6; color: #6b7280;
   padding: 2px 8px; border-radius: 999px; font-size: 11px;
 }
 
 .np-history h3 { margin: 0 0 12px; }
 .np-history-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-.np-h { background: var(--surface, #0f1112); border: 1px solid #222; border-radius: 10px; padding: 14px; }
+.np-h { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; }
 .np-h-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 6px; }
-.np-h-meta { font-size: 12px; color: var(--muted, #888); }
-.np-h-body { font-size: 14px; color: #ccc; margin-bottom: 8px; line-height: 1.4; }
+.np-h-meta { font-size: 12px; color: #6b7280; }
+.np-h-body { font-size: 14px; color: #4b5563; margin-bottom: 8px; line-height: 1.4; }
 .np-h-foot { display: flex; gap: 12px; align-items: center; font-size: 12px; }
 .np-badge { padding: 2px 8px; border-radius: 999px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
 .np-badge-sending { background: #1b3a5f; color: #9ecbff; }
 .np-badge-sent    { background: #14532d; color: #86efac; }
 .np-badge-failed  { background: #5c1a1a; color: #fca5a5; }
-.np-badge-queued  { background: #2a2a2a; color: #ddd; }
-.np-muted { color: var(--muted, #888); font-size: 13px; }
+.np-badge-queued  { background: #f3f4f6; color: #374151; }
+.np-muted { color: #6b7280; font-size: 13px; }
