@@ -66,6 +66,7 @@ Deno.serve(async (req: Request) => {
     const program = pass.program;
     const points = pass.points || 0;
     const stamps = pass.stamps || 0;
+    const rewards = pass.rewards_balance || 0;
     let loyaltyPoints: any;
     if (program?.loyalty_type === "stamp") {
       const need = program.stamps_required || 10;
@@ -84,6 +85,8 @@ Deno.serve(async (req: Request) => {
     const patchBody: any = { loyaltyPoints };
     if (program?.loyalty_type === "tiered" && pass.tier) {
       patchBody.secondaryLoyaltyPoints = { label: "Tier", balance: { string: pass.tier } };
+    } else if (rewards > 0) {
+      patchBody.secondaryLoyaltyPoints = { label: "Rewards", balance: { string: `${rewards}x ${program?.reward_title || "Reward"}` } };
     }
 
     const accessToken = await getGoogleAccessToken();

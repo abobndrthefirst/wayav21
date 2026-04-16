@@ -74,8 +74,30 @@ Deno.serve(async (req: Request) => {
     else if (typeof stamps_delta === "number") updates.stamps = (pass.stamps || 0) + stamps_delta;
     if (set_tier) updates.tier = set_tier;
 
-    if (pass.program?.loyalty_type === "tiered" && pass.program?.tiers && updates.points != null) {
-      const sortedTiers = [...pass.program.tiers].sort((a: any, b: any) => b.threshold - a.threshold);
+    // ── Reward accumulation loop ──
+    // When stamps or points cross the threshold, increment rewards_balance
+    // and reset the counter to the remainder so the customer loops again.
+    const program = pass.program;
+    let rewardsEarned = 0;
+
+    if (program?.loyalty_type === "stamp" && updates.stamps != null) {
+      const need = program.stamps_required || 10;
+      if (updates.stamps >= need) {
+        rewardsEarned = Math.floor(updates.stamps / need);
+        updates.stamps = updates.stamps % need;
+        updates.rewards_balance = (pass.rewards_balance || 0) + rewardsEarned;
+      }
+    } else if (program?.loyalty_type === "points" && updates.points != null) {
+      const need = program.reward_threshold || 10;
+      if (updates.points >= need) {
+        rewardsEarned = Math.floor(updates.points / need);
+        updates.points = updates.points % need;
+        updates.rewards_balance = (pass.rewards_balance || 0) + rewardsEarned;
+      }
+    }
+
+    if (program?.loyalty_type === "tiered" && program?.tiers && updates.points != null) {
+      const sortedTiers = [...program.tiers].sort((a: any, b: any) => b.threshold - a.threshold);
       const t = sortedTiers.find((x: any) => updates.points >= (x.threshold || 0));
       if (t) updates.tier = t.name;
     }

@@ -3034,17 +3034,24 @@ function LoyaltyPage(props) { return <DashboardPage {...props} /> }
 function SettingsPage(props) { return <DashboardPage {...props} /> }
 
 /* ─── Auth Redirect (redirects logged-in users away from landing/login/signup) ─── */
-function AuthRedirect() {
+function AuthRedirect({ children }) {
   const { user, loading } = useAuth()
+  const [checked, setChecked] = useState(false)
+
   useEffect(() => {
-    if (loading || !user) return
+    if (loading) return
+    if (!user) { setChecked(true); return }
     const path = window.location.pathname
     if (path === '/' || path === '/login' || path === '/signup') {
       supabase.from('shops').select('id').eq('user_id', user.id).single()
         .then(({ data }) => navigate(data ? '/dashboard' : '/setup'))
+    } else {
+      setChecked(true)
     }
   }, [user, loading])
-  return null
+
+  if (loading || (!checked && !user)) return null
+  return children || null
 }
 
 /* ─── Programs Page Wrapper (loads shop, renders <ProgramsList />) ─── */
@@ -3132,30 +3139,31 @@ function AdminEventsPage({ lang, setLang, theme, setTheme }) {
 export default function App() {
   const [lang, setLang] = useState('ar')
   const [theme, setTheme] = useState('light')
-  const [page, setPage] = useState('home')
+  const [page, setPage] = useState(null)
   const t = content[lang]
 
   useSmoothScroll()
 
+  const routePath = (p) => {
+    if (p === '/privacy') return 'privacy'
+    if (p === '/terms') return 'terms'
+    if (p === '/login') return 'login'
+    if (p === '/signup') return 'signup'
+    if (p === '/setup') return 'setup'
+    if (p === '/dashboard') return 'dashboard'
+    if (p === '/data') return 'data'
+    if (p === '/loyalty') return 'loyalty'
+    if (p === '/settings') return 'settings'
+    if (p === '/admin/events') return 'admin-events'
+    if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
+    if (p.startsWith('/w/')) return 'enroll'
+    if (p.startsWith('/wallet/')) return 'wallet'
+    return 'home'
+  }
+
   // Simple path-based routing
   useEffect(() => {
     const path = window.location.pathname
-    const routePath = (p) => {
-      if (p === '/privacy') return 'privacy'
-      if (p === '/terms') return 'terms'
-      if (p === '/login') return 'login'
-      if (p === '/signup') return 'signup'
-      if (p === '/setup') return 'setup'
-      if (p === '/dashboard') return 'dashboard'
-      if (p === '/data') return 'data'
-      if (p === '/loyalty') return 'loyalty'
-      if (p === '/settings') return 'settings'
-      if (p === '/admin/events') return 'admin-events'
-      if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
-      if (p.startsWith('/w/')) return 'enroll'
-      if (p.startsWith('/wallet/')) return 'wallet'
-      return 'home'
-    }
     setPage(routePath(path))
 
     const handlePopState = () => {
@@ -3178,6 +3186,8 @@ export default function App() {
     window.scrollTo(0, 0)
   }, [page])
 
+  if (page === null) return null
+
   if (page === 'privacy') return <AuthProvider><PrivacyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'terms') return <AuthProvider><TermsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'login') return <AuthProvider><LoginPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
@@ -3194,23 +3204,24 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <AuthRedirect />
-      <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
-        <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
-        <Hero t={t} />
-        <StatsBar t={t} />
-        <HowItWorks t={t} />
-        <Audience t={t} />
-        <ProductDemo t={t} />
-        <Features t={t} />
-        <WalletCards t={t} />
-        <Comparison t={t} />
-        <SocialProof t={t} />
-        <Calculator t={t} lang={lang} />
-        <Pricing t={t} />
-        <CTA t={t} />
-        <Footer t={t} />
-      </div>
+      <AuthRedirect>
+        <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
+          <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+          <Hero t={t} />
+          <StatsBar t={t} />
+          <HowItWorks t={t} />
+          <Audience t={t} />
+          <ProductDemo t={t} />
+          <Features t={t} />
+          <WalletCards t={t} />
+          <Comparison t={t} />
+          <SocialProof t={t} />
+          <Calculator t={t} lang={lang} />
+          <Pricing t={t} />
+          <CTA t={t} />
+          <Footer t={t} />
+        </div>
+      </AuthRedirect>
     </AuthProvider>
   )
 }

@@ -143,8 +143,8 @@ export default function WalletEnrollPage({ lang = 'en' }) {
       await Promise.all(calls)
       if (anyOk) {
         setDone(true)
+        if (failures.length > 0) console.warn('Partial wallet failure:', failures.join('; '))
       } else {
-        // Surface the real server error instead of pretending it worked.
         setError(failures.join(' — ') || T('Could not create your card. Please try again.', 'تعذر إنشاء البطاقة. حاول مرة أخرى.'))
       }
     } catch (err) {
@@ -251,6 +251,16 @@ export default function WalletEnrollPage({ lang = 'en' }) {
                     <span className="we-wallet-big">Google Wallet</span>
                   </span>
                 </a>
+              )}
+              {!googleSaveUrl && (device === 'android' || device === 'desktop') && (
+                <div style={{ padding: '10px 16px', background: '#fef2f2', borderRadius: 10, fontSize: 13, color: '#991b1b', textAlign: 'center' }}>
+                  {T('Google Wallet is temporarily unavailable. Your Apple Wallet pass is ready.', 'محفظة جوجل غير متاحة حالياً. بطاقة آبل جاهزة.')}
+                </div>
+              )}
+              {!appleBlobUrl && (device === 'ios' || device === 'desktop') && !googleSaveUrl && (
+                <div style={{ padding: '10px 16px', background: '#fef2f2', borderRadius: 10, fontSize: 13, color: '#991b1b', textAlign: 'center' }}>
+                  {T('Could not generate your pass. Please try again.', 'تعذر إنشاء البطاقة. حاول مرة أخرى.')}
+                </div>
               )}
             </div>
             {program.google_maps_url && (

@@ -104,6 +104,11 @@ function hexToRgb(hex: string): string {
 
 function buildPassFields(program: any, customer: any) {
   const type = program.loyalty_type || "stamp";
+  const rewards = customer.rewards_balance || 0;
+  const rewardsField = rewards > 0
+    ? { key: "rewards", label: "REWARDS", value: `${rewards}x ${program.reward_title || "Reward"}` }
+    : { key: "rewards", label: "REWARD", value: program.reward_title || "Reward" };
+
   if (type === "stamp") {
     const need = program.stamps_required || 10;
     const have = customer.stamps || 0;
@@ -114,7 +119,7 @@ function buildPassFields(program: any, customer: any) {
       headerFields: [{ key: "count", label: "STAMPS", value: `${have}/${need}` }],
       primaryFields: [{ key: "stamps", label: customer.customer_name || "Member", value: stampRow }],
       secondaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
-      auxiliaryFields: [{ key: "reward", label: "REWARD", value: program.reward_title || "Reward" }],
+      auxiliaryFields: [rewardsField],
     };
   }
   if (type === "points") {
@@ -124,7 +129,7 @@ function buildPassFields(program: any, customer: any) {
       headerFields: [{ key: "points", label: "POINTS", value: `${have}/${need}` }],
       primaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
       secondaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
-      auxiliaryFields: [{ key: "reward", label: "REWARD", value: program.reward_title || "Reward" }],
+      auxiliaryFields: [rewardsField],
     };
   }
   if (type === "tiered") {
