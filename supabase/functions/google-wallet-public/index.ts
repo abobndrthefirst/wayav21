@@ -142,12 +142,13 @@ Deno.serve(async (req: Request) => {
     }
 
     // Build the loyalty class
-    const hexColor = programWithShopName.card_color || "#10B981";
+    const rawColor = programWithShopName.card_color || "#10B981";
+    const hexColor = /^#[0-9A-Fa-f]{6}$/.test(rawColor) ? rawColor : "#10B981";
     const loyaltyClass: Record<string, unknown> = {
       id: classId,
       issuerName: "Waya",
       reviewStatus: "UNDER_REVIEW",
-      programName: programWithShopName.name || programWithShopName.shop_name,
+      programName: programWithShopName.name || programWithShopName.shop_name || "Loyalty",
       hexBackgroundColor: hexColor,
       countryCode: "SA",
     };
@@ -174,7 +175,7 @@ Deno.serve(async (req: Request) => {
         id: "reward",
       });
     }
-    if (programWithShopName.terms) textModules.push({ header: "Terms", body: programWithShopName.terms, id: "terms" });
+    if (programWithShopName.terms) textModules.push({ header: "Terms", body: (programWithShopName.terms as string).slice(0, 500), id: "terms" });
 
     const linksModule: any = { uris: [] };
     if (programWithShopName.google_maps_url) linksModule.uris.push({ uri: programWithShopName.google_maps_url, description: "Find us on Maps", id: "maps" });
@@ -212,7 +213,10 @@ Deno.serve(async (req: Request) => {
     }
 
     if (programWithShopName.expires_at) {
-      loyaltyObject.validTimeInterval = { end: { date: new Date(programWithShopName.expires_at).toISOString() } };
+      const expiryDate = new Date(programWithShopName.expires_at);
+      if (expiryDate.getTime() > Date.now()) {
+        loyaltyObject.validTimeInterval = { end: { date: expiryDate.toISOString() } };
+      }
     }
 
     const shopLocations = Array.isArray(shop?.locations) ? shop.locations : [];
@@ -232,6 +236,7 @@ Deno.serve(async (req: Request) => {
       origins: ["https://trywaya.com", "https://www.trywaya.com"],
       typ: "savetowallet",
       iat: now,
+      exp: now + 3600,
       payload: { loyaltyClasses: [loyaltyClass], loyaltyObjects: [loyaltyObject] },
     };
 

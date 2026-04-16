@@ -67,6 +67,80 @@ Deno.serve(async (req: Request) => {
       }), { headers: { ...cors, "Content-Type": "application/json" } });
     }
 
+    // ── Redeem reward ──
+    if (action === "redeem_reward") {
+      const bal = pass.rewards_balance || 0;
+      if (bal < 1) throw new Error("No rewards to redeem");
+      const updates: any = {
+        updated_at: new Date().toISOString(),
+        rewards_balance: bal - 1,
+      };
+      await supabase.from("customer_passes").update(updates).eq("id", pass_id);
+
+      try {
+        await supabase.from("activity_log").insert({
+          shop_id: pass.shop_id,
+          customer_name: pass.customer_name,
+          action: "redeem_reward",
+          points: -1,
+          client_request_id: idempotencyKey,
+        });
+      } catch (_) { /* idempotency conflict is fine */ }
+
+      // Enqueue wallet update so the pass reflects the new balance
+      const enqueued: { kind: string; count: number }[] = [];
+      if (pass.apple_serial) {
+        try {
+          const { data: regs } = await supabase
+            .from("apple_device_registrations")
+            .select("push_token")
+            .eq("serial_number", pass.apple_serial);
+          const rows = (regs || []).map((r: any) => ({
+            kind: "apple_apns",
+            customer_pass_id: pass.id,
+            shop_id: pass.shop_id,
+            payload: { push_token: r.push_token },
+            idempotency_key: idempotencyKey,
+          }));
+          if (rows.length > 0) {
+            await supabase.from("wallet_update_jobs")
+              .upsert(rows, { onConflict: "kind,customer_pass_id,idempotency_key", ignoreDuplicates: true });
+            enqueued.push({ kind: "apple_apns", count: rows.length });
+          }
+        } catch (_) {}
+      }
+      if (pass.google_object_id) {
+        try {
+          await supabase.from("wallet_update_jobs")
+            .upsert([{
+              kind: "google_wallet",
+              customer_pass_id: pass.id,
+              shop_id: pass.shop_id,
+              payload: { google_object_id: pass.google_object_id },
+              idempotency_key: idempotencyKey,
+            }], { onConflict: "kind,customer_pass_id,idempotency_key", ignoreDuplicates: true });
+          enqueued.push({ kind: "google_wallet", count: 1 });
+        } catch (_) {}
+      }
+
+      events.rewardRedeemed({
+        source: "points-update",
+        shop_id: pass.shop_id,
+        program_id: pass.program_id,
+        customer_pass_id: pass.id,
+        message: `Reward redeemed for ${pass.customer_name || "member"}`,
+        metadata: { prior_balance: bal, enqueued },
+        request_id: idempotencyKey,
+      });
+
+      return new Response(JSON.stringify({
+        success: true,
+        pass: { ...pass, ...updates },
+        enqueued,
+        idempotency_key: idempotencyKey,
+      }), { headers: { ...cors, "Content-Type": "application/json" } });
+    }
+
     const updates: any = { updated_at: new Date().toISOString(), last_visit_at: new Date().toISOString() };
     if (typeof set_points === "number") updates.points = set_points;
     else if (typeof points_delta === "number") updates.points = (pass.points || 0) + points_delta;

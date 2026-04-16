@@ -2094,6 +2094,16 @@ function LoginPage({ t, lang, setLang, theme, setTheme }) {
       .then(({ data }) => navigate(data ? '/dashboard' : '/setup'))
   }, [user])
 
+  if (user) {
+    return (
+      <div className="auth-page">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+          <div style={{ textAlign: 'center', color: '#888' }}>{a.logging || 'Redirecting…'}</div>
+        </div>
+      </div>
+    )
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault()
     if (!email.trim() || !password.trim()) { setError(a.errEmpty); return }
@@ -2104,7 +2114,7 @@ function LoginPage({ t, lang, setLang, theme, setTheme }) {
 
   const handleGoogle = async () => {
     setError('')
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/login' } })
   }
 
   const handleForgot = async () => {
@@ -2182,6 +2192,16 @@ function SignupPage({ t, lang, setLang, theme, setTheme }) {
       .then(({ data }) => navigate(data ? '/dashboard' : '/setup'))
   }, [user])
 
+  if (user) {
+    return (
+      <div className="auth-page">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+          <div style={{ textAlign: 'center', color: '#888' }}>{a.logging || 'Redirecting…'}</div>
+        </div>
+      </div>
+    )
+  }
+
   const handleSignup = async (e) => {
     e.preventDefault()
     if (!fullName.trim()) { setError(a.errName); return }
@@ -2198,7 +2218,7 @@ function SignupPage({ t, lang, setLang, theme, setTheme }) {
 
   const handleGoogle = async () => {
     setError('')
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/login' } })
   }
 
   if (success) {
@@ -3040,7 +3060,7 @@ function AuthRedirect({ children }) {
     }
   }, [user, loading])
 
-  if (loading || (!checked && !user)) return null
+  if (loading || !checked) return null
   return children || null
 }
 

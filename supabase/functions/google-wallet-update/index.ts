@@ -87,6 +87,8 @@ Deno.serve(async (req: Request) => {
       patchBody.secondaryLoyaltyPoints = { label: "Tier", balance: { string: pass.tier } };
     } else if (rewards > 0) {
       patchBody.secondaryLoyaltyPoints = { label: "Rewards", balance: { string: `${rewards}x ${program?.reward_title || "Reward"}` } };
+    } else {
+      patchBody.secondaryLoyaltyPoints = { label: "Rewards", balance: { string: "0" } };
     }
 
     const accessToken = await getGoogleAccessToken();

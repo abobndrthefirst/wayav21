@@ -676,6 +676,101 @@
   font-size: 28px;
 }
 
+/* ─── Help CTA Banner ─── */
+.pd-help-banner {
+  margin-top: 32px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #d1fae5 100%);
+  border: 1.5px solid #a7f3d0;
+  border-radius: 16px;
+  padding: 24px 28px;
+  animation: pd-fadein .5s ease;
+}
+.pd-help-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.pd-help-icon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  background: #10B981;
+  color: #fff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(16,185,129,.25);
+}
+.pd-help-text {
+  flex: 1;
+  min-width: 0;
+}
+.pd-help-text h4 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #065f46;
+}
+.pd-help-text p {
+  margin: 0;
+  font-size: 13.5px;
+  color: #047857;
+  line-height: 1.5;
+}
+.pd-help-buttons {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.pd-help-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform .12s, box-shadow .2s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pd-help-btn:active { transform: scale(.96); }
+.pd-help-btn.whatsapp {
+  background: #25D366;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(37,211,102,.3);
+}
+.pd-help-btn.whatsapp:hover {
+  background: #20bd5a;
+  box-shadow: 0 6px 20px rgba(37,211,102,.4);
+}
+.pd-help-btn.email {
+  background: #fff;
+  color: #065f46;
+  border: 1.5px solid #a7f3d0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+.pd-help-btn.email:hover {
+  border-color: #10B981;
+  box-shadow: 0 4px 14px rgba(16,185,129,.15);
+}
+@media (max-width: 768px) {
+  .pd-help-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .pd-help-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+  .pd-help-btn {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
 /* ─── Action Bar ─── */
 .pd-actions {
   display: flex;

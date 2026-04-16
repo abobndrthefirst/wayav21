@@ -365,6 +365,31 @@ function ProgramCustomers({ program, onClose, lang }) {
     }
   }
 
+  const redeem = async (pass) => {
+    if ((pass.rewards_balance || 0) < 1) return
+    setBusy(pass.id)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const url = `${supabase.supabaseUrl}/functions/v1/points-update`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+          'apikey': supabase.supabaseKey || '',
+        },
+        body: JSON.stringify({ pass_id: pass.id, action: 'redeem_reward' }),
+      })
+      const j = await res.json()
+      if (!j.success) alert(j.error || T('Redeem failed', 'فشل الاستبدال'))
+      await load()
+    } catch (e) {
+      alert(e.message)
+    } finally {
+      setBusy(null)
+    }
+  }
+
   const filtered = passes.filter(p => {
     if (!search) return true
     const q = search.toLowerCase()
@@ -400,6 +425,11 @@ function ProgramCustomers({ program, onClose, lang }) {
                   ? `${p.stamps || 0}/${program.stamps_required || 10} ${T('stamps', 'ختم')}`
                   : `${p.points || 0} ${T('points', 'نقطة')}`}
                 {p.tier && ` · ${p.tier}`}
+                {(p.rewards_balance || 0) > 0 && (
+                  <span style={{ marginInlineStart: 6, background: '#10B981', color: '#fff', padding: '2px 8px', borderRadius: 10, fontSize: 12, fontWeight: 700 }}>
+                    {p.rewards_balance}x {T('reward', 'مكافأة')}
+                  </span>
+                )}
               </span>
             </div>
             <div className="pl-customer-actions">
@@ -407,6 +437,12 @@ function ProgramCustomers({ program, onClose, lang }) {
               <button disabled={busy === p.id} className="lw-btn primary sm" onClick={() => bump(p, 1)}>+1</button>
               {!isStamp && (
                 <button disabled={busy === p.id} className="lw-btn primary sm" onClick={() => bump(p, 5)}>+5</button>
+              )}
+              {(p.rewards_balance || 0) > 0 && (
+                <button disabled={busy === p.id} className="lw-btn sm" onClick={() => redeem(p)}
+                  style={{ background: '#f59e0b', color: '#fff', border: 'none' }}>
+                  {T('Redeem', 'استبدال')}
+                </button>
               )}
             </div>
           </div>
