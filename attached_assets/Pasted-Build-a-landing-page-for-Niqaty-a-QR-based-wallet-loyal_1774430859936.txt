@@ -1,0 +1,39 @@
+Build a landing page for "Niqaty | نقاطي" — a QR-based wallet loyalty SaaS for small businesses in Saudi Arabia.
+Language: Full Arabic/English toggle. Arabic is the default (RTL). English switches to LTR. Every word on the page must be translated. The toggle button is fixed in the nav.
+Design direction — follow this exactly:
+
+Color palette: Deep Saudi green #0A6C3B, gold #C8922A, warm cream background #FDFAF3, dark #0D1F15
+Fonts: Cairo + Tajawal (Google Fonts) for Arabic. Playfair Display + DM Sans for English
+Subtle Islamic geometric pattern as a background texture (low opacity grid)
+Warm, premium, local feel — NOT generic SaaS purple gradients
+
+Sections to build:
+
+Fixed nav — logo (نقاطي / Niqaty), language toggle (AR/EN), CTA button
+Hero — bold headline, subtext, two CTA buttons, floating animated emoji badges (✅ Point Added, 🎉 Reward Unlocked), animated background
+Scrolling business strip — infinite marquee showing all business types (coffee, restaurants, laundromats, barbershops, salons, bakeries, boutiques etc.)
+Stats bar — green background, 4 stats with count-up animation on scroll: "10 minutes setup", "0 hardware needed", "∞ customers", "$20/month"
+How it works diagram — 5 steps in a zigzag left/right layout with animated green connector arrows between cards. Each card has emoji icon, step number, title, description. Cards lift on hover with green accent border
+Business types grid — dark background, 8 business cards with emoji + name, hover turns green
+Features grid — 3 columns, 6 cards, each with icon, title, description. Bottom animated border on hover
+Phone mockup section — realistic phone showing the Apple Wallet pass: green gradient card with business name, points (7/10), gold stamp dots, rewards list, QR code preview. Stamps animate sequentially every 4 seconds
+Pricing section — one card, $20/month, full feature list with green checkmarks, CTA button
+CTA / waitlist — green background, email/WhatsApp input, submit confirmation
+
+Interactions:
+
+Scroll reveal animations (fade up) on all sections
+Stamp dots animate sequentially on loop
+Stats count up when scrolled into view
+Hover states on all cards
+Email form shows success state on submit
+Smooth scroll between sections
+
+Key copy (Arabic default):
+
+Headline: أبسط برنامج ولاء — يشتغل خلال دقائق
+Subheadline: بطاقة ولاء رقمية تعيش في محفظة جوال عميلك. بدون تطبيق. بدون تسجيل.
+Price: $20 / شهر
+CTA: ابدأ مجاناً
+
+Tech: Single HTML file with embedded CSS and JS. No frameworks needed. Mobile responsive.

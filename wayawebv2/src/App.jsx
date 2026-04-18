@@ -2160,14 +2160,79 @@ function GoogleWalletIcon() {
   )
 }
 
-/* ─── Loyalty Tab with Google Wallet ─── */
+/* ─── Apple Wallet Icon ─── */
+function AppleWalletIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.41-1.09-.47-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.41C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.50-3.74 4.25z"/>
+    </svg>
+  )
+}
+
+/* ─── Loyalty Tab with Google Wallet + Apple Wallet ─── */
 function LoyaltyTab({ t, lang, shop, user }) {
   const [walletUrl, setWalletUrl] = useState(null)
   const [walletLoading, setWalletLoading] = useState(false)
   const [walletError, setWalletError] = useState(null)
+  const [appleLoading, setAppleLoading] = useState(false)
+  const [appleError, setAppleError] = useState(null)
   const [copied, setCopied] = useState(false)
   const [testName, setTestName] = useState(lang === 'ar' ? 'أحمد علي' : 'Ahmed Ali')
   const [testPhone, setTestPhone] = useState('0551234567')
+  const [enrollLink, setEnrollLink] = useState(null)
+
+  useEffect(() => {
+    if (!shop?.id) return
+    supabase.from('loyalty_programs').select('id').eq('shop_id', shop.id).eq('is_active', true).limit(1).single()
+      .then(async ({ data: prog }) => {
+        if (!prog) return
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) return
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/mint-enrollment-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+          body: JSON.stringify({ program_id: prog.id }),
+        })
+        const json = await res.json()
+        if (json.success) setEnrollLink(`https://www.trywaya.com/w/${prog.id}?t=${json.token}`)
+      })
+  }, [shop?.id])
+
+  const generateApplePass = async () => {
+    setAppleLoading(true)
+    setAppleError(null)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/apple-wallet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          customer_name: testName,
+          customer_phone: testPhone,
+          points_balance: 5,
+        }),
+      })
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}))
+        throw new Error(errJson.error || 'Failed to generate Apple Wallet pass')
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${shop.name.replace(/[^\w]/g, '_')}.pkpass`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setAppleError(err.message)
+    }
+    setAppleLoading(false)
+  }
 
   const generateWalletPass = async () => {
     setWalletLoading(true)
@@ -2200,8 +2265,8 @@ function LoyaltyTab({ t, lang, shop, user }) {
   }
 
   const copyCustomerLink = () => {
-    const link = `https://www.trywaya.com/wallet/${shop.id}`
-    navigator.clipboard.writeText(link)
+    if (!enrollLink) return
+    navigator.clipboard.writeText(enrollLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -2235,7 +2300,7 @@ function LoyaltyTab({ t, lang, shop, user }) {
         <div className="wallet-customer-link">
           <label>{t.loyaltyPage.walletCustomerLink}</label>
           <div className="wallet-link-row">
-            <input type="text" readOnly value={`trywaya.com/wallet/${shop.id}`} className="wallet-link-input" dir="ltr" />
+            <input type="text" readOnly value={enrollLink ? enrollLink.replace('https://www.', '') : (lang === 'ar' ? 'جاري التحميل...' : 'Loading...')} className="wallet-link-input" dir="ltr" />
             <button className="wallet-copy-btn" onClick={copyCustomerLink}>
               {copied ? t.loyaltyPage.walletCopied : t.loyaltyPage.walletCopyLink}
             </button>
@@ -2259,6 +2324,19 @@ function LoyaltyTab({ t, lang, shop, user }) {
             <GoogleWalletIcon />
             {walletLoading ? t.loyaltyPage.walletGenerating : t.loyaltyPage.walletTestBtn}
           </button>
+
+          <button
+            className="wallet-test-btn wallet-test-btn-apple"
+            onClick={generateApplePass}
+            disabled={appleLoading}
+            style={{ marginTop: 8, background: '#000', color: '#fff' }}
+          >
+            <AppleWalletIcon />
+            {appleLoading
+              ? (lang === 'ar' ? 'جاري الإنشاء...' : 'Generating...')
+              : (lang === 'ar' ? 'بطاقة تجريبية — Apple Wallet' : 'Test Pass — Apple Wallet')}
+          </button>
+          {appleError && <div className="wallet-error">{appleError}</div>}
 
           {walletError && (
             <div className="wallet-error">
@@ -2286,45 +2364,77 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [walletUrl, setWalletUrl] = useState(null)
+  const [appleBlobUrl, setAppleBlobUrl] = useState(null)
   const [generating, setGenerating] = useState(false)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [submitted, setSubmitted] = useState(false)
-
-  const shopId = window.location.pathname.split('/wallet/')[1]
+  const [programId, setProgramId] = useState(null)
+  const [enrollToken, setEnrollToken] = useState(null)
 
   useEffect(() => {
-    if (!shopId) { setError('Invalid link'); setLoading(false); return }
-    supabase.from('shops').select('*').eq('id', shopId).single()
-      .then(({ data, error: err }) => {
-        if (err || !data) { setError(lang === 'ar' ? 'المتجر غير موجود' : 'Shop not found'); }
-        else { setShop(data) }
-        setLoading(false)
-      })
-  }, [shopId])
+    const path = window.location.pathname
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('t')
+
+    if (path.startsWith('/w/')) {
+      const pId = path.split('/w/')[1]
+      if (!pId) { setError('Invalid link'); setLoading(false); return }
+      setProgramId(pId)
+      setEnrollToken(token)
+      supabase.from('loyalty_programs').select('*, shop:shops(*)').eq('id', pId).single()
+        .then(({ data, error: err }) => {
+          if (err || !data) { setError(lang === 'ar' ? 'البرنامج غير موجود' : 'Program not found') }
+          else { setShop(data.shop) }
+          setLoading(false)
+        })
+    } else {
+      const shopId = path.split('/wallet/')[1]
+      if (!shopId) { setError('Invalid link'); setLoading(false); return }
+      supabase.from('shops').select('*').eq('id', shopId).single()
+        .then(async ({ data: shopData, error: err }) => {
+          if (err || !shopData) { setError(lang === 'ar' ? 'المتجر غير موجود' : 'Shop not found'); setLoading(false); return }
+          setShop(shopData)
+          const { data: prog } = await supabase.from('loyalty_programs').select('id').eq('shop_id', shopId).eq('is_active', true).limit(1).single()
+          if (prog) setProgramId(prog.id)
+          setLoading(false)
+        })
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!name || !phone) return
+    if (!name || !phone || !programId) return
     setGenerating(true)
     try {
-      // Call edge function without auth (we'll need to allow this for customers)
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shop_id: shopId,
-          customer_name: name,
-          customer_phone: phone,
-        }),
-      })
-      const data = await res.json()
-      if (data.success) {
-        setWalletUrl(data.saveUrl)
-        setSubmitted(true)
-      } else {
-        setError(data.error)
-      }
+      const bodyObj = { program_id: programId, customer_name: name, customer_phone: phone, enrollment_token: enrollToken }
+      const body = JSON.stringify(bodyObj)
+
+      const [googleRes, appleRes] = await Promise.all([
+        fetch(`${SUPABASE_URL}/functions/v1/google-wallet-public`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        }).then(r => r.json()).catch(e => ({ success: false, error: e.message })),
+
+        fetch(`${SUPABASE_URL}/functions/v1/apple-wallet-public`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        }).then(async r => {
+          if (!r.ok) {
+            const errJson = await r.json().catch(() => ({}))
+            return { success: false, error: errJson.error }
+          }
+          const blob = await r.blob()
+          return { success: true, blobUrl: URL.createObjectURL(blob) }
+        }).catch(() => ({ success: false })),
+      ])
+
+      if (googleRes.success) setWalletUrl(googleRes.saveUrl)
+      if (appleRes.success) setAppleBlobUrl(appleRes.blobUrl)
+      if (googleRes.success || appleRes.success) setSubmitted(true)
+      else setError(googleRes.error || 'Failed to generate pass')
     } catch (err) {
       setError(err.message)
     }
@@ -2377,9 +2487,22 @@ function WalletPage({ lang, setLang, theme, setTheme }) {
           <motion.div className="wallet-done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <div className="wallet-done-check">✓</div>
             <p>{lang === 'ar' ? 'تم إنشاء بطاقتك!' : 'Your card is ready!'}</p>
-            <a href={walletUrl} target="_blank" rel="noopener noreferrer" className="wallet-add-btn-google">
-              <img src="https://developers.google.com/static/wallet/images/web/en_add_to_google_wallet_wallet-button.png" alt="Add to Google Wallet" style={{ height: 52 }} />
-            </a>
+            {walletUrl && (
+              <a href={walletUrl} target="_blank" rel="noopener noreferrer" className="wallet-add-btn-google">
+                <img src="https://developers.google.com/static/wallet/images/web/en_add_to_google_wallet_wallet-button.png" alt="Add to Google Wallet" style={{ height: 52 }} />
+              </a>
+            )}
+            {appleBlobUrl && (
+              <a
+                href={appleBlobUrl}
+                download={`${shop.name.replace(/[^\w]/g, '_')}.pkpass`}
+                className="wallet-add-btn-apple"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 12, background: '#000', color: '#fff', padding: '12px 20px', borderRadius: 10, textDecoration: 'none', fontWeight: 600 }}
+              >
+                <AppleWalletIcon />
+                {lang === 'ar' ? 'أضف إلى Apple Wallet' : 'Add to Apple Wallet'}
+              </a>
+            )}
             <p className="wallet-reward-info">
               {lang === 'ar'
                 ? `اجمع ${shop.reward_threshold || 10} نقاط واحصل على مكافأة`
@@ -2627,6 +2750,29 @@ function AuthRedirect() {
   return null
 }
 
+function HomeGate({ lang, setLang, theme, setTheme, t }) {
+  const { user, loading } = useAuth()
+  if (loading) return <div className="auth-page"><div className="dash-loading"><Logo size={40} /></div></div>
+  return (
+    <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+      <Hero t={t} />
+      <StatsBar t={t} />
+      <HowItWorks t={t} />
+      <Audience t={t} />
+      <ProductDemo t={t} />
+      <Features t={t} />
+      <WalletCards t={t} />
+      <Comparison t={t} />
+      <SocialProof t={t} />
+      <Calculator t={t} lang={lang} />
+      <Pricing t={t} />
+      <CTA t={t} />
+      <Footer t={t} />
+    </div>
+  )
+}
+
 /* ─── App ─── */
 export default function App() {
   const [lang, setLang] = useState('ar')
@@ -2649,7 +2795,7 @@ export default function App() {
       if (p === '/data') return 'data'
       if (p === '/loyalty') return 'loyalty'
       if (p === '/settings') return 'settings'
-      if (p.startsWith('/wallet/')) return 'wallet'
+      if (p.startsWith('/wallet/') || p.startsWith('/w/')) return 'wallet'
       return 'home'
     }
     setPage(routePath(path))
@@ -2688,22 +2834,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AuthRedirect />
-      <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
-        <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
-        <Hero t={t} />
-        <StatsBar t={t} />
-        <HowItWorks t={t} />
-        <Audience t={t} />
-        <ProductDemo t={t} />
-        <Features t={t} />
-        <WalletCards t={t} />
-        <Comparison t={t} />
-        <SocialProof t={t} />
-        <Calculator t={t} lang={lang} />
-        <Pricing t={t} />
-        <CTA t={t} />
-        <Footer t={t} />
-      </div>
+      <HomeGate lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
     </AuthProvider>
   )
 }

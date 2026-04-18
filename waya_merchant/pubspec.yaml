@@ -1,0 +1,51 @@
+name: waya_merchant
+description: Waya merchant app — scan customer QR, add points/stamps, manage loyalty.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Supabase — auth, DB, edge functions
+  supabase_flutter: ^2.5.6
+
+  # Native Google Sign-In (nicer UX than web OAuth on mobile)
+  google_sign_in: ^6.2.1
+
+  # QR / barcode scanning (MLKit under the hood — fast, reliable)
+  mobile_scanner: ^7.2.0
+
+  # Misc
+  shared_preferences: ^2.2.3
+  intl: ^0.20.2
+  cupertino_icons: ^1.0.8
+  uuid: ^4.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+  generate: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo.png"
+  remove_alpha_ios: true
+  background_color_ios: "#FFFFFF"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/logo.png"
+  min_sdk_android: 21
