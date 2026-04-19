@@ -184,5 +184,5 @@ function timeAgo(iso, isAr) {
   if (h < 24) return isAr ? `قبل ${h} س` : `${h}h ago`
   const days = Math.floor(h / 24)
   if (days < 30) return isAr ? `قبل ${days} ي` : `${days}d ago`
-  return d.toLocaleDateString(isAr ? 'ar-SA' : 'en-US')
+  return d.toLocaleDateString('en-US')
 }

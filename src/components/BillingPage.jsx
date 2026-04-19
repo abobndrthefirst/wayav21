@@ -28,7 +28,7 @@ const TIERS = [
     id: 'tier1',
     titleAr: 'البداية', titleEn: 'Starter',
     monthly: 80, annual: 768,
-    featuresAr: ['برنامج ولاء واحد', 'حتى ٢٠٠ عميل', 'لوحة تحكم كاملة', 'دعم عبر البريد'],
+    featuresAr: ['برنامج ولاء واحد', 'حتى 200 عميل', 'لوحة تحكم كاملة', 'دعم عبر البريد'],
     featuresEn: ['1 loyalty program', 'Up to 200 customers', 'Full dashboard access', 'Email support'],
   },
   {
@@ -36,7 +36,7 @@ const TIERS = [
     titleAr: 'النمو', titleEn: 'Growth',
     monthly: 150, annual: 1440,
     badgeAr: 'الأكثر شيوعاً', badgeEn: 'Most popular',
-    featuresAr: ['برامج ولاء غير محدودة', 'حتى ٢٬٠٠٠ عميل', 'معمل البطاقات', 'تحليلات متقدمة', 'دعم عبر واتساب'],
+    featuresAr: ['برامج ولاء غير محدودة', 'حتى 2,000 عميل', 'معمل البطاقات', 'تحليلات متقدمة', 'دعم عبر واتساب'],
     featuresEn: ['Unlimited loyalty programs', 'Up to 2,000 customers', 'Pass designer lab', 'Advanced analytics', 'WhatsApp support'],
   },
   {
@@ -75,7 +75,7 @@ function StatusBanner({ subscription, lang }) {
       <span className="billing-status-sub">
         {subscription.plan_id}
         {subscription.current_period_end
-          ? ` · ${isAr ? 'ينتهي' : 'Ends'} ${new Date(subscription.current_period_end).toLocaleDateString(isAr ? 'ar-SA' : 'en-GB')}`
+          ? ` · ${isAr ? 'ينتهي' : 'Ends'} ${new Date(subscription.current_period_end).toLocaleDateString('en-GB')}`
           : ''}
       </span>
     </motion.div>
@@ -157,10 +157,10 @@ export default function BillingPage({ lang = 'ar' }) {
     title: T('Subscription', 'الاشتراك'),
     sub: T(
       'Pick a plan that fits your shop — pay monthly or save 20% with annual billing.',
-      'اختر الخطة التي تناسب متجرك — ادفع شهرياً أو وفّر ٢٠٪ بالدفع السنوي.',
+      'اختر الخطة التي تناسب متجرك — ادفع شهرياً أو وفّر 20% بالدفع السنوي.',
     ),
     monthly: T('Monthly', 'شهري'),
-    annual: T('Annual — save 20%', 'سنوي — خصم ٢٠٪'),
+    annual: T('Annual — save 20%', 'سنوي — خصم 20%'),
     unitMonth: T('SAR / month', 'ر.س / شهر'),
     unitYear: T('SAR / year', 'ر.س / سنة'),
     phoneLabel: T('Phone number (for StreamPay invoices)', 'رقم الجوال (لإشعارات ستريم باي)'),
@@ -170,7 +170,7 @@ export default function BillingPage({ lang = 'ar' }) {
     subscribed: T('Subscribed', 'مشترك'),
     back: T('← Home', '← الرئيسية'),
     redirecting: T('Redirecting…', 'جارٍ التحويل…'),
-    save20: T('Save 20%', 'وفّر ٢٠٪'),
+    save20: T('Save 20%', 'وفّر 20%'),
     loading: T('Loading…', 'جارٍ التحميل…'),
     existingPending: T(
       'You already have a subscription in progress.',

@@ -97,7 +97,7 @@ const content = {
       or: 'أو', forgot: 'نسيت كلمة المرور؟', back: 'الرئيسية',
       noAccount: 'ما عندك حساب؟', hasAccount: 'عندك حساب؟', goSignup: 'سجّل الحين', goLogin: 'سجّل دخول',
       errInvalid: 'الإيميل أو كلمة المرور غلط', errEmpty: 'ادخل الإيميل وكلمة المرور',
-      errName: 'ادخل اسمك', errEmail: 'ادخل إيميل صحيح', errPassword: 'كلمة المرور لازم ٦ أحرف على الأقل',
+      errName: 'ادخل اسمك', errEmail: 'ادخل إيميل صحيح', errPassword: 'كلمة المرور لازم 6 أحرف على الأقل',
       logging: 'جاري الدخول...', signing: 'جاري التسجيل...',
       successTitle: 'تم التسجيل!', successMsg: 'تفقد إيميلك وفعّل حسابك عشان تقدر تدخل.',
       errEmailFirst: 'ادخل إيميلك أولاً', resetSent: 'تم إرسال رابط إعادة التعيين على إيميلك',
@@ -110,7 +110,7 @@ const content = {
       phone: 'رقم الجوال', phonePh: '05xxxxxxxx',
       address: 'العنوان', addressPh: 'مثلاً: الرياض، حي النخيل',
       instagram: 'انستقرام', twitter: 'تويتر',
-      logo: 'شعار المتجر', logoUpload: 'اختر صورة', logoHint: 'PNG أو JPG، أقصى حجم ٢ ميقا',
+      logo: 'شعار المتجر', logoUpload: 'اختر صورة', logoHint: 'PNG أو JPG، أقصى حجم 2 ميقا',
       loyaltyTitle: 'إعدادات برنامج الولاء',
       pointsPerVisit: 'نقاط لكل زيارة', rewardAt: 'المكافأة عند', points: 'نقطة',
       rewardDesc: 'وصف المكافأة', rewardDescPh: 'مثلاً: قهوة مجانية',
@@ -181,10 +181,10 @@ const content = {
       errorMsg: 'يرجى تعبئة جميع الحقول',
     },
     stats: [
-      { value: '٥–٢٥x', label: 'تكلفة اكتساب العميل الجديد مقارنة بالاحتفاظ بالحالي' },
-      { value: '+١٨٪', label: 'زيادة في الإنفاق من العملاء المسجّلين ببرامج ولاء' },
-      { value: '٦٠–٧٠٪', label: 'احتمال الشراء من عميل حالي، مقابل ٥–٢٠٪ من عميل جديد' },
-      { value: '٤.٨x', label: 'إنفاق أعلى من العملاء اللي يحسّون بارتباط عاطفي بالعلامة' },
+      { value: '5–25x', label: 'تكلفة اكتساب العميل الجديد مقارنة بالاحتفاظ بالحالي' },
+      { value: '+18%', label: 'زيادة في الإنفاق من العملاء المسجّلين ببرامج ولاء' },
+      { value: '60–70%', label: 'احتمال الشراء من عميل حالي، مقابل 5–20% من عميل جديد' },
+      { value: '4.8x', label: 'إنفاق أعلى من العملاء اللي يحسّون بارتباط عاطفي بالعلامة' },
     ],
     how: {
       badge: 'كيف يعمل',
@@ -203,10 +203,10 @@ const content = {
       subtitle: 'أدوات مصممة تخلّي عميلك يرجع — بدون ما تعقّد شغلك.',
       dashboard: 'لوحة تحكم نظام الولاء',
       dashStats: [
-        { label: 'ارتفاع الإيرادات', value: '١٤.٢ك ر.س', change: '+٢٢%' },
-        { label: 'زيارات متكررة', value: '٦٧%', change: '+٨%' },
-        { label: 'مكافآت مرسلة', value: '٣,٨٩١', change: '+٣٤%' },
-        { label: 'عملاء نشطين', value: '١,٢٤٧', change: '+١٢%' },
+        { label: 'ارتفاع الإيرادات', value: '14.2ك ر.س', change: '+22%' },
+        { label: 'زيارات متكررة', value: '67%', change: '+8%' },
+        { label: 'مكافآت مرسلة', value: '3,891', change: '+34%' },
+        { label: 'عملاء نشطين', value: '1,247', change: '+12%' },
       ],
       items: [
         { icon: 'bell', title: 'إشعارات ذكية', desc: 'إشعار في الوقت الصح يذكّر عميلك يرجع — بدون إزعاج.' },
@@ -240,10 +240,10 @@ const content = {
       ],
       dashboardTitle: 'لوحة تحكم وايا',
       metrics: [
-        { icon: 'users', value: '١,٢٤٧', label: 'عميل نشط', trend: '+١٢٪' },
-        { icon: 'repeat', value: '٦٧٪', label: 'زيارات متكررة', trend: '+٨٪' },
-        { icon: 'gift', value: '٣,٨٩١', label: 'مكافأة مرسلة', trend: '+٣٤٪' },
-        { icon: 'sar', value: '١٤.٢ك', label: 'إيرادات إضافية', trend: '+٢٢٪' },
+        { icon: 'users', value: '1,247', label: 'عميل نشط', trend: '+12%' },
+        { icon: 'repeat', value: '67%', label: 'زيارات متكررة', trend: '+8%' },
+        { icon: 'gift', value: '3,891', label: 'مكافأة مرسلة', trend: '+34%' },
+        { icon: 'sar', value: '14.2ك', label: 'إيرادات إضافية', trend: '+22%' },
       ],
       customerJourney: 'رحلة العميل',
       journeySteps: ['يمسح QR', 'يجمع نقاط', 'يوصله إشعار', 'يرجع ويستلم مكافأة'],
@@ -303,9 +303,9 @@ const content = {
       title: 'أرقام تتكلم',
       subtitle: 'من أول شهر، التجار شافوا الفرق.',
       items: [
-        { value: '+٤٧٧', label: 'محل مسجّل', desc: 'تجار اختاروا وايا لإدارة ولاء عملائهم' },
-        { value: '+٣٢٪', label: 'زيادة في الزيارات المتكررة', desc: 'عملاء يرجعون أكثر بعد تفعيل البرنامج' },
-        { value: '+١٨٪', label: 'ارتفاع في متوسط الفاتورة', desc: 'إنفاق أعلى من العملاء المكافَئين' },
+        { value: '+477', label: 'محل مسجّل', desc: 'تجار اختاروا وايا لإدارة ولاء عملائهم' },
+        { value: '+32%', label: 'زيادة في الزيارات المتكررة', desc: 'عملاء يرجعون أكثر بعد تفعيل البرنامج' },
+        { value: '+18%', label: 'ارتفاع في متوسط الفاتورة', desc: 'إنفاق أعلى من العملاء المكافَئين' },
       ],
     },
     pricing: {
@@ -315,17 +315,17 @@ const content = {
       foundingSub: 'ابدأ بدون أي تكلفة — ادفع بس لما تشوف النتائج',
       monthly: {
         label: 'الخطة الشهرية',
-        price: '٧٥',
+        price: '75',
         unit: 'ر.س / شهر',
         note: 'بدون التزام — الغي بأي وقت',
       },
       annual: {
         label: 'الخطة السنوية',
-        badge: 'خصم ٥٠٪',
-        price: '٣٧',
-        oldPrice: '٧٥',
+        badge: 'خصم 50%',
+        price: '37',
+        oldPrice: '75',
         unit: 'ر.س / شهر',
-        note: 'يُفوتر ٤٥٠ ر.س سنوياً — توفير ٤٥٠ ر.س',
+        note: 'يُفوتر 450 ر.س سنوياً — توفير 450 ر.س',
       },
       features: [
         'حملات غير محدودة',
@@ -344,7 +344,7 @@ const content = {
       btn: 'ابدأ تجربتك المجانية',
     },
     footer: {
-      copy: '٢٠٢٦ وايا.',
+      copy: '2026 وايا.',
       links: { privacy: 'الخصوصية', terms: 'الشروط' },
       contact: 'تواصل معنا',
       email: 'hello@trywaya.com',
@@ -1575,12 +1575,9 @@ function Calculator({ t, lang }) {
   const netProfit = extraRevenue - wayaCost
   const roiMultiple = (extraRevenue / wayaCost).toFixed(1)
 
-  const fmt = (n) => {
-    if (lang === 'ar') {
-      return n.toLocaleString('ar-SA')
-    }
-    return n.toLocaleString('en-US')
-  }
+  // Always use English digits, even in Arabic mode — per product decision
+  // to keep numbers readable in one script across the site.
+  const fmt = (n) => n.toLocaleString('en-US')
 
   return (
     <section className="section calculator-section" id="calculator">
@@ -1791,14 +1788,14 @@ const PRICING_TIERS = [
   {
     id: 'tier1', monthly: 80, annual: 768,
     titleAr: 'البداية', titleEn: 'Starter',
-    featuresAr: ['برنامج ولاء واحد', 'حتى ٢٠٠ عميل', 'لوحة تحكم كاملة', 'دعم عبر البريد'],
+    featuresAr: ['برنامج ولاء واحد', 'حتى 200 عميل', 'لوحة تحكم كاملة', 'دعم عبر البريد'],
     featuresEn: ['1 loyalty program', 'Up to 200 customers', 'Full dashboard access', 'Email support'],
   },
   {
     id: 'tier2', monthly: 150, annual: 1440, featured: true,
     titleAr: 'النمو', titleEn: 'Growth',
     badgeAr: 'الأكثر شيوعاً', badgeEn: 'Most popular',
-    featuresAr: ['برامج ولاء غير محدودة', 'حتى ٢٬٠٠٠ عميل', 'معمل البطاقات', 'تحليلات متقدمة', 'دعم عبر واتساب'],
+    featuresAr: ['برامج ولاء غير محدودة', 'حتى 2,000 عميل', 'معمل البطاقات', 'تحليلات متقدمة', 'دعم عبر واتساب'],
     featuresEn: ['Unlimited loyalty programs', 'Up to 2,000 customers', 'Pass designer lab', 'Advanced analytics', 'WhatsApp support'],
   },
   {
@@ -1821,10 +1818,10 @@ function Pricing({ t, lang }) {
   }
 
   const toggleMonthly = isAr ? 'شهري' : 'Monthly'
-  const toggleAnnual = isAr ? 'سنوي — خصم ٢٠٪' : 'Annual — save 20%'
+  const toggleAnnual = isAr ? 'سنوي — خصم 20%' : 'Annual — save 20%'
   const unitMonth = isAr ? 'ر.س / شهر' : 'SAR / month'
   const unitYear = isAr ? 'ر.س / سنة' : 'SAR / year'
-  const saveLabel = isAr ? 'وفّر ٢٠٪' : 'Save 20%'
+  const saveLabel = isAr ? 'وفّر 20%' : 'Save 20%'
 
   return (
     <section className="section" id="pricing">
@@ -2020,7 +2017,7 @@ function PrivacyPage({ lang, setLang, theme, setTheme, t }) {
       <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
       <section className="legal-page">
         <h1 className="legal-title">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</h1>
-        <p className="legal-date">{isAr ? 'آخر تحديث: أبريل ٢٠٢٦' : 'Last updated: April 2026'}</p>
+        <p className="legal-date">{isAr ? 'آخر تحديث: أبريل 2026' : 'Last updated: April 2026'}</p>
 
         <h2>{isAr ? 'مقدمة' : 'Introduction'}</h2>
         <p>{isAr
@@ -2075,7 +2072,7 @@ function TermsPage({ lang, setLang, theme, setTheme, t }) {
       <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
       <section className="legal-page">
         <h1 className="legal-title">{isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}</h1>
-        <p className="legal-date">{isAr ? 'آخر تحديث: أبريل ٢٠٢٦' : 'Last updated: April 2026'}</p>
+        <p className="legal-date">{isAr ? 'آخر تحديث: أبريل 2026' : 'Last updated: April 2026'}</p>
 
         <h2>{isAr ? 'الخدمة' : 'The Service'}</h2>
         <p>{isAr
@@ -2091,7 +2088,7 @@ function TermsPage({ lang, setLang, theme, setTheme, t }) {
 
         <h2>{isAr ? 'الاشتراك والدفع' : 'Subscription & Payment'}</h2>
         <p>{isAr
-          ? 'الخطة الشهرية بسعر ٧٥ ر.س/شهر والخطة السنوية بسعر ٣٧ ر.س/شهر (خصم ٥٠٪، تُفوتر سنوياً). أول شهرين مجاناً للمشاريع الجديدة. يمكنك إلغاء اشتراكك في أي وقت. بعد الإلغاء، ستستمر الخدمة حتى نهاية فترة الفوترة الحالية.'
+          ? 'الخطة الشهرية بسعر 75 ر.س/شهر والخطة السنوية بسعر 37 ر.س/شهر (خصم 50%، تُفوتر سنوياً). أول شهرين مجاناً للمشاريع الجديدة. يمكنك إلغاء اشتراكك في أي وقت. بعد الإلغاء، ستستمر الخدمة حتى نهاية فترة الفوترة الحالية.'
           : 'The monthly plan is 75 SAR/month and the annual plan is 37 SAR/month (50% off, billed annually). First 2 months are completely FREE for founding businesses. You can cancel your subscription at any time. After cancellation, the service continues until the end of the current billing period.'
         }</p>
 
@@ -2941,7 +2938,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               <h2>{t.settingsPage.account}</h2>
               <div className="settings-account-info">
                 <p><strong>{t.settingsPage.email}:</strong> {user?.email}</p>
-                <p><strong>{t.settingsPage.joined}:</strong> {new Date(user?.created_at).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p><strong>{t.settingsPage.joined}:</strong> {new Date(user?.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
             </motion.div>
           </>
@@ -3047,7 +3044,7 @@ function MerchantProfileCard({ shop, setShop, t, lang }) {
                 {logoUploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'تغيير الشعار' : 'Change Logo')}
                 <input type="file" accept="image/*" onChange={handleLogoChange} style={{ display: 'none' }} disabled={logoUploading} />
               </label>
-              <small style={{ color: '#6b7280' }}>{T('PNG or JPG, max 2MB', 'PNG أو JPG، أقصى حجم ٢ ميقا')}</small>
+              <small style={{ color: '#6b7280' }}>{T('PNG or JPG, max 2MB', 'PNG أو JPG، أقصى حجم 2 ميقا')}</small>
             </div>
           </div>
         </div>
