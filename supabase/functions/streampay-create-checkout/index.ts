@@ -122,13 +122,22 @@ Deno.serve(async (req: Request) => {
     }
 
     // ── Create or reuse StreamPay consumer ──
-    const email = user.email ?? undefined;
+    // StreamPay sandbox mode rejects any consumer whose email/phone doesn't
+    // match the organization owner's. When testing in sandbox, set both
+    // STREAMPAY_SANDBOX_EMAIL and STREAMPAY_SANDBOX_PHONE to override what
+    // we send to StreamPay (the real user's email/phone are still persisted
+    // on the local `shops` and `subscriptions` tables). Leave both unset in
+    // production.
+    const sandboxEmail = Deno.env.get("STREAMPAY_SANDBOX_EMAIL")?.trim();
+    const sandboxPhone = Deno.env.get("STREAMPAY_SANDBOX_PHONE")?.trim();
+    const email = sandboxEmail || user.email || undefined;
+    const streampayPhone = sandboxPhone || phone;
     let consumer: SPConsumer | null = null;
     try {
       consumer = await streampay.createConsumer({
         name: shop.name ?? email ?? "Waya shop",
         email,
-        phone_number: phone,
+        phone_number: streampayPhone,
         external_id: shop.id,
         communication_methods: email ? ["EMAIL"] : ["SMS"],
       });
@@ -143,7 +152,7 @@ Deno.serve(async (req: Request) => {
         consumer = items[0] ?? null;
         if (!consumer) {
           const byPhone = await streampay
-            .listConsumers({ phone_number: phone })
+            .listConsumers({ phone_number: streampayPhone })
             .catch(() => null);
           const phoneItems = Array.isArray(byPhone)
             ? byPhone
