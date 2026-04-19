@@ -183,13 +183,27 @@ export default function BillingPage({ lang = 'ar' }) {
   const formatError = (e) => {
     if (!e) return T('Unknown error', 'خطأ غير معروف')
     if (typeof e === 'string') return e
-    if (e.message && typeof e.message === 'string' && e.message !== '[object Object]') return e.message
+
+    // Prefer body-embedded messages over Error.message — StreamPay's structured
+    // error usually has more useful content than the wrapped Error message.
     if (e instanceof StreamPayApiError && e.body && typeof e.body === 'object') {
       const body = e.body
-      if (typeof body.error === 'string') return body.error
-      if (body.streampay_body?.detail?.[0]?.msg) return body.streampay_body.detail[0].msg
+      if (typeof body.error === 'string' && body.error.length > 0) return body.error
+      const detail = body.streampay_body?.detail
+      if (Array.isArray(detail) && detail[0]?.msg) return String(detail[0].msg)
+      if (body.error && typeof body.error === 'object') {
+        if (typeof body.error.message === 'string') return body.error.message
+        try { return JSON.stringify(body.error) } catch { /* fall through */ }
+      }
     }
-    try { return JSON.stringify(e) } catch { return String(e) }
+    if (e.message && typeof e.message === 'string' && e.message !== '[object Object]') {
+      return e.message
+    }
+    try {
+      const j = JSON.stringify(e)
+      if (j && j !== '{}') return j
+    } catch { /* fall through */ }
+    return T('Unknown error', 'خطأ غير معروف')
   }
 
   const onSubscribe = async (tier) => {

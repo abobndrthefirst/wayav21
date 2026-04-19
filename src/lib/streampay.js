@@ -20,6 +20,26 @@ export class StreamPayApiError extends Error {
   }
 }
 
+// Extract a human-readable message from whatever shape the edge function
+// returned. Never returns "[object Object]" — objects are unwrapped or
+// JSON-stringified as a last resort.
+function extractMessage(parsed, status) {
+  if (typeof parsed === 'string' && parsed.length > 0) return parsed
+  if (parsed && typeof parsed === 'object') {
+    const { error, message } = parsed
+    if (typeof error === 'string' && error.length > 0) return error
+    if (typeof message === 'string' && message.length > 0) return message
+    if (error && typeof error === 'object') {
+      if (typeof error.message === 'string') return error.message
+      try { return JSON.stringify(error) } catch { /* fall through */ }
+    }
+    // Surface a nested streampay detail if present
+    const detail = parsed?.streampay_body?.detail
+    if (Array.isArray(detail) && detail[0]?.msg) return String(detail[0].msg)
+  }
+  return `Request failed (${status})`
+}
+
 async function callFn(name, { method, body } = {}) {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) throw new Error('Not signed in')
@@ -39,9 +59,9 @@ async function callFn(name, { method, body } = {}) {
     try { parsed = JSON.parse(text) } catch { parsed = text }
   }
   if (!res.ok) {
-    const msg = parsed && typeof parsed === 'object' && parsed.error
-      ? String(parsed.error)
-      : `Request failed (${res.status})`
+    const msg = extractMessage(parsed, res.status)
+    // eslint-disable-next-line no-console
+    console.error(`[streampay] ${name} failed:`, res.status, parsed)
     throw new StreamPayApiError(res.status, parsed, msg)
   }
   return parsed
