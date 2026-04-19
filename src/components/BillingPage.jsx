@@ -179,31 +179,50 @@ export default function BillingPage({ lang = 'ar' }) {
   }), [isAr])
 
   // Never let a raw object bubble up as "[object Object]" — always return a
-  // usable string for setError().
+  // usable string for setError(). v3: walk all plausible string paths before
+  // falling back to a JSON dump of the body, not of the Error itself (Error
+  // instances serialize to "{}" because their props are non-enumerable).
   const formatError = (e) => {
     if (!e) return T('Unknown error', 'خطأ غير معروف')
     if (typeof e === 'string') return e
 
-    // Prefer body-embedded messages over Error.message — StreamPay's structured
-    // error usually has more useful content than the wrapped Error message.
-    if (e instanceof StreamPayApiError && e.body && typeof e.body === 'object') {
-      const body = e.body
-      if (typeof body.error === 'string' && body.error.length > 0) return body.error
-      const detail = body.streampay_body?.detail
-      if (Array.isArray(detail) && detail[0]?.msg) return String(detail[0].msg)
-      if (body.error && typeof body.error === 'object') {
-        if (typeof body.error.message === 'string') return body.error.message
-        try { return JSON.stringify(body.error) } catch { /* fall through */ }
+    // Deep-walk the StreamPay body for any string we can show.
+    const walk = (obj) => {
+      if (!obj || typeof obj !== 'object') return null
+      if (typeof obj.error === 'string' && obj.error.length > 0 && obj.error !== '[object Object]') return obj.error
+      if (typeof obj.message === 'string' && obj.message.length > 0 && obj.message !== '[object Object]') return obj.message
+      if (typeof obj.msg === 'string' && obj.msg.length > 0) return obj.msg
+      if (Array.isArray(obj.detail) && obj.detail[0]) {
+        const first = obj.detail[0]
+        if (typeof first === 'string') return first
+        if (first && typeof first === 'object' && typeof first.msg === 'string') return first.msg
       }
+      if (obj.error && typeof obj.error === 'object') {
+        const nested = walk(obj.error)
+        if (nested) return nested
+      }
+      if (obj.streampay_body) {
+        const nested = walk(obj.streampay_body)
+        if (nested) return nested
+      }
+      return null
     }
+
+    if (e instanceof StreamPayApiError) {
+      const fromBody = walk(e.body)
+      if (fromBody) return fromBody
+      // Last-resort dump so the user sees SOMETHING actionable.
+      try {
+        const j = JSON.stringify(e.body)
+        if (j && j !== '{}' && j !== 'null') return `Server error (${e.status}): ${j}`
+      } catch { /* fall through */ }
+      return `Server error (${e.status})`
+    }
+
     if (e.message && typeof e.message === 'string' && e.message !== '[object Object]') {
       return e.message
     }
-    try {
-      const j = JSON.stringify(e)
-      if (j && j !== '{}') return j
-    } catch { /* fall through */ }
-    return T('Unknown error', 'خطأ غير معروف')
+    return T('Unknown error — check DevTools console', 'خطأ غير معروف — افتح الكونسول')
   }
 
   const onSubscribe = async (tier) => {
