@@ -75,7 +75,7 @@ Deno.serve(async (req: Request) => {
     // ── Resolve shop for this user ──
     const { data: shop, error: shopErr } = await supabase
       .from("shops")
-      .select("id, name, phone")
+      .select("id, name, phone, streampay_consumer_id")
       .eq("user_id", user.id)
       .maybeSingle();
     if (shopErr) throw shopErr;
@@ -134,48 +134,70 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // ── Create or reuse StreamPay consumer ──
-    // StreamPay sandbox mode rejects any consumer whose email/phone doesn't
-    // match the organization owner's. When testing in sandbox, set both
-    // STREAMPAY_SANDBOX_EMAIL and STREAMPAY_SANDBOX_PHONE to override what
-    // we send to StreamPay (the real user's email/phone are still persisted
-    // on the local `shops` and `subscriptions` tables). Leave both unset in
-    // production.
+    // ── Resolve the StreamPay consumer for this shop.
+    //
+    // StreamPay sandbox mode rejects consumers whose email/phone don't match
+    // the organization owner's. The two STREAMPAY_SANDBOX_* env vars let us
+    // override what we send to StreamPay while keeping real values locally.
+    // Leave both unset in production.
     const sandboxEmail = Deno.env.get("STREAMPAY_SANDBOX_EMAIL")?.trim();
     const sandboxPhone = Deno.env.get("STREAMPAY_SANDBOX_PHONE")?.trim();
     const email = sandboxEmail || user.email || undefined;
     const streampayPhone = sandboxPhone || phone;
+
     let consumer: SPConsumer | null = null;
-    try {
-      consumer = await streampay.createConsumer({
-        name: shop.name ?? email ?? "Waya shop",
-        email,
-        phone_number: streampayPhone,
-        external_id: shop.id,
-        communication_methods: email ? ["EMAIL"] : ["SMS"],
-      });
-    } catch (err) {
-      if (err instanceof StreamPayError && err.code === "DUPLICATE_CONSUMER") {
-        const byEmail = email
-          ? await streampay.listConsumers({ email }).catch(() => null)
-          : null;
-        const items = Array.isArray(byEmail)
-          ? byEmail
-          : (byEmail as { items?: SPConsumer[] } | null)?.items ?? [];
-        consumer = items[0] ?? null;
-        if (!consumer) {
-          const byPhone = await streampay
-            .listConsumers({ phone_number: streampayPhone })
-            .catch(() => null);
-          const phoneItems = Array.isArray(byPhone)
-            ? byPhone
-            : (byPhone as { items?: SPConsumer[] } | null)?.items ?? [];
-          consumer = phoneItems[0] ?? null;
-        }
-        if (!consumer) throw err;
-      } else {
-        throw err;
+
+    // 1. If shops.streampay_consumer_id is cached, reuse it. No API call.
+    if (shop.streampay_consumer_id) {
+      try {
+        consumer = await streampay.getConsumer(shop.streampay_consumer_id);
+      } catch (err) {
+        // 404 means the cached id is stale — fall through and create a new one.
+        if (err instanceof StreamPayError && err.status !== 404) throw err;
+        consumer = null;
       }
+    }
+
+    // 2. No cached id? Try to create. If StreamPay says "duplicate", look it
+    //    up by email then phone so we can reuse the existing record.
+    if (!consumer) {
+      try {
+        consumer = await streampay.createConsumer({
+          name: shop.name ?? email ?? "Waya shop",
+          email,
+          phone_number: streampayPhone,
+          external_id: shop.id,
+          communication_methods: email ? ["EMAIL"] : ["SMS"],
+        });
+      } catch (err) {
+        if (err instanceof StreamPayError && err.isDuplicateConsumer()) {
+          if (email) {
+            const byEmail = await streampay.listConsumers({ email }).catch(() => []);
+            consumer = byEmail[0] ?? null;
+          }
+          if (!consumer) {
+            const byPhone = await streampay
+              .listConsumers({ phone_number: streampayPhone })
+              .catch(() => []);
+            consumer = byPhone[0] ?? null;
+          }
+          if (!consumer) throw err;
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    // 3. Persist the consumer id on the shop so the next checkout skips all
+    //    StreamPay round-trips until a real change is needed.
+    if (consumer && shop.streampay_consumer_id !== consumer.id) {
+      await supabase
+        .from("shops")
+        .update({
+          streampay_consumer_id: consumer.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", shop.id);
     }
 
     // ── Pre-insert pending subscription so we have an id to sign into the URL ──

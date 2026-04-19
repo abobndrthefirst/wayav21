@@ -27,18 +27,54 @@ function resolveToken(): string {
 export class StreamPayError extends Error {
   readonly status: number;
   readonly code: string | undefined;
+  readonly additionalInfo: string | undefined;
   readonly body: unknown;
   constructor(status: number, body: unknown) {
-    const obj = (body && typeof body === "object" ? body : {}) as Record<
-      string,
-      unknown
-    >;
-    const msg = (obj.error as string) ?? (obj.message as string) ??
-      `StreamPay error ${status}`;
-    super(msg);
+    // StreamPay's error envelopes can be any of:
+    //   { error: "string" }
+    //   { error: { code, message, additional_info } }   ← production shape
+    //   { detail: [{ type, loc, msg }] }                ← validation shape
+    //   { code, message }
+    // Unwrap every variant so callers always get a string message + code.
+    const obj = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
+    const nestedError = (obj.error && typeof obj.error === "object")
+      ? obj.error as Record<string, unknown>
+      : null;
+
+    let code: string | undefined;
+    if (typeof obj.code === "string") code = obj.code;
+    else if (nestedError && typeof nestedError.code === "string") code = nestedError.code;
+
+    let additionalInfo: string | undefined;
+    if (typeof obj.additional_info === "string") additionalInfo = obj.additional_info;
+    else if (nestedError && typeof nestedError.additional_info === "string") {
+      additionalInfo = nestedError.additional_info;
+    }
+
+    let message: string | null = null;
+    if (typeof obj.error === "string") message = obj.error;
+    else if (nestedError && typeof nestedError.message === "string") message = nestedError.message;
+    else if (typeof obj.message === "string") message = obj.message;
+    else if (Array.isArray(obj.detail) && obj.detail[0] && typeof (obj.detail[0] as { msg?: unknown }).msg === "string") {
+      message = (obj.detail[0] as { msg: string }).msg;
+    }
+    if (additionalInfo && !message?.toLowerCase().includes(additionalInfo.toLowerCase())) {
+      message = message ? `${message} — ${additionalInfo}` : additionalInfo;
+    }
+    if (!message) message = `StreamPay error ${status}`;
+
+    super(message);
     this.status = status;
-    this.code = (obj.code as string) ?? undefined;
+    this.code = code;
+    this.additionalInfo = additionalInfo;
     this.body = body;
+  }
+
+  /** True if this error signals the consumer already exists in StreamPay. */
+  isDuplicateConsumer(): boolean {
+    if (this.code === "DUPLICATE_CONSUMER") return true;
+    const haystack = `${this.message} ${this.additionalInfo ?? ""}`.toLowerCase();
+    return /duplicate|already exists|already registered/.test(haystack);
   }
 }
 
@@ -133,8 +169,19 @@ export const streampay = {
     email?: string;
     phone_number?: string;
     external_id?: string;
-  }): Promise<{ items: SPConsumer[] } | SPConsumer[]> {
-    return call("/consumers", { query });
+  }): Promise<SPConsumer[]> {
+    // StreamPay returns { data: [...], pagination: {...} }. Normalise so
+    // callers always get a bare array of consumer records.
+    const res = await call<unknown>("/consumers", { query });
+    if (Array.isArray(res)) return res as SPConsumer[];
+    const r = (res ?? {}) as { data?: unknown; items?: unknown };
+    if (Array.isArray(r.data)) return r.data as SPConsumer[];
+    if (Array.isArray(r.items)) return r.items as SPConsumer[];
+    return [];
+  },
+
+  async getConsumer(id: string): Promise<SPConsumer> {
+    return call<SPConsumer>(`/consumers/${encodeURIComponent(id)}`);
   },
 
   async createProduct(input: {
