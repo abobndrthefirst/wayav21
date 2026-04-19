@@ -43,6 +43,11 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Belt-and-braces: the pg_cron job does this every minute, but run it
+    // on read too so a user returning to /billing never sees a stale pending
+    // row that's already past its 10-min checkout window.
+    await supabase.rpc("expire_stale_pending_subscriptions").catch(() => {});
+
     const { data: subs, error } = await supabase
       .from("subscriptions")
       .select(
