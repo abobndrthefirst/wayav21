@@ -27,6 +27,10 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Supabase CLI local project ref
+supabase/.temp/
+
 /test-results/
 /playwright-report/
 /blob-report/

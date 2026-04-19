@@ -2017,6 +2017,172 @@ body {
   margin: 0 auto;
 }
 
+/* 3-tier layout (landing + billing page) */
+.pricing-cards-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 1100px;
+}
+@media (max-width: 900px) {
+  .pricing-cards-3 { grid-template-columns: 1fr; }
+}
+
+/* Monthly/annual toggle (landing + billing page) */
+.billing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  margin: 0 auto;
+}
+.billing-toggle-landing {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 24px;
+  width: fit-content;
+}
+.billing-toggle-btn {
+  background: transparent;
+  color: var(--white);
+  border: none;
+  padding: 10px 18px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+  font-family: inherit;
+}
+.billing-toggle-active {
+  background: var(--green);
+  color: #0a0a08;
+  font-weight: 700;
+}
+
+/* Billing page layout */
+.billing-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--white);
+  padding-bottom: 80px;
+}
+.billing-section {
+  padding-top: 60px;
+}
+.billing-header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 32px;
+}
+.billing-header .section-title {
+  margin-bottom: 12px;
+}
+.billing-tiers {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 1100px;
+}
+@media (max-width: 900px) {
+  .billing-tiers { grid-template-columns: 1fr; }
+}
+
+/* Status banner at the top of /billing if a subscription exists */
+.billing-status {
+  max-width: 900px;
+  margin: 0 auto 28px;
+  padding: 14px 20px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.billing-status-label {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.billing-status-sub {
+  color: var(--gray);
+  font-size: 0.88rem;
+}
+.billing-status-active {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.billing-status-active .billing-status-label { color: var(--green); }
+.billing-status-warn {
+  background: rgba(255, 200, 50, 0.12);
+  border: 1px solid rgba(255, 200, 50, 0.3);
+}
+.billing-status-warn .billing-status-label { color: #ffc832; }
+.billing-status-bad {
+  background: rgba(240, 69, 69, 0.12);
+  border: 1px solid rgba(240, 69, 69, 0.3);
+}
+.billing-status-bad .billing-status-label { color: #f04545; }
+
+/* Phone input card */
+.billing-phone-card {
+  max-width: 540px;
+  margin: 32px auto 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.billing-phone-label {
+  font-size: 0.8rem;
+  color: var(--gray-dim);
+  font-weight: 600;
+}
+.billing-phone-input {
+  background: transparent;
+  color: var(--white);
+  font-size: 1.1rem;
+  padding: 8px 0;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  outline: none;
+  font-family: inherit;
+}
+.billing-phone-input:focus { border-bottom-color: var(--green); }
+.billing-phone-hint {
+  font-size: 0.78rem;
+  color: var(--gray-dim);
+}
+
+.billing-error {
+  max-width: 640px;
+  margin: 20px auto 0;
+  padding: 14px 18px;
+  background: rgba(240, 69, 69, 0.1);
+  border: 1px solid rgba(240, 69, 69, 0.3);
+  color: #f04545;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Return / cancel landing pages (reuse .auth-page base) */
+.billing-return-page { display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+.billing-return-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 44px 36px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+.billing-return-icon { display: flex; justify-content: center; margin-bottom: 20px; }
+.billing-return-title { font-size: 1.6rem; font-weight: 700; color: var(--white); margin-bottom: 10px; }
+.billing-return-sub { color: var(--gray-dim); font-size: 0.95rem; }
+
 .pricing-card {
   position: relative;
   background: var(--bg-card);

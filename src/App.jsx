@@ -22,6 +22,9 @@ const WalletEnrollPage = lazy(() => import('./components/WalletEnrollPage'))
 const EventsPanel = lazy(() => import('./components/EventsPanel'))
 const NotificationsPanel = lazy(() => import('./components/NotificationsPanel'))
 const PassDesignerPage = lazy(() => import('./components/pass-designer/PassDesignerPage'))
+const BillingPage = lazy(() => import('./components/BillingPage'))
+const BillingReturnPage = lazy(() => import('./components/BillingReturnPage'))
+const BillingCancelPage = lazy(() => import('./components/BillingCancelPage'))
 
 const LazyFallback = () => (
   <div style={{ padding: 48, textAlign: 'center', color: '#888' }}>Loading…</div>
@@ -1779,8 +1782,45 @@ function SocialProof({ t }) {
 }
 
 /* ─── Pricing ─── */
-function Pricing({ t }) {
+// Tier catalog lives alongside the server-side `plans` table (SAR, 20% annual).
+const PRICING_TIERS = [
+  {
+    id: 'tier1', monthly: 80, annual: 768,
+    titleAr: 'البداية', titleEn: 'Starter',
+    featuresAr: ['برنامج ولاء واحد', 'حتى ٢٠٠ عميل', 'لوحة تحكم كاملة', 'دعم عبر البريد'],
+    featuresEn: ['1 loyalty program', 'Up to 200 customers', 'Full dashboard access', 'Email support'],
+  },
+  {
+    id: 'tier2', monthly: 150, annual: 1440, featured: true,
+    titleAr: 'النمو', titleEn: 'Growth',
+    badgeAr: 'الأكثر شيوعاً', badgeEn: 'Most popular',
+    featuresAr: ['برامج ولاء غير محدودة', 'حتى ٢٬٠٠٠ عميل', 'معمل البطاقات', 'تحليلات متقدمة', 'دعم عبر واتساب'],
+    featuresEn: ['Unlimited loyalty programs', 'Up to 2,000 customers', 'Pass designer lab', 'Advanced analytics', 'WhatsApp support'],
+  },
+  {
+    id: 'tier3', monthly: 300, annual: 2880,
+    titleAr: 'الاحتراف', titleEn: 'Pro',
+    featuresAr: ['كل مميزات خطة النمو', 'عملاء غير محدودين', 'حملات مخصصة للمواسم', 'API للمطورين', 'دعم مخصص وذو أولوية'],
+    featuresEn: ['Everything in Growth', 'Unlimited customers', 'Seasonal campaigns', 'Developer API', 'Priority dedicated support'],
+  },
+]
+
+function Pricing({ t, lang }) {
+  const { user } = useAuth()
   const [annual, setAnnual] = useState(true)
+  const isAr = lang === 'ar'
+
+  const goCheckout = (tierId) => {
+    const target = `/billing?plan=${tierId}_${annual ? 'annual' : 'monthly'}`
+    if (user) navigate(target)
+    else navigate(`/signup?next=${encodeURIComponent(target)}`)
+  }
+
+  const toggleMonthly = isAr ? 'شهري' : 'Monthly'
+  const toggleAnnual = isAr ? 'سنوي — خصم ٢٠٪' : 'Annual — save 20%'
+  const unitMonth = isAr ? 'ر.س / شهر' : 'SAR / month'
+  const unitYear = isAr ? 'ر.س / سنة' : 'SAR / year'
+  const saveLabel = isAr ? 'وفّر ٢٠٪' : 'Save 20%'
 
   return (
     <section className="section" id="pricing">
@@ -1805,51 +1845,68 @@ function Pricing({ t }) {
         </motion.div>
       </Reveal>
 
-      <Reveal delay={0.2}>
-        <div className="pricing-cards">
-          <motion.div className={`pricing-card ${!annual ? 'pricing-active' : ''}`} onClick={() => setAnnual(false)} whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.08)' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-            <span className="pricing-plan-label">{t.pricing.monthly.label}</span>
-            <div className="pricing-amount">
-              <span className="price">{t.pricing.monthly.price}</span>
-              <span className="price-label">{t.pricing.monthly.unit}</span>
-            </div>
-            <p className="price-note">{t.pricing.monthly.note}</p>
-            <ul className="pricing-features">
-              {t.pricing.features.map((f, i) => (
-                <li key={i}><CheckIcon color="#10B981" /> <span>{f}</span></li>
-              ))}
-            </ul>
-            <a href="#cta" className="pricing-cta-link">
-              <motion.button className="pricing-cta" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                {t.pricing.cta}
-              </motion.button>
-            </a>
-          </motion.div>
+      <Reveal delay={0.15}>
+        <div className="billing-toggle billing-toggle-landing">
+          <button
+            className={`billing-toggle-btn ${!annual ? 'billing-toggle-active' : ''}`}
+            onClick={() => setAnnual(false)}
+          >{toggleMonthly}</button>
+          <button
+            className={`billing-toggle-btn ${annual ? 'billing-toggle-active' : ''}`}
+            onClick={() => setAnnual(true)}
+          >{toggleAnnual}</button>
+        </div>
+      </Reveal>
 
-          <motion.div className={`pricing-card pricing-card-featured ${annual ? 'pricing-active' : ''}`} onClick={() => setAnnual(true)} whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.08)' }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-            <div className="pricing-plan-label-row">
-              <span className="pricing-plan-label">{t.pricing.annual.label}</span>
-              <span className="save-badge">{t.pricing.annual.badge}</span>
-            </div>
-            <div className="pricing-amount">
-              {t.pricing.annual.oldPrice && (
-                <span className="price-old">{t.pricing.annual.oldPrice}</span>
-              )}
-              <span className="price">{t.pricing.annual.price}</span>
-              <span className="price-label">{t.pricing.annual.unit}</span>
-            </div>
-            <p className="price-note">{t.pricing.annual.note}</p>
-            <ul className="pricing-features">
-              {t.pricing.features.map((f, i) => (
-                <li key={i}><CheckIcon color="#10B981" /> <span>{f}</span></li>
-              ))}
-            </ul>
-            <a href="#cta" className="pricing-cta-link">
-              <motion.button className="pricing-cta" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                {t.pricing.cta}
-              </motion.button>
-            </a>
-          </motion.div>
+      <Reveal delay={0.2}>
+        <div className="pricing-cards pricing-cards-3">
+          {PRICING_TIERS.map((tier) => {
+            const price = annual ? tier.annual : tier.monthly
+            const unit = annual ? unitYear : unitMonth
+            const title = isAr ? tier.titleAr : tier.titleEn
+            const features = isAr ? tier.featuresAr : tier.featuresEn
+            const badge = isAr ? tier.badgeAr : tier.badgeEn
+            return (
+              <motion.div
+                key={tier.id}
+                className={`pricing-card ${tier.featured ? 'pricing-card-featured' : ''}`}
+                whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.08)' }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                {tier.featured && badge ? (
+                  <div className="pricing-plan-label-row">
+                    <span className="pricing-plan-label">{title}</span>
+                    <span className="save-badge">{badge}</span>
+                  </div>
+                ) : (
+                  <span className="pricing-plan-label">{title}</span>
+                )}
+                <div className="pricing-amount">
+                  <span className="price">{price.toLocaleString('en-US')}</span>
+                  <span className="price-label">{unit}</span>
+                </div>
+                {annual && (
+                  <p className="price-note" style={{ color: '#10B981', fontWeight: 600 }}>{saveLabel}</p>
+                )}
+                <ul className="pricing-features">
+                  {features.map((f, i) => (
+                    <li key={i}><CheckIcon color="#10B981" /> <span>{f}</span></li>
+                  ))}
+                </ul>
+                <motion.button
+                  className="pricing-cta"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => goCheckout(tier.id)}
+                >
+                  {t.pricing.cta}
+                </motion.button>
+              </motion.div>
+            )
+          })}
         </div>
       </Reveal>
     </section>
@@ -3163,6 +3220,9 @@ export default function App() {
     if (p === '/dashboard') return 'dashboard'
     if (p === '/data') return 'data'
     if (p === '/settings') return 'settings'
+    if (p === '/billing') return 'billing'
+    if (p === '/billing/return') return 'billing-return'
+    if (p === '/billing/cancel') return 'billing-cancel'
     if (p === '/admin/events') return 'admin-events'
     if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
     if (p.startsWith('/w/')) return 'enroll'
@@ -3208,6 +3268,9 @@ export default function App() {
   if (page === 'wallet') return <WalletPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
   if (page === 'enroll') return <Suspense fallback={<LazyFallback />}><WalletEnrollPage lang={lang} /></Suspense>
   if (page === 'programs') return <AuthProvider><ProgramsPageWrapper lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'billing') return <AuthProvider><Suspense fallback={<LazyFallback />}><BillingPage lang={lang} /></Suspense></AuthProvider>
+  if (page === 'billing-return') return <AuthProvider><Suspense fallback={<LazyFallback />}><BillingReturnPage lang={lang} /></Suspense></AuthProvider>
+  if (page === 'billing-cancel') return <AuthProvider><Suspense fallback={<LazyFallback />}><BillingCancelPage lang={lang} /></Suspense></AuthProvider>
   if (page === 'admin-events') return <AuthProvider><AdminEventsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} /></AuthProvider>
 
   return (
@@ -3225,7 +3288,7 @@ export default function App() {
           <Comparison t={t} />
           <SocialProof t={t} />
           <Calculator t={t} lang={lang} />
-          <Pricing t={t} />
+          <Pricing t={t} lang={lang} />
           <CTA t={t} />
           <Footer t={t} />
         </div>
