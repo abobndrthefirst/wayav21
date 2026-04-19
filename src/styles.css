@@ -2128,6 +2128,20 @@ body {
 }
 .billing-status-info .billing-status-label { color: #6ba3e3; }
 
+/* Dashboard: inline banner shown while the shop is still on trial, so the
+   demo stats don't look like real activity. */
+.dash-demo-banner {
+  margin: 0 auto 20px;
+  padding: 12px 18px;
+  background: linear-gradient(90deg, rgba(16,185,129,0.12), rgba(16,185,129,0.05));
+  border: 1px solid rgba(16,185,129,0.25);
+  border-radius: 14px;
+  color: var(--cream);
+  font-size: 0.92rem;
+  text-align: center;
+  max-width: 760px;
+}
+
 /* Phone input card */
 .billing-phone-card {
   max-width: 540px;

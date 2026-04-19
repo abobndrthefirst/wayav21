@@ -9,6 +9,7 @@ import {
   KSA_PHONE_ERR_EN,
   KSA_PHONE_ERR_AR,
 } from './lib/phone'
+import { useShopStats } from './lib/useShopStats'
 // Analytics loaded via script tag in index.html
 import './styles.css'
 import './components/loyalty-wizard.css'
@@ -2734,7 +2735,7 @@ function DesignerTab({ shop, lang }) {
 }
 
 function DashboardPage({ t, lang, setLang, theme, setTheme }) {
-  const { user, signOut } = useAuth()
+  const { user, signOut, loading: authLoading } = useAuth()
   const d = t.dashboard
   const [shop, setShop] = useState(null)
   const [activeTab, setActiveTab] = useState('home')
@@ -2749,6 +2750,14 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         setLoadingShop(false)
       })
   }, [user])
+
+  // Real stats once the shop has been activated; demo stats otherwise.
+  // Driven by shops.account_status, which the subscriptions trigger keeps
+  // in sync with the StreamPay payment status.
+  const stats = useShopStats({
+    shopId: shop?.id,
+    accountStatus: shop?.account_status,
+  })
 
   if (loadingShop) return <div className="auth-page"><div className="dash-loading"><Logo size={72} /></div></div>
   if (!shop) return null
@@ -2838,13 +2847,24 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               <h1 className="dash-title">{d.welcome}، {shopName}</h1>
             </div>
 
+            {stats.isDemo && (
+              <div className="dash-demo-banner">
+                {lang === 'ar'
+                  ? 'معاينة تجريبية — الأرقام ستتحول إلى بيانات متجرك الفعلية بعد الاشتراك.'
+                  : 'Demo preview — numbers switch to your real activity once you subscribe.'}
+              </div>
+            )}
             <div className="data-stats-grid">
-              {demoData.stats.map((s, i) => (
-                <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}>
+              {([
+                { key: 'customers', value: stats.customers },
+                { key: 'visits', value: `${stats.repeatRatePct}%` },
+                { key: 'revenue', value: stats.rewardsSent.toLocaleString('en-US') },
+                { key: 'rewards', value: stats.rewardsRedeemed.toLocaleString('en-US') },
+              ]).map((s, i) => (
+                <motion.div key={s.key} className="data-stat-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}>
                   <div className="data-stat-icon-wrap">{statIcons[i]}</div>
-                  <div className="data-stat-value"><CountUp value={s.value} duration={2} delay={i * 0.15} /></div>
+                  <div className="data-stat-value"><CountUp value={typeof s.value === 'number' ? s.value.toLocaleString('en-US') : s.value} duration={2} delay={i * 0.15} /></div>
                   <div className="data-stat-label">{d.statLabels[s.key]}</div>
-                  <div className="data-stat-change">{s.change}</div>
                 </motion.div>
               ))}
             </div>
@@ -2900,10 +2920,10 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
             <h1 className="dash-title">{t.dataPage.title}</h1>
             <div className="data-stats-grid">
               {[
-                { label: t.dataPage.customers, value: '1,247', icon: '👥', color: '#10B981' },
-                { label: t.dataPage.totalScans, value: '8,432', icon: '📱', color: '#3B82F6' },
-                { label: t.dataPage.rewardsRedeemed, value: '3,891', icon: '🎁', color: '#F59E0B' },
-                { label: t.dataPage.totalPoints, value: '25,296', icon: '⭐', color: '#8B5CF6' },
+                { label: t.dataPage.customers, value: stats.customers.toLocaleString('en-US'), icon: '👥', color: '#10B981' },
+                { label: t.dataPage.totalScans, value: stats.scans.toLocaleString('en-US'), icon: '📱', color: '#3B82F6' },
+                { label: t.dataPage.rewardsRedeemed, value: stats.rewardsRedeemed.toLocaleString('en-US'), icon: '🎁', color: '#F59E0B' },
+                { label: t.dataPage.totalPoints, value: stats.totalPoints.toLocaleString('en-US'), icon: '⭐', color: '#8B5CF6' },
               ].map((sc, i) => (
                 <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}>
                   <div className="data-stat-icon" style={{ background: sc.color + '18', color: sc.color }}>{sc.icon}</div>

@@ -67,7 +67,9 @@ export default function BillingReturnPage({ lang = 'ar' }) {
           const res = await getStatus()
           if (res?.hasActive) {
             setPhase('success')
-            setTimeout(() => navigate('/dashboard'), 1000)
+            // Linger on the thank-you for 3.5s so the user sees the
+            // celebration, then drop them into their now-activated dashboard.
+            setTimeout(() => navigate('/dashboard'), 3500)
             return
           }
           const status = res?.subscription?.status
@@ -85,7 +87,7 @@ export default function BillingReturnPage({ lang = 'ar' }) {
       if (cancelled) return
       if (urlStatus === 'paid') {
         setPhase('success')
-        setTimeout(() => navigate('/billing'), 1000)
+        setTimeout(() => navigate('/dashboard'), 3500)
       } else {
         setPhase('failed')
         setMessage(T('Timed out waiting for confirmation. Check /billing shortly.', 'انتهت مهلة التحقق. تحقق من صفحة الاشتراك بعد قليل.'))
@@ -98,6 +100,7 @@ export default function BillingReturnPage({ lang = 'ar' }) {
 
   return (
     <div className="auth-page billing-return-page" dir={isAr ? 'rtl' : 'ltr'}>
+      {phase === 'success' && <ConfettiBurst />}
       <motion.div
         className="billing-return-card"
         initial={{ opacity: 0, y: 30, filter: 'blur(12px)' }}
@@ -111,12 +114,28 @@ export default function BillingReturnPage({ lang = 'ar' }) {
           {phase === 'failed' && <Cross />}
         </div>
         <h1 className="billing-return-title">
-          {phase === 'verifying' && T('Verifying payment…', 'جارٍ التحقق من الدفع...')}
-          {phase === 'polling' && T('Confirming subscription…', 'تأكيد الاشتراك...')}
-          {phase === 'success' && T('Subscription active ✓', 'تم الاشتراك بنجاح ✓')}
+          {phase === 'verifying' && T('Verifying payment…', 'جارٍ التحقق من الدفع…')}
+          {phase === 'polling' && T('Confirming subscription…', 'تأكيد الاشتراك…')}
+          {phase === 'success' && T('Thank you for subscribing! 🎉', 'شكراً لاشتراكك معنا! 🎉')}
           {phase === 'failed' && T("Couldn't confirm payment", 'تعذّر تأكيد الدفع')}
         </h1>
-        {phase === 'success' && <p className="billing-return-sub">{T('Redirecting to dashboard…', 'جارٍ التحويل إلى لوحة التحكم...')}</p>}
+        {phase === 'success' && (
+          <>
+            <p className="billing-return-sub">
+              {T(
+                'Your account is now live. We’re loading your real dashboard…',
+                'حسابك الآن جاهز. نحمّل لك لوحة التحكم الفعلية…',
+              )}
+            </p>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="auth-submit-btn"
+              style={{ marginTop: 22 }}
+            >
+              {T('Go to dashboard', 'الذهاب إلى لوحة التحكم')}
+            </button>
+          </>
+        )}
         {phase === 'failed' && (
           <>
             <p className="billing-return-sub">{message}</p>
@@ -126,6 +145,43 @@ export default function BillingReturnPage({ lang = 'ar' }) {
           </>
         )}
       </motion.div>
+    </div>
+  )
+}
+
+// Lightweight "particles" burst — no extra deps, just a handful of motion
+// spans that fall + rotate. Runs once when mounted alongside the success
+// card.
+function ConfettiBurst() {
+  const pieces = Array.from({ length: 40 })
+  const palette = ['#10B981', '#FFD166', '#06B6D4', '#F472B6', '#FFFFFF']
+  return (
+    <div
+      aria-hidden="true"
+      style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 10 }}
+    >
+      {pieces.map((_, i) => {
+        const x = Math.random() * 100
+        const delay = Math.random() * 0.5
+        const rotate = (Math.random() * 720) - 360
+        const color = palette[i % palette.length]
+        return (
+          <motion.span
+            key={i}
+            initial={{ top: -40, left: `${x}%`, opacity: 0, rotate: 0 }}
+            animate={{ top: '100vh', opacity: [0, 1, 1, 0], rotate }}
+            transition={{ duration: 2.8 + Math.random() * 1.2, delay, ease: 'easeIn' }}
+            style={{
+              position: 'absolute',
+              display: 'block',
+              width: 8 + Math.random() * 6,
+              height: 12 + Math.random() * 8,
+              background: color,
+              borderRadius: 2,
+            }}
+          />
+        )
+      })}
     </div>
   )
 }
