@@ -158,6 +158,19 @@ Deno.serve(async (req: Request) => {
       updatePayload.current_period_end = subscriptionRemote.current_period_end;
     }
 
+    // If we're about to mark this row active/past_due, make sure no other
+    // row for the same shop is sitting in the active-set (would collide
+    // with the partial unique index). A user who retried checkout in a new
+    // tab may have a second pending/active row we need to expire first.
+    if (status === "active" || status === "past_due") {
+      await supabase
+        .from("subscriptions")
+        .update({ status: "expired", updated_at: new Date().toISOString() })
+        .eq("shop_id", sub.shop_id)
+        .neq("id", subId)
+        .in("status", ["pending", "active", "past_due"]);
+    }
+
     const { data: updated, error: updateErr } = await supabase
       .from("subscriptions")
       .update(updatePayload)
