@@ -105,20 +105,33 @@ Deno.serve(async (req: Request) => {
       }, 409);
     }
 
-    // ── Reject if there is already an active/pending subscription ──
+    // ── Reject if there is already an active/past_due subscription.
+    //    For `pending`: auto-expire rows older than 10 min so a user who
+    //    bailed out of a StreamPay checkout can retry without hitting a
+    //    permanent wall. Fresh pendings still block (prevents double-taps).
     const { data: existing, error: existingErr } = await supabase
       .from("subscriptions")
-      .select("id, status")
+      .select("id, status, created_at")
       .eq("shop_id", shop.id)
       .in("status", ["pending", "active", "past_due"])
       .maybeSingle();
     if (existingErr) throw existingErr;
     if (existing) {
-      return json(req, {
-        error: "existing subscription",
-        existing_subscription_id: existing.id,
-        status: existing.status,
-      }, 409);
+      const isStalePending =
+        existing.status === "pending" &&
+        Date.now() - new Date(existing.created_at).getTime() > 10 * 60 * 1000;
+      if (isStalePending) {
+        await supabase
+          .from("subscriptions")
+          .update({ status: "canceled", updated_at: new Date().toISOString() })
+          .eq("id", existing.id);
+      } else {
+        return json(req, {
+          error: "existing subscription",
+          existing_subscription_id: existing.id,
+          status: existing.status,
+        }, 409);
+      }
     }
 
     // ── Create or reuse StreamPay consumer ──
