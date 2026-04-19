@@ -87,7 +87,7 @@ async function submitLead({ contact, store_name, industry }) {
 /* ─── i18n content ─── */
 const content = {
   ar: {
-    nav: { cta: 'ابدأ مجاناً', pricing: 'الأسعار', features: 'المميزات', how: 'كيف يعمل', login: 'دخول', signup: 'سجّل', logout: 'خروج', hi: 'مرحباً' },
+    nav: { cta: 'ابدأ مجاناً', pricing: 'الأسعار', features: 'المميزات', how: 'كيف يعمل', login: 'دخول', signup: 'سجّل', logout: 'خروج', hi: 'مرحباً', dashboard: 'لوحة التحكم', subscription: 'الاشتراك' },
     auth: {
       loginTitle: 'تسجيل الدخول', loginSub: 'ادخل لحسابك وابدأ تدير برنامج الولاء',
       signupTitle: 'إنشاء حساب', signupSub: 'سجّل الحين وابدأ أسبوعك المجاني',
@@ -352,7 +352,7 @@ const content = {
     },
   },
   en: {
-    nav: { cta: 'Start Free', pricing: 'Pricing', features: 'Features', how: 'How It Works', login: 'Log In', signup: 'Sign Up', logout: 'Log Out', hi: 'Hi' },
+    nav: { cta: 'Start Free', pricing: 'Pricing', features: 'Features', how: 'How It Works', login: 'Log In', signup: 'Sign Up', logout: 'Log Out', hi: 'Hi', dashboard: 'Dashboard', subscription: 'Subscription' },
     auth: {
       loginTitle: 'Log In', loginSub: 'Sign in to manage your loyalty program',
       signupTitle: 'Create Account', signupSub: 'Sign up and start your free trial',
@@ -875,6 +875,8 @@ function NavAuthButtons({ t }) {
     return (
       <div className="nav-auth">
         <span className="nav-greeting">{t.nav.hi}, {name}</span>
+        <button onClick={() => navigate('/billing')} className="nav-auth-btn nav-login-btn">{t.nav.subscription}</button>
+        <button onClick={() => navigate('/dashboard')} className="nav-auth-btn nav-signup-btn">{t.nav.dashboard}</button>
         <button onClick={async () => { await signOut(); navigate('/') }} className="nav-auth-btn nav-logout-btn">{t.nav.logout}</button>
       </div>
     )
@@ -894,7 +896,9 @@ function MobileAuthButtons({ t, closeMenu }) {
     return (
       <>
         <span className="mobile-drawer-greeting">{t.nav.hi}, {name}</span>
-        <button onClick={async () => { await signOut(); navigate('/'); closeMenu() }} className="mobile-drawer-cta">{t.nav.logout}</button>
+        <button onClick={() => { navigate('/dashboard'); closeMenu() }} className="mobile-drawer-auth">{t.nav.dashboard}</button>
+        <button onClick={() => { navigate('/billing'); closeMenu() }} className="mobile-drawer-cta">{t.nav.subscription}</button>
+        <button onClick={async () => { await signOut(); navigate('/'); closeMenu() }} className="mobile-drawer-auth">{t.nav.logout}</button>
       </>
     )
   }
@@ -2794,6 +2798,10 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           ))}
         </div>
         <div className="sidebar-footer">
+          <button className="sidebar-item sidebar-billing-link" onClick={() => navigate('/billing')}>
+            <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h6"/></svg></span>
+            <span className="sidebar-item-label">{lang === 'ar' ? 'الاشتراك' : 'Subscription'}</span>
+          </button>
           <button className="sidebar-item sidebar-home-link" onClick={() => navigate('/')}>
             <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span>
             <span className="sidebar-item-label">{d.visitSite}</span>
