@@ -3,7 +3,7 @@
 // .section, .pricing-card, .pricing-card-featured, .pricing-cta, .pricing-features)
 // plus a monthly/annual toggle and a KSA phone field.
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import {
@@ -109,10 +109,11 @@ export default function BillingPage({ lang = 'ar' }) {
   const { subscription, hasActive, loading: subLoading, refresh } = useSubscription({ user, authLoading })
 
   const [interval, setInterval] = useState('annual')
-  const [phone, setPhone] = useState('05')
+  const [phone, setPhone] = useState('')
   const [selectedTier, setSelectedTier] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+  const phoneInputRef = useRef(null)
 
   // Preselect plan from ?plan=tier1_monthly-style query string.
   useEffect(() => {
@@ -155,7 +156,16 @@ export default function BillingPage({ lang = 'ar' }) {
 
   const onSubscribe = async (tier) => {
     const normalized = normalizeKsaPhone(phone)
-    if (!normalized) { setError(strings.phoneErr); return }
+    if (!normalized) {
+      setError(strings.phoneErr)
+      setSelectedTier(tier)
+      // Focus + scroll to the phone input so the user knows why.
+      if (phoneInputRef.current) {
+        phoneInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        phoneInputRef.current.focus()
+      }
+      return
+    }
     setSelectedTier(tier)
     setSubmitting(true)
     setError(null)
@@ -225,6 +235,33 @@ export default function BillingPage({ lang = 'ar' }) {
           ))}
         </motion.div>
 
+        {/* Phone input — required BEFORE checkout so the user sees it first */}
+        {!hasActive && (
+          <motion.div
+            className="billing-phone-card"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+          >
+            <label className="billing-phone-label">{strings.phoneLabel}</label>
+            <input
+              ref={phoneInputRef}
+              type="tel"
+              inputMode="tel"
+              dir="ltr"
+              value={phone}
+              onChange={e => {
+                const v = sanitizePhoneInput(e.target.value)
+                setPhone(v)
+                setError(null)
+              }}
+              placeholder="05XXXXXXXX"
+              className="billing-phone-input"
+              style={{ borderColor: phoneValid ? '#10B981' : 'var(--border)' }}
+            />
+            <p className="billing-phone-hint">{strings.phoneHint}</p>
+          </motion.div>
+        )}
+
         <div className="pricing-cards billing-tiers">
           {TIERS.map((tier, idx) => {
             const price = interval === 'monthly' ? tier.monthly : tier.annual
@@ -272,7 +309,7 @@ export default function BillingPage({ lang = 'ar' }) {
 
                 <motion.button
                   onClick={() => onSubscribe(idx + 1)}
-                  disabled={submitting || !phoneValid || hasActive}
+                  disabled={submitting || hasActive}
                   className="pricing-cta"
                   whileHover={{ scale: submitting ? 1 : 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -287,31 +324,6 @@ export default function BillingPage({ lang = 'ar' }) {
             )
           })}
         </div>
-
-        {!hasActive && (
-          <motion.div
-            className="billing-phone-card"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-          >
-            <label className="billing-phone-label">{strings.phoneLabel}</label>
-            <input
-              type="tel"
-              inputMode="tel"
-              dir="ltr"
-              value={phone}
-              onChange={e => {
-                const v = sanitizePhoneInput(e.target.value)
-                setPhone(v)
-                setError(null)
-              }}
-              placeholder="05XXXXXXXX"
-              className="billing-phone-input"
-              style={{ borderColor: phoneValid ? '#10B981' : 'var(--border)' }}
-            />
-            <p className="billing-phone-hint">{strings.phoneHint}</p>
-          </motion.div>
-        )}
 
         {error && (
           <motion.div
