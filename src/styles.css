@@ -2122,6 +2122,11 @@ body {
   border: 1px solid rgba(240, 69, 69, 0.3);
 }
 .billing-status-bad .billing-status-label { color: #f04545; }
+.billing-status-info {
+  background: rgba(100, 150, 220, 0.08);
+  border: 1px solid rgba(100, 150, 220, 0.25);
+}
+.billing-status-info .billing-status-label { color: #6ba3e3; }
 
 /* Phone input card */
 .billing-phone-card {

@@ -48,19 +48,37 @@ Deno.serve(async (req: Request) => {
     // row that's already past its 10-min checkout window.
     await supabase.rpc("expire_stale_pending_subscriptions").catch(() => {});
 
-    const { data: subs, error } = await supabase
-      .from("subscriptions")
-      .select(
-        "id, shop_id, user_id, plan_id, status, streampay_subscription_id, current_period_end, last_synced_at, updated_at, created_at",
-      )
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1);
-    if (error) throw error;
+    // Read shop info alongside subscription so the client gets a single
+    // truth-of-record for both subscription state AND the shop-level status.
+    const [{ data: subs, error: subsErr }, { data: shop }] = await Promise.all([
+      supabase
+        .from("subscriptions")
+        .select(
+          "id, shop_id, user_id, plan_id, status, streampay_subscription_id, current_period_end, last_synced_at, updated_at, created_at",
+        )
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1),
+      supabase
+        .from("shops")
+        .select("id, account_status, first_activated_at")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
+    if (subsErr) throw subsErr;
 
     const sub = subs?.[0] ?? null;
+    const shopStatus = {
+      account_status: shop?.account_status ?? "trial",
+      first_activated_at: shop?.first_activated_at ?? null,
+    };
+
     if (!sub) {
-      return json(req, { subscription: null, hasActive: false });
+      return json(req, {
+        subscription: null,
+        hasActive: false,
+        shop: shopStatus,
+      });
     }
 
     let current = sub;
@@ -108,6 +126,7 @@ Deno.serve(async (req: Request) => {
     return json(req, {
       subscription: current,
       hasActive: current.status === "active",
+      shop: shopStatus,
     });
   } catch (err) {
     if (err instanceof StreamPayError) {

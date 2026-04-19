@@ -52,19 +52,33 @@ function fmt(n) {
   return new Intl.NumberFormat('en-US').format(n)
 }
 
-function StatusBanner({ subscription, lang }) {
+function StatusBanner({ subscription, accountStatus, lang }) {
   const isAr = lang === 'ar'
-  const labelAr = {
-    active: 'اشتراك نشط', pending: 'بانتظار إتمام الدفع', past_due: 'متأخر السداد',
-    canceled: 'ملغي', failed: 'فشل', expired: 'منتهي',
+  // Map account-level status (not the raw subscription row) to a user-facing
+  // label. This is the field product actually cares about: "production-ready
+  // shop yes/no".
+  const AR = {
+    trial: 'حساب تجريبي — لم يتم الدفع بعد',
+    active: 'اشتراك نشط',
+    past_due: 'متأخر السداد',
+    canceled: 'تم الإلغاء',
+    payment_failed: 'فشل الدفع',
+    resubscribe_required: 'انتهى اشتراكك — جدد الاشتراك',
   }
-  const labelEn = {
-    active: 'Active subscription', pending: 'Awaiting payment', past_due: 'Past due',
-    canceled: 'Canceled', failed: 'Failed', expired: 'Expired',
+  const EN = {
+    trial: 'Trial — no payment yet',
+    active: 'Active subscription',
+    past_due: 'Past due',
+    canceled: 'Canceled',
+    payment_failed: 'Payment failed',
+    resubscribe_required: 'Subscription ended — resubscribe',
   }
-  const label = (isAr ? labelAr : labelEn)[subscription.status] ?? subscription.status
-  const tone = subscription.status === 'active' ? 'active' :
-    subscription.status === 'pending' || subscription.status === 'past_due' ? 'warn' : 'bad'
+  const label = (isAr ? AR : EN)[accountStatus] ?? accountStatus
+  const tone =
+    accountStatus === 'active' ? 'active' :
+    accountStatus === 'past_due' || accountStatus === 'resubscribe_required' ? 'warn' :
+    accountStatus === 'payment_failed' || accountStatus === 'canceled' ? 'bad' :
+    'info'
   return (
     <motion.div
       className={`billing-status billing-status-${tone}`}
@@ -73,8 +87,8 @@ function StatusBanner({ subscription, lang }) {
     >
       <span className="billing-status-label">{label}</span>
       <span className="billing-status-sub">
-        {subscription.plan_id}
-        {subscription.current_period_end
+        {subscription?.plan_id ?? ''}
+        {subscription?.current_period_end
           ? ` · ${isAr ? 'ينتهي' : 'Ends'} ${new Date(subscription.current_period_end).toLocaleDateString('en-GB')}`
           : ''}
       </span>
@@ -106,7 +120,7 @@ export default function BillingPage({ lang = 'ar' }) {
     if (!authLoading && !user) navigate('/login')
   }, [user, authLoading])
 
-  const { subscription, hasActive, loading: subLoading, refresh } = useSubscription({ user, authLoading })
+  const { subscription, hasActive, accountStatus, loading: subLoading, refresh } = useSubscription({ user, authLoading })
 
   const [interval, setInterval] = useState('annual')
   const [phone, setPhone] = useState('')
@@ -294,7 +308,7 @@ export default function BillingPage({ lang = 'ar' }) {
           <p className="section-subtitle">{strings.sub}</p>
         </motion.div>
 
-        {!subLoading && subscription && <StatusBanner subscription={subscription} lang={lang} />}
+        {!subLoading && <StatusBanner subscription={subscription} accountStatus={accountStatus} lang={lang} />}
 
         <motion.div
           className="billing-toggle"
