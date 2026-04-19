@@ -8,6 +8,16 @@ out-tsc
 .expo
 .expo-shared
 
+# env files (contain secrets — never commit)
+.env
+.env.local
+.env.*.local
+supabase/.env
+supabase/.env.local
+supabase/functions/.env
+supabase/functions/.env.local
+supabase/.temp
+
 # dependencies
 node_modules
 
@@ -52,8 +62,8 @@ Thumbs.db
 niqaty-fixed/
 artifacts/
 attached_assets/
-lib/
-scripts/
+/lib/
+/scripts/
 main.py
 pyproject.toml
 replit.md

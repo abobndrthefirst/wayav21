@@ -127,11 +127,25 @@ const T = {
       ],
     },
     price: {
-      pill: 'الأسعار', h2: 'خطة واحدة بسيطة، بدون مفاجآت',
-      sub: 'كل الأدوات. كل الدعم. بسعر يناسب المحل الصغير.',
-      features: ['حملات غير محدودة', 'توصيل واتساب و SMS', 'لوحة تحكم كاملة', 'تحليلات وتقارير', 'حلقة إحالة مدمجة', 'قوالب رمضان والعيد', 'دعم فني عربي'],
-      monthly: { title: 'الخطة الشهرية', price: '٧٥', unit: 'ر.س / شهر', note: 'بدون التزام — الغي بأي وقت', cta: 'ابدأ الآن' },
-      annual: { title: 'الخطة السنوية', badge: 'الأكثر توفيراً', price: '٥٥', unit: 'ر.س / شهر', note: 'يُفوتر ١٬٤٢٨ ر.س سنوياً — وفّر ٣٥٨ ر.س', cta: 'ابدأ الآن', saving: 'وفّر ٢٧٪' },
+      pill: 'الأسعار', h2: 'ثلاث خطط تناسب حجم متجرك',
+      sub: 'ادفع شهرياً أو وفّر ٢٠٪ بالدفع السنوي. ألغِ متى شئت.',
+      toggleMonthly: 'شهري', toggleAnnual: 'سنوي — خصم ٢٠٪',
+      unitMonth: 'ر.س / شهر', unitYear: 'ر.س / سنة',
+      tiers: [
+        {
+          id: 'tier1', title: 'البداية', monthly: '٨٠', annual: '٧٦٨',
+          features: ['برنامج ولاء واحد', 'حتى ٢٠٠ عميل', 'لوحة تحكم كاملة', 'دعم عبر البريد'],
+        },
+        {
+          id: 'tier2', title: 'النمو', monthly: '١٥٠', annual: '١٬٤٤٠', badge: 'الأكثر شيوعاً',
+          features: ['برامج ولاء غير محدودة', 'حتى ٢٬٠٠٠ عميل', 'معمل البطاقات (PassLab)', 'تحليلات متقدمة', 'دعم عبر واتساب'],
+        },
+        {
+          id: 'tier3', title: 'الاحتراف', monthly: '٣٠٠', annual: '٢٬٨٨٠',
+          features: ['كل مميزات خطة النمو', 'عملاء غير محدودين', 'حملات مخصصة للمواسم', 'API للمطورين', 'دعم مخصص وذو أولوية'],
+        },
+      ],
+      saveLabel: 'وفّر ٢٠٪', cta: 'ابدأ الآن',
     },
     cta: {
       h2: 'مستعد تحوّل المشتري العابر إلى عميل دائم؟',
@@ -199,11 +213,25 @@ const T = {
       ],
     },
     price: {
-      pill: 'Pricing', h2: 'One simple plan. No surprises.',
-      sub: 'All the tools. All the support. Priced for small businesses.',
-      features: ['Unlimited campaigns', 'WhatsApp & SMS delivery', 'Full dashboard access', 'Analytics & reports', 'Built-in referral loop', 'Ramadan & Eid templates', 'Arabic support team'],
-      monthly: { title: 'Monthly', price: '75', unit: 'SAR / month', note: 'No commitment — cancel anytime', cta: 'Get started' },
-      annual: { title: 'Annual', badge: 'Best value', price: '55', unit: 'SAR / month', note: 'Billed 1,428 SAR/year — save 358 SAR', cta: 'Get started', saving: 'Save 27%' },
+      pill: 'Pricing', h2: 'Three plans, sized to your shop',
+      sub: 'Pay monthly or save 20% with annual billing. Cancel anytime.',
+      toggleMonthly: 'Monthly', toggleAnnual: 'Annual — save 20%',
+      unitMonth: 'SAR / month', unitYear: 'SAR / year',
+      tiers: [
+        {
+          id: 'tier1', title: 'Starter', monthly: '80', annual: '768',
+          features: ['1 loyalty program', 'Up to 200 customers', 'Full dashboard access', 'Email support'],
+        },
+        {
+          id: 'tier2', title: 'Growth', monthly: '150', annual: '1,440', badge: 'Most popular',
+          features: ['Unlimited loyalty programs', 'Up to 2,000 customers', 'Apple Wallet PassLab', 'Advanced analytics', 'WhatsApp support'],
+        },
+        {
+          id: 'tier3', title: 'Pro', monthly: '300', annual: '2,880',
+          features: ['Everything in Growth', 'Unlimited customers', 'Seasonal campaigns', 'Developer API', 'Priority dedicated support'],
+        },
+      ],
+      saveLabel: 'Save 20%', cta: 'Get started',
     },
     cta: {
       h2: 'Ready to turn one-time buyers into loyal regulars?',
@@ -298,6 +326,7 @@ export default function Home() {
   const [email, setEmail]       = useState('');
   const [ctaEmail, setCtaEmail] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pricingInterval, setPricingInterval] = useState<'monthly' | 'annual'>('annual');
 
   const t    = T[lang];
   const isAR = lang === 'ar';
@@ -652,58 +681,90 @@ export default function Home() {
 
       {/* ══════════════ SECTION 6 — PRICING ══════════════ */}
       <section id="pricing" className="w-full py-24 px-4 sm:px-8 md:px-16 overflow-hidden" style={{ background: C.bg }}>
-        <div className="max-w-[960px] mx-auto flex flex-col gap-14 items-center">
+        <div className="max-w-[1100px] mx-auto flex flex-col gap-10 md:gap-14 items-center">
           <div className="flex flex-col items-center gap-4 text-center reveal">
             <Pill font={nFont}>{t.price.pill}</Pill>
             <h2 className="font-bold text-3xl md:text-5xl tracking-[-1px]" style={{ color: C.white, fontFamily: hFont }}>{t.price.h2}</h2>
-            <p className="text-base max-w-[480px]" style={{ color: C.muted, fontFamily: bFont }}>{t.price.sub}</p>
+            <p className="text-base max-w-[520px]" style={{ color: C.muted, fontFamily: bFont }}>{t.price.sub}</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
 
-            {/* Annual — prominent */}
-            <div className="reveal-left rounded-3xl p-7 md:p-10 flex flex-col gap-7 relative overflow-hidden order-first min-w-0"
-              style={{ background: C.priceDk, border: `1px solid rgba(16,186,131,0.3)` }}>
-              <div className="absolute top-7 px-3 py-1 rounded-full" style={{ background: C.green, [isAR ? 'left' : 'right']: '28px' }}>
-                <span className="font-bold text-xs" style={{ color: '#0a0a08', fontFamily: bFont }}>{t.price.annual.badge}</span>
-              </div>
-              <div className={`flex flex-col gap-1.5 ${isAR ? 'items-end' : 'items-start'}`}>
-                <h3 className="font-bold text-xl" style={{ color: C.white, fontFamily: hFont }}>{t.price.annual.title}</h3>
-                <div className={`flex items-baseline gap-2 ${isAR ? 'flex-row-reverse' : ''}`}>
-                  <span className="font-black text-[48px] md:text-[60px] leading-none tracking-[-2px]" style={{ color: C.white, fontFamily: F.number }}>{t.price.annual.price}</span>
-                  <span className="text-base" style={{ color: C.muted, fontFamily: bFont }}>{t.price.annual.unit}</span>
-                </div>
-                <p className="text-xs" style={{ color: C.subtle, fontFamily: bFont }}>{t.price.annual.note}</p>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: C.green, background: 'rgba(16,186,131,0.1)' }}>{t.price.annual.saving}</span>
-              </div>
-              <div style={{ borderTop: '1px solid rgba(16,186,131,0.1)' }} />
-              <div className="flex flex-col gap-3.5 flex-1">
-                {t.price.features.map((f, i) => <CheckRow key={i} text={f} font={bFont} />)}
-              </div>
-              <a href={wa} className="waya-btn flex items-center justify-center px-6 py-4 rounded-xl mt-2" style={{ background: C.green }}>
-                <span className="font-bold text-base" style={{ color: '#0a0a08', fontFamily: bFont }}>{t.price.annual.cta}</span>
-              </a>
-            </div>
+          {/* Billing-interval toggle */}
+          <div className="reveal flex items-center gap-2 rounded-full p-1"
+               style={{ background: C.bgCard, border: '1px solid rgba(255,255,255,0.06)' }}>
+            {(['monthly', 'annual'] as const).map(opt => {
+              const active = pricingInterval === opt;
+              return (
+                <button key={opt} onClick={() => setPricingInterval(opt)}
+                  className="px-5 py-2 text-sm rounded-full transition-colors"
+                  style={{
+                    background: active ? C.green : 'transparent',
+                    color: active ? '#0a0a08' : C.white,
+                    fontFamily: bFont, fontWeight: active ? 700 : 500,
+                  }}>
+                  {opt === 'monthly' ? t.price.toggleMonthly : t.price.toggleAnnual}
+                </button>
+              );
+            })}
+          </div>
 
-            {/* Monthly */}
-            <div className="reveal-right waya-card rounded-3xl p-7 md:p-10 flex flex-col gap-7 min-w-0"
-              style={{ background: C.priceM, border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div className={`flex flex-col gap-1.5 ${isAR ? 'items-end' : 'items-start'}`}>
-                <h3 className="font-bold text-xl" style={{ color: C.white, fontFamily: hFont }}>{t.price.monthly.title}</h3>
-                <div className={`flex items-baseline gap-2 ${isAR ? 'flex-row-reverse' : ''}`}>
-                  <span className="font-black text-[48px] md:text-[60px] leading-none tracking-[-2px]" style={{ color: C.white, fontFamily: F.number }}>{t.price.monthly.price}</span>
-                  <span className="text-base" style={{ color: C.muted, fontFamily: bFont }}>{t.price.monthly.unit}</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
+            {t.price.tiers.map(tier => {
+              const isFeatured = tier.id === 'tier2';
+              const price = pricingInterval === 'monthly' ? tier.monthly : tier.annual;
+              const unit = pricingInterval === 'monthly' ? t.price.unitMonth : t.price.unitYear;
+              const planId = `${tier.id}_${pricingInterval}`;
+              const onClick = () => {
+                const target = `/billing?plan=${planId}`;
+                if (user) navigate(target);
+                else navigate(`/signup?next=${encodeURIComponent(target)}`);
+              };
+              return (
+                <div key={tier.id}
+                  className={`${isFeatured ? 'reveal-scale' : 'reveal'} rounded-3xl p-7 md:p-9 flex flex-col gap-6 relative overflow-hidden min-w-0`}
+                  style={{
+                    background: isFeatured ? C.priceDk : C.priceM,
+                    border: `1px solid ${isFeatured ? 'rgba(16,186,131,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                  }}>
+                  {isFeatured && 'badge' in tier && tier.badge && (
+                    <div className="absolute top-5 px-3 py-1 rounded-full"
+                      style={{ background: C.green, [isAR ? 'left' : 'right']: '20px' }}>
+                      <span className="font-bold text-xs" style={{ color: '#0a0a08', fontFamily: bFont }}>
+                        {tier.badge}
+                      </span>
+                    </div>
+                  )}
+                  <div className={`flex flex-col gap-1.5 ${isAR ? 'items-end' : 'items-start'}`}>
+                    <h3 className="font-bold text-xl" style={{ color: C.white, fontFamily: hFont }}>{tier.title}</h3>
+                    <div className={`flex items-baseline gap-2 ${isAR ? 'flex-row-reverse' : ''}`}>
+                      <span className="font-black text-[44px] md:text-[56px] leading-none tracking-[-2px]"
+                        style={{ color: C.white, fontFamily: F.number }}>{price}</span>
+                      <span className="text-sm" style={{ color: C.muted, fontFamily: bFont }}>{unit}</span>
+                    </div>
+                    {pricingInterval === 'annual' && (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                        style={{ color: C.green, background: 'rgba(16,186,131,0.1)' }}>
+                        {t.price.saveLabel}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ borderTop: `1px solid ${isFeatured ? 'rgba(16,186,131,0.1)' : 'rgba(255,255,255,0.06)'}` }} />
+                  <div className="flex flex-col gap-3 flex-1">
+                    {tier.features.map((f, i) => <CheckRow key={i} text={f} font={bFont} />)}
+                  </div>
+                  <button onClick={onClick}
+                    className="waya-btn flex items-center justify-center px-6 py-4 rounded-xl mt-2 transition-colors"
+                    style={{
+                      background: isFeatured ? C.green : 'rgba(255,255,255,0.06)',
+                      border: isFeatured ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                    }}>
+                    <span className="font-bold text-base"
+                      style={{ color: isFeatured ? '#0a0a08' : '#e2e2e2', fontFamily: bFont }}>
+                      {t.price.cta}
+                    </span>
+                  </button>
                 </div>
-                <p className="text-xs" style={{ color: C.subtle, fontFamily: bFont }}>{t.price.monthly.note}</p>
-              </div>
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} />
-              <div className="flex flex-col gap-3.5 flex-1">
-                {t.price.features.map((f, i) => <CheckRow key={i} text={f} font={bFont} />)}
-              </div>
-              <a href={wa} className="waya-btn flex items-center justify-center px-6 py-4 rounded-xl mt-2 transition-colors"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <span className="font-semibold text-base text-[#e2e2e2]" style={{ fontFamily: bFont }}>{t.price.monthly.cta}</span>
-              </a>
-            </div>
+              );
+            })}
           </div>
         </div>
       </section>
