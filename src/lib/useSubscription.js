@@ -69,11 +69,14 @@ export function useSubscription({ user, authLoading }) {
     loading,
     error,
     refresh: load,
-    // Shop-level account lifecycle: 'trial' | 'active' | 'past_due' |
-    // 'canceled' | 'payment_failed' | 'resubscribe_required'. Use this
-    // (not the subscription row) to gate UI features — a canceled shop
-    // may still have access until current_period_end.
-    accountStatus: shopStatus?.account_status ?? 'trial',
+    // Shop-level account lifecycle:
+    //   'on_trial' | 'active' | 'past_due' | 'canceled' |
+    //   'payment_failed' | 'resubscribe_required'.
+    // Use this (not the subscription row) to gate UI features — a canceled
+    // shop may still have access until current_period_end, and an on_trial
+    // shop has full live access with their real data.
+    accountStatus: shopStatus?.account_status ?? 'on_trial',
     firstActivatedAt: shopStatus?.first_activated_at ?? null,
+    trialEndsAt: shopStatus?.trial_ends_at ?? null,
   }
 }

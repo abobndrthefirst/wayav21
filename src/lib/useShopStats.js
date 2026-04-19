@@ -1,21 +1,10 @@
 // useShopStats — one-call shop analytics for the dashboard home + data tabs.
 //
-//   accountStatus === 'trial'  → return demo numbers (the preview the user
-//                                sees before paying, to understand what the
-//                                dashboard will look like once they have
-//                                real activity).
-//   accountStatus === 'active' → call public.shop_stats(shop_id) RPC and
-//                                return real aggregates from the DB.
-//                                Zeros are normal for a freshly-activated
-//                                shop — that's ok, not hidden behind demo.
-//
-// Returns a stable shape so the render block doesn't branch:
-//   {
-//     customers, scans, rewardsRedeemed, totalPoints,
-//     rewardsSent, repeatRatePct,
-//     isDemo: true|false,   // caller can show/hide "demo preview" ribbons
-//     loading, error
-//   }
+// Every account state that represents a real, usable shop — on_trial,
+// active, past_due, canceled — gets real numbers from public.shop_stats
+// (zeros are fine; they just mean "no activity yet"). Only the fallback
+// paths (resubscribe_required, payment_failed) show demo numbers so the
+// UI stays informative instead of empty while the shop is locked out.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from './supabase'
@@ -38,16 +27,24 @@ const ZERO = {
   repeatRatePct: 0,
 }
 
+// Shops in any of these states have a live, usable product experience →
+// show their real activity.
+const LIVE_STATES = new Set([
+  'on_trial',
+  'active',
+  'past_due',
+  'canceled',
+])
+
 export function useShopStats({ shopId, accountStatus }) {
-  const isActive = accountStatus === 'active' || accountStatus === 'past_due' ||
-                   accountStatus === 'canceled'  // already activated at least once
-  const [stats, setStats] = useState(isActive ? ZERO : DEMO)
-  const [loading, setLoading] = useState(isActive)
+  const isLive = LIVE_STATES.has(accountStatus)
+  const [stats, setStats] = useState(isLive ? ZERO : DEMO)
+  const [loading, setLoading] = useState(isLive)
   const [error, setError] = useState(null)
   const mounted = useRef(true)
 
   const load = useCallback(async () => {
-    if (!shopId || !isActive) return
+    if (!shopId || !isLive) return
     setLoading(true)
     setError(null)
     const { data, error: err } = await supabase.rpc('shop_stats', { _shop_id: shopId })
@@ -66,7 +63,7 @@ export function useShopStats({ shopId, accountStatus }) {
       })
     }
     setLoading(false)
-  }, [shopId, isActive])
+  }, [shopId, isLive])
 
   useEffect(() => {
     mounted.current = true
@@ -74,17 +71,17 @@ export function useShopStats({ shopId, accountStatus }) {
   }, [])
 
   useEffect(() => {
-    if (!isActive) {
+    if (!isLive) {
       setStats(DEMO)
       setLoading(false)
       return
     }
     load()
-  }, [isActive, load])
+  }, [isLive, load])
 
   return {
     ...stats,
-    isDemo: !isActive,
+    isDemo: !isLive,
     loading,
     error,
     refresh: load,

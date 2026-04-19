@@ -2847,11 +2847,22 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               <h1 className="dash-title">{d.welcome}، {shopName}</h1>
             </div>
 
-            {stats.isDemo && (
-              <div className="dash-demo-banner">
+            {shop.account_status === 'on_trial' && shop.trial_ends_at && (() => {
+              const ms = new Date(shop.trial_ends_at).getTime() - Date.now()
+              const daysLeft = Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)))
+              return (
+                <div className="dash-demo-banner">
+                  {lang === 'ar'
+                    ? `فترة تجريبية مجانية — متبقي ${daysLeft} يوم. اشترك الآن للاستمرار بعد انتهاء الفترة.`
+                    : `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left. Subscribe to keep going after it ends.`}
+                </div>
+              )
+            })()}
+            {shop.account_status === 'resubscribe_required' && (
+              <div className="dash-demo-banner" style={{ background: 'linear-gradient(90deg, rgba(240,69,69,0.12), rgba(240,69,69,0.05))', borderColor: 'rgba(240,69,69,0.3)' }}>
                 {lang === 'ar'
-                  ? 'معاينة تجريبية — الأرقام ستتحول إلى بيانات متجرك الفعلية بعد الاشتراك.'
-                  : 'Demo preview — numbers switch to your real activity once you subscribe.'}
+                  ? 'انتهت فترتك التجريبية — اشترك الآن للاستمرار في استخدام وايا.'
+                  : 'Your free trial has ended — subscribe now to keep using Waya.'}
               </div>
             )}
             <div className="data-stats-grid">

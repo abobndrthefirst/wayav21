@@ -52,13 +52,23 @@ function fmt(n) {
   return new Intl.NumberFormat('en-US').format(n)
 }
 
-function StatusBanner({ subscription, accountStatus, lang }) {
+function daysUntil(iso) {
+  if (!iso) return null
+  const ms = new Date(iso).getTime() - Date.now()
+  if (!Number.isFinite(ms)) return null
+  return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)))
+}
+
+function StatusBanner({ subscription, accountStatus, trialEndsAt, lang }) {
   const isAr = lang === 'ar'
+  const daysLeft = accountStatus === 'on_trial' ? daysUntil(trialEndsAt) : null
+
   // Map account-level status (not the raw subscription row) to a user-facing
-  // label. This is the field product actually cares about: "production-ready
-  // shop yes/no".
+  // label + tone. Dynamic copy for on_trial includes days remaining.
   const AR = {
-    trial: 'حساب تجريبي — لم يتم الدفع بعد',
+    on_trial: daysLeft != null
+      ? `فترة تجريبية مجانية — متبقي ${daysLeft} يوم`
+      : 'فترة تجريبية مجانية',
     active: 'اشتراك نشط',
     past_due: 'متأخر السداد',
     canceled: 'تم الإلغاء',
@@ -66,7 +76,9 @@ function StatusBanner({ subscription, accountStatus, lang }) {
     resubscribe_required: 'انتهى اشتراكك — جدد الاشتراك',
   }
   const EN = {
-    trial: 'Trial — no payment yet',
+    on_trial: daysLeft != null
+      ? `Free trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`
+      : 'Free trial',
     active: 'Active subscription',
     past_due: 'Past due',
     canceled: 'Canceled',
@@ -76,6 +88,7 @@ function StatusBanner({ subscription, accountStatus, lang }) {
   const label = (isAr ? AR : EN)[accountStatus] ?? accountStatus
   const tone =
     accountStatus === 'active' ? 'active' :
+    accountStatus === 'on_trial' ? 'info' :
     accountStatus === 'past_due' || accountStatus === 'resubscribe_required' ? 'warn' :
     accountStatus === 'payment_failed' || accountStatus === 'canceled' ? 'bad' :
     'info'
@@ -120,7 +133,7 @@ export default function BillingPage({ lang = 'ar' }) {
     if (!authLoading && !user) navigate('/login')
   }, [user, authLoading])
 
-  const { subscription, hasActive, accountStatus, loading: subLoading, refresh } = useSubscription({ user, authLoading })
+  const { subscription, hasActive, accountStatus, trialEndsAt, loading: subLoading, refresh } = useSubscription({ user, authLoading })
 
   const [interval, setInterval] = useState('annual')
   const [phone, setPhone] = useState('')
@@ -308,7 +321,7 @@ export default function BillingPage({ lang = 'ar' }) {
           <p className="section-subtitle">{strings.sub}</p>
         </motion.div>
 
-        {!subLoading && <StatusBanner subscription={subscription} accountStatus={accountStatus} lang={lang} />}
+        {!subLoading && <StatusBanner subscription={subscription} accountStatus={accountStatus} trialEndsAt={trialEndsAt} lang={lang} />}
 
         <motion.div
           className="billing-toggle"

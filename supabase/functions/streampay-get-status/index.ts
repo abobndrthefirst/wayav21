@@ -61,7 +61,7 @@ Deno.serve(async (req: Request) => {
         .limit(1),
       supabase
         .from("shops")
-        .select("id, account_status, first_activated_at")
+        .select("id, account_status, first_activated_at, trial_ends_at")
         .eq("user_id", user.id)
         .maybeSingle(),
     ]);
@@ -69,8 +69,9 @@ Deno.serve(async (req: Request) => {
 
     const sub = subs?.[0] ?? null;
     const shopStatus = {
-      account_status: shop?.account_status ?? "trial",
+      account_status: shop?.account_status ?? "on_trial",
       first_activated_at: shop?.first_activated_at ?? null,
+      trial_ends_at: shop?.trial_ends_at ?? null,
     };
 
     if (!sub) {
