@@ -110,10 +110,34 @@ export default function BillingPage({ lang = 'ar' }) {
 
   const [interval, setInterval] = useState('annual')
   const [phone, setPhone] = useState('')
+  const [phoneEditable, setPhoneEditable] = useState(false)
+  const [shopPhoneLoaded, setShopPhoneLoaded] = useState(false)
   const [selectedTier, setSelectedTier] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const phoneInputRef = useRef(null)
+
+  // Pre-fill phone from the shop record (collected during /setup).
+  // If the shop already has a valid KSA phone, keep it read-only with an
+  // "Edit" button — no need to make the user retype what we already have.
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('shops')
+      .select('phone')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        const existing = data?.phone
+        if (existing && isValidKsaPhone(existing)) {
+          setPhone(existing)
+          setPhoneEditable(false)
+        } else {
+          setPhoneEditable(true)
+        }
+        setShopPhoneLoaded(true)
+      })
+  }, [user])
 
   // Preselect plan from ?plan=tier1_monthly-style query string.
   useEffect(() => {
@@ -154,12 +178,28 @@ export default function BillingPage({ lang = 'ar' }) {
     ),
   }), [isAr])
 
+  // Never let a raw object bubble up as "[object Object]" — always return a
+  // usable string for setError().
+  const formatError = (e) => {
+    if (!e) return T('Unknown error', 'خطأ غير معروف')
+    if (typeof e === 'string') return e
+    if (e.message && typeof e.message === 'string' && e.message !== '[object Object]') return e.message
+    if (e instanceof StreamPayApiError && e.body && typeof e.body === 'object') {
+      const body = e.body
+      if (typeof body.error === 'string') return body.error
+      if (body.streampay_body?.detail?.[0]?.msg) return body.streampay_body.detail[0].msg
+    }
+    try { return JSON.stringify(e) } catch { return String(e) }
+  }
+
   const onSubscribe = async (tier) => {
+    // If the shop has no phone yet, the input is editable and we validate.
+    // If the phone came from the shop record, it was already validated.
     const normalized = normalizeKsaPhone(phone)
     if (!normalized) {
       setError(strings.phoneErr)
       setSelectedTier(tier)
-      // Focus + scroll to the phone input so the user knows why.
+      setPhoneEditable(true)
       if (phoneInputRef.current) {
         phoneInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
         phoneInputRef.current.focus()
@@ -174,13 +214,17 @@ export default function BillingPage({ lang = 'ar' }) {
         plan_id: `tier${tier}_${interval}`,
         phone: normalized,
       })
+      if (!res?.checkout_url || typeof res.checkout_url !== 'string') {
+        setError(T('Checkout URL missing from server response.', 'لم يتم استلام رابط الدفع من الخادم.'))
+        return
+      }
       window.location.assign(res.checkout_url)
     } catch (e) {
       if (e instanceof StreamPayApiError && e.status === 409 && e.existingSubscriptionId) {
         await refresh()
         setError(strings.existingPending)
       } else {
-        setError(e?.message ?? String(e))
+        setError(formatError(e))
       }
     } finally {
       setSubmitting(false)
@@ -235,30 +279,50 @@ export default function BillingPage({ lang = 'ar' }) {
           ))}
         </motion.div>
 
-        {/* Phone input — required BEFORE checkout so the user sees it first */}
-        {!hasActive && (
+        {/* Phone — we pre-fill from shops.phone (collected at /setup).
+            If we already have a valid phone we show it read-only with an Edit
+            link. If not, we render the input as normal. */}
+        {!hasActive && shopPhoneLoaded && (
           <motion.div
             className="billing-phone-card"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ delay: 0.15, duration: 0.5 }}
           >
-            <label className="billing-phone-label">{strings.phoneLabel}</label>
-            <input
-              ref={phoneInputRef}
-              type="tel"
-              inputMode="tel"
-              dir="ltr"
-              value={phone}
-              onChange={e => {
-                const v = sanitizePhoneInput(e.target.value)
-                setPhone(v)
-                setError(null)
-              }}
-              placeholder="05XXXXXXXX"
-              className="billing-phone-input"
-              style={{ borderColor: phoneValid ? '#10B981' : 'var(--border)' }}
-            />
-            <p className="billing-phone-hint">{strings.phoneHint}</p>
+            {phoneEditable ? (
+              <>
+                <label className="billing-phone-label">{strings.phoneLabel}</label>
+                <input
+                  ref={phoneInputRef}
+                  type="tel"
+                  inputMode="tel"
+                  dir="ltr"
+                  value={phone}
+                  onChange={e => {
+                    const v = sanitizePhoneInput(e.target.value)
+                    setPhone(v)
+                    setError(null)
+                  }}
+                  placeholder="05XXXXXXXX"
+                  className="billing-phone-input"
+                  style={{ borderColor: phoneValid ? '#10B981' : 'var(--border)' }}
+                />
+                <p className="billing-phone-hint">{strings.phoneHint}</p>
+              </>
+            ) : (
+              <div className="billing-phone-row">
+                <div className="billing-phone-saved">
+                  <span className="billing-phone-label">{strings.phoneLabel}</span>
+                  <span className="billing-phone-value">{phone}</span>
+                </div>
+                <button
+                  type="button"
+                  className="billing-phone-edit"
+                  onClick={() => { setPhoneEditable(true); setTimeout(() => phoneInputRef.current?.focus(), 50) }}
+                >
+                  {T('Change', 'تغيير')}
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
 

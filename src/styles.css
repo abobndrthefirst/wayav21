@@ -2156,6 +2156,40 @@ body {
   color: var(--gray-dim);
 }
 
+/* Read-only phone state (pre-filled from shops.phone) */
+.billing-phone-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.billing-phone-saved {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.billing-phone-value {
+  font-size: 1.05rem;
+  color: var(--white);
+  font-family: monospace, 'SF Mono', Menlo, monospace;
+  direction: ltr;
+}
+.billing-phone-edit {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--gray);
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  font-family: inherit;
+}
+.billing-phone-edit:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
 .billing-error {
   max-width: 640px;
   margin: 20px auto 0;
