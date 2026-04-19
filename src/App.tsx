@@ -3,6 +3,7 @@ import { AuthProvider } from './lib/AuthContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import PassLab from './pages/PassLab';
 
 export function navigate(path: string) {
   window.history.pushState({}, '', path);
@@ -20,6 +21,7 @@ function Router() {
 
   if (route === '/login') return <Login />;
   if (route === '/signup') return <Signup />;
+  if (route === '/pass-lab') return <PassLab />;
   return <Home />;
 }
 
