@@ -1801,10 +1801,24 @@ function SocialProof({ t }) {
 // Tier catalog lives alongside the server-side `plans` table (SAR, 20% annual).
 const PRICING_TIERS = [
   {
-    id: 'tier1', monthly: 80, annual: 768,
-    titleAr: 'البداية', titleEn: 'Starter',
-    featuresAr: ['برنامج ولاء واحد', 'حتى 200 عميل', 'لوحة تحكم كاملة', 'دعم عبر البريد'],
-    featuresEn: ['1 loyalty program', 'Up to 200 customers', 'Full dashboard access', 'Email support'],
+    id: 'tier1', monthly: 85, annual: 816,
+    titleAr: 'باقة التأسيس', titleEn: 'Founding Plan',
+    featuresAr: [
+      'اشتراك أول شهرين مجاناً',
+      'عدد بطاقات غير محدود',
+      'تصميم بطاقات مخصّص',
+      'عدد عملاء غير محدود',
+      'لوحة تحكم كاملة',
+      'استيراد بيانات العملاء من Excel',
+    ],
+    featuresEn: [
+      'First 2 months free',
+      'Unlimited cards',
+      'Custom card design',
+      'Unlimited customers',
+      'Full dashboard',
+      'Import customers from Excel',
+    ],
   },
   {
     id: 'tier2', monthly: 150, annual: 1440, featured: true,
@@ -1823,107 +1837,92 @@ const PRICING_TIERS = [
 
 function Pricing({ t, lang }) {
   const { user } = useAuth()
-  const [annual, setAnnual] = useState(true)
   const isAr = lang === 'ar'
 
-  const goCheckout = (tierId) => {
-    const target = `/billing?plan=${tierId}_${annual ? 'annual' : 'monthly'}`
+  const goCheckout = () => {
+    const target = `/billing?plan=tier1_monthly`
     if (user) navigate(target)
     else navigate(`/signup?next=${encodeURIComponent(target)}`)
   }
 
-  const toggleMonthly = isAr ? 'شهري' : 'Monthly'
-  const toggleAnnual = isAr ? 'سنوي — خصم 20%' : 'Annual — save 20%'
-  const unitMonth = isAr ? 'ر.س / شهر' : 'SAR / month'
-  const unitYear = isAr ? 'ر.س / سنة' : 'SAR / year'
-  const saveLabel = isAr ? 'وفّر 20%' : 'Save 20%'
+  const founding = PRICING_TIERS[0]
+  const title = isAr ? founding.titleAr : founding.titleEn
+  const features = isAr ? founding.featuresAr : founding.featuresEn
+  const price = founding.monthly
+  const unit = isAr ? 'ر.س / شهرياً' : 'SAR / month'
+  const recommended = isAr ? '✨ العرض الحالي' : '✨ Current offer'
+  const freeTrial = isAr ? 'اشتراك أول شهرين مجاناً' : 'First 2 months free'
+  const featuresTitle = isAr ? 'الباقة تحتوي على' : 'Includes'
+  const soonTitle = isAr ? 'قريباً' : 'Coming soon'
+  const soonFeatures = isAr
+    ? ['ميزة الإشعارات اللامحدودة', 'دعم منصات الكاشير المعروفة']
+    : ['Unlimited notifications', 'Popular POS integrations']
+  const cta = isAr ? 'اشترك الآن' : 'Subscribe Now'
 
   return (
     <section className="section" id="pricing">
       <Reveal>
         <div className="section-badge">{t.pricing.badge}</div>
-        <h2 className="section-title">{t.pricing.title}</h2>
+        <h2 className="section-title">{title}</h2>
       </Reveal>
 
       <Reveal delay={0.1}>
         <motion.div
-          className="founding-banner"
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          className="founding-plan-card"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          whileHover={{ y: -6 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 22 }}
         >
-          <span className="founding-icon">🎁</span>
-          <div className="founding-text">
-            <strong>{t.pricing.foundingBanner}</strong>
-            <span>{t.pricing.foundingSub}</span>
+          <div className="founding-plan-badge">{recommended}</div>
+          <div className="founding-plan-free">{freeTrial}</div>
+
+          <div className="founding-plan-price">
+            <span className="founding-plan-amount">{price}</span>
+            <div className="founding-plan-unit">
+              <span className="founding-plan-sar">{isAr ? 'ر.س' : 'SAR'}</span>
+              <span className="founding-plan-per">{isAr ? 'شهرياً' : 'per month'}</span>
+            </div>
           </div>
+
+          <div className="founding-plan-divider" />
+
+          <span className="founding-plan-features-title">{featuresTitle}</span>
+          <ul className="founding-plan-features">
+            {features.map((f, i) => (
+              <li key={i}>
+                <span className="founding-plan-check">
+                  <CheckIcon color="#ffffff" />
+                </span>
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="founding-plan-soon">
+            <span className="founding-plan-soon-label">{soonTitle}</span>
+            <ul className="founding-plan-soon-list">
+              {soonFeatures.map((f, i) => (
+                <li key={i}>
+                  <span className="founding-plan-soon-dot">●</span>
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <motion.button
+            className="founding-plan-cta"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={goCheckout}
+          >
+            {cta}
+          </motion.button>
+
+          <span className="founding-plan-unit-hint">{unit}</span>
         </motion.div>
-      </Reveal>
-
-      <Reveal delay={0.15}>
-        <div className="billing-toggle billing-toggle-landing">
-          <button
-            className={`billing-toggle-btn ${!annual ? 'billing-toggle-active' : ''}`}
-            onClick={() => setAnnual(false)}
-          >{toggleMonthly}</button>
-          <button
-            className={`billing-toggle-btn ${annual ? 'billing-toggle-active' : ''}`}
-            onClick={() => setAnnual(true)}
-          >{toggleAnnual}</button>
-        </div>
-      </Reveal>
-
-      <Reveal delay={0.2}>
-        <div className="pricing-cards pricing-cards-3">
-          {PRICING_TIERS.map((tier) => {
-            const price = annual ? tier.annual : tier.monthly
-            const unit = annual ? unitYear : unitMonth
-            const title = isAr ? tier.titleAr : tier.titleEn
-            const features = isAr ? tier.featuresAr : tier.featuresEn
-            const badge = isAr ? tier.badgeAr : tier.badgeEn
-            return (
-              <motion.div
-                key={tier.id}
-                className={`pricing-card ${tier.featured ? 'pricing-card-featured' : ''}`}
-                whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.08)' }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-              >
-                {tier.featured && badge ? (
-                  <div className="pricing-plan-label-row">
-                    <span className="pricing-plan-label">{title}</span>
-                    <span className="save-badge">{badge}</span>
-                  </div>
-                ) : (
-                  <span className="pricing-plan-label">{title}</span>
-                )}
-                <div className="pricing-amount">
-                  <span className="price">{price.toLocaleString('en-US')}</span>
-                  <span className="price-label">{unit}</span>
-                </div>
-                {annual && (
-                  <p className="price-note" style={{ color: '#10B981', fontWeight: 600 }}>{saveLabel}</p>
-                )}
-                <ul className="pricing-features">
-                  {features.map((f, i) => (
-                    <li key={i}><CheckIcon color="#10B981" /> <span>{f}</span></li>
-                  ))}
-                </ul>
-                <motion.button
-                  className="pricing-cta"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => goCheckout(tier.id)}
-                >
-                  {t.pricing.cta}
-                </motion.button>
-              </motion.div>
-            )
-          })}
-        </div>
       </Reveal>
     </section>
   )

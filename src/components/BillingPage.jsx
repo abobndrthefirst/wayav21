@@ -26,10 +26,24 @@ function navigate(path) {
 const TIERS = [
   {
     id: 'tier1',
-    titleAr: 'البداية', titleEn: 'Starter',
-    monthly: 80, annual: 768,
-    featuresAr: ['برنامج ولاء واحد', 'حتى 200 عميل', 'لوحة تحكم كاملة', 'دعم عبر البريد'],
-    featuresEn: ['1 loyalty program', 'Up to 200 customers', 'Full dashboard access', 'Email support'],
+    titleAr: 'باقة التأسيس', titleEn: 'Founding Plan',
+    monthly: 85, annual: 816,
+    featuresAr: [
+      'اشتراك أول شهرين مجاناً',
+      'عدد بطاقات غير محدود',
+      'تصميم بطاقات مخصّص',
+      'عدد عملاء غير محدود',
+      'لوحة تحكم كاملة',
+      'استيراد بيانات العملاء من Excel',
+    ],
+    featuresEn: [
+      'First 2 months free',
+      'Unlimited cards',
+      'Custom card design',
+      'Unlimited customers',
+      'Full dashboard',
+      'Import customers from Excel',
+    ],
   },
   {
     id: 'tier2',
