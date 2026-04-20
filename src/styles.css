@@ -2956,6 +2956,16 @@ body {
   margin-bottom: 28px;
   line-height: 1.5;
 }
+.auth-oauth-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+.auth-oauth-row .auth-google-btn,
+.auth-oauth-row .auth-apple-btn {
+  flex: 1;
+  width: auto;
+}
 .auth-google-btn {
   width: 100%;
   display: flex;
@@ -2978,6 +2988,30 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 .auth-google-btn:active {
+  transform: scale(0.98);
+  transition: transform 0.1s;
+}
+.auth-apple-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #fff;
+  color: #000;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.auth-apple-btn:hover {
+  background: #f0f0f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+.auth-apple-btn:active {
   transform: scale(0.98);
   transition: transform 0.1s;
 }
@@ -3030,6 +3064,11 @@ body {
 }
 .auth-error {
   color: #ef4444;
+  font-size: 0.85rem;
+  margin: -4px 0 0;
+}
+.auth-success {
+  color: #10b981;
   font-size: 0.85rem;
   margin: -4px 0 0;
 }

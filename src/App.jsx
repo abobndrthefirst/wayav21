@@ -94,7 +94,7 @@ const content = {
       signupTitle: 'إنشاء حساب', signupSub: 'سجّل الحين وابدأ أسبوعك المجاني',
       email: 'الإيميل', password: 'كلمة المرور', name: 'الاسم الكامل',
       emailPh: 'name@example.com', passwordPh: 'ادخل كلمة المرور', namePh: 'مثلاً: أحمد علي',
-      loginBtn: 'دخول', signupBtn: 'أنشئ حسابي', googleBtn: 'الدخول عبر Google', googleSignup: 'التسجيل عبر Google',
+      loginBtn: 'دخول', signupBtn: 'أنشئ حسابي', googleBtn: 'الدخول عبر Google', googleSignup: 'التسجيل عبر Google', appleBtn: 'الدخول عبر Apple', appleSignup: 'التسجيل عبر Apple',
       or: 'أو', forgot: 'نسيت كلمة المرور؟', back: 'الرئيسية',
       noAccount: 'ما عندك حساب؟', hasAccount: 'عندك حساب؟', goSignup: 'سجّل الحين', goLogin: 'سجّل دخول',
       errInvalid: 'الإيميل أو كلمة المرور غلط', errEmpty: 'ادخل الإيميل وكلمة المرور',
@@ -102,6 +102,13 @@ const content = {
       logging: 'جاري الدخول...', signing: 'جاري التسجيل...',
       successTitle: 'تم التسجيل!', successMsg: 'تفقد إيميلك وفعّل حسابك عشان تقدر تدخل.',
       errEmailFirst: 'ادخل إيميلك أولاً', resetSent: 'تم إرسال رابط إعادة التعيين على إيميلك',
+      otpTitle: 'تأكيد إيميلك', otpSub: 'أرسلنا لك رمز مكوّن من 6 أرقام على إيميلك',
+      otpLabel: 'رمز التأكيد', otpPh: '123456', otpBtn: 'تأكيد', otpVerifying: 'جاري التأكيد...',
+      otpErrEmpty: 'ادخل الرمز', otpErrInvalid: 'الرمز غلط أو انتهت صلاحيته', otpResend: 'أعد الإرسال', otpResent: 'تم إرسال رمز جديد',
+      resetTitle: 'كلمة مرور جديدة', resetSub: 'اختار كلمة مرور قوية لحسابك',
+      resetNewPass: 'كلمة المرور الجديدة', resetConfirmPass: 'تأكيد كلمة المرور', resetNewPassPh: 'ادخل كلمة مرور جديدة',
+      resetBtn: 'حفظ كلمة المرور', resetSaving: 'جاري الحفظ...', resetErrMatch: 'كلمتا المرور غير متطابقتين',
+      resetSuccess: 'تم تغيير كلمة المرور!', resetSuccessMsg: 'يمكنك الآن الدخول بكلمة مرورك الجديدة.',
     },
     setup: {
       title: 'أعدّ متجرك', subtitle: 'أكمل معلومات متجرك عشان تبدأ',
@@ -359,7 +366,7 @@ const content = {
       signupTitle: 'Create Account', signupSub: 'Sign up and start your free trial',
       email: 'Email', password: 'Password', name: 'Full name',
       emailPh: 'name@example.com', passwordPh: 'Enter your password', namePh: 'e.g. Ahmed Ali',
-      loginBtn: 'Log In', signupBtn: 'Create My Account', googleBtn: 'Continue with Google', googleSignup: 'Sign up with Google',
+      loginBtn: 'Log In', signupBtn: 'Create My Account', googleBtn: 'Continue with Google', googleSignup: 'Sign up with Google', appleBtn: 'Continue with Apple', appleSignup: 'Sign up with Apple',
       or: 'or', forgot: 'Forgot password?', back: 'Home',
       noAccount: "Don't have an account?", hasAccount: 'Already have an account?', goSignup: 'Sign up', goLogin: 'Log in',
       errInvalid: 'Invalid email or password', errEmpty: 'Please enter email and password',
@@ -367,6 +374,13 @@ const content = {
       logging: 'Logging in...', signing: 'Creating account...',
       successTitle: 'Account created!', successMsg: 'Check your email and confirm your account to get started.',
       errEmailFirst: 'Enter your email first', resetSent: 'Password reset link sent to your email',
+      otpTitle: 'Confirm your email', otpSub: 'We sent a 6-digit code to your email',
+      otpLabel: 'Confirmation code', otpPh: '123456', otpBtn: 'Verify', otpVerifying: 'Verifying...',
+      otpErrEmpty: 'Enter the code', otpErrInvalid: 'Invalid or expired code', otpResend: 'Resend code', otpResent: 'New code sent',
+      resetTitle: 'New password', resetSub: 'Choose a strong password for your account',
+      resetNewPass: 'New password', resetConfirmPass: 'Confirm password', resetNewPassPh: 'Enter new password',
+      resetBtn: 'Save password', resetSaving: 'Saving...', resetErrMatch: 'Passwords do not match',
+      resetSuccess: 'Password changed!', resetSuccessMsg: 'You can now log in with your new password.',
     },
     setup: {
       title: 'Set Up Your Shop', subtitle: 'Complete your shop info to get started',
@@ -2138,6 +2152,14 @@ function GoogleIcon() {
   )
 }
 
+function AppleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.38.07 2.34.74 3.17.8 1.2-.24 2.36-.93 3.63-.84 1.54.12 2.7.72 3.44 1.82-3.15 1.9-2.4 5.77.42 6.9-.57 1.52-1.3 3.01-2.66 4.2zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+    </svg>
+  )
+}
+
 /* ─── Login Page ─── */
 function LoginPage({ t, lang, setLang, theme, setTheme }) {
   const { user } = useAuth()
@@ -2145,6 +2167,7 @@ function LoginPage({ t, lang, setLang, theme, setTheme }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const a = t.auth
 
   useEffect(() => {
@@ -2176,10 +2199,15 @@ function LoginPage({ t, lang, setLang, theme, setTheme }) {
     await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/login' } })
   }
 
+  const handleApple = async () => {
+    setError('')
+    await supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: window.location.origin + '/login' } })
+  }
+
   const handleForgot = async () => {
     if (!email.trim()) { setError(a.errEmailFirst); return }
-    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin + '/login' })
-    if (!err) { setError(''); alert(a.resetSent) } else setError(err.message)
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin + '/reset-password' })
+    if (!err) { setError(''); setResetSent(true) } else setError(err.message)
   }
 
   return (
@@ -2204,9 +2232,14 @@ function LoginPage({ t, lang, setLang, theme, setTheme }) {
         <motion.h1 className="auth-title" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>{a.loginTitle}</motion.h1>
         <motion.p className="auth-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }}>{a.loginSub}</motion.p>
 
-        <motion.button onClick={handleGoogle} className="auth-google-btn" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5 }} whileHover={{ scale: 1.01, borderColor: 'rgba(255,255,255,0.25)' }} whileTap={{ scale: 0.98 }}>
-          <GoogleIcon /><span>{a.googleBtn}</span>
-        </motion.button>
+        <div className="auth-oauth-row">
+          <motion.button onClick={handleGoogle} className="auth-google-btn" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5 }} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+            <GoogleIcon /><span>{a.googleBtn}</span>
+          </motion.button>
+          <motion.button onClick={handleApple} className="auth-apple-btn" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+            <AppleIcon /><span>{a.appleBtn}</span>
+          </motion.button>
+        </div>
 
         <div className="auth-divider"><span>{a.or}</span></div>
 
@@ -2222,7 +2255,10 @@ function LoginPage({ t, lang, setLang, theme, setTheme }) {
               placeholder={a.passwordPh} dir="ltr" />
           </motion.div>
           <button type="button" onClick={handleForgot} className="auth-forgot">{a.forgot}</button>
-          <AnimatePresence>{error && <motion.p className="auth-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{error}</motion.p>}</AnimatePresence>
+          <AnimatePresence>
+            {error && <motion.p className="auth-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{error}</motion.p>}
+            {resetSent && <motion.p className="auth-success" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{a.resetSent}</motion.p>}
+          </AnimatePresence>
           <motion.button type="submit" disabled={loading} className="auth-submit-btn" whileHover={{ scale: 1.02, boxShadow: '0 8px 30px rgba(16,185,129,0.25)' }} whileTap={{ scale: 0.97 }}>
             {loading ? a.logging : a.loginBtn}
           </motion.button>
@@ -2280,14 +2316,20 @@ function SignupPage({ t, lang, setLang, theme, setTheme }) {
     await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/login' } })
   }
 
+  const handleApple = async () => {
+    setError('')
+    await supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: window.location.origin + '/login' } })
+  }
+
   if (success) {
     return (
       <div className="auth-page">
         <motion.div className="auth-card" style={{ textAlign: 'center' }} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>📧</div>
           <h1 className="auth-title">{a.successTitle}</h1>
-          <p className="auth-subtitle">{a.successMsg}</p>
-          <button onClick={() => navigate('/login')} className="auth-submit-btn" style={{ marginTop: 24 }}>{a.goLogin}</button>
+          <p className="auth-subtitle" style={{ marginBottom: 8 }}>{a.successMsg}</p>
+          <p style={{ color: '#10b981', fontWeight: 600, direction: 'ltr', fontSize: '0.95rem' }}>{email}</p>
+          <button onClick={() => navigate('/login')} className="auth-submit-btn" style={{ marginTop: 28 }}>{a.goLogin}</button>
         </motion.div>
       </div>
     )
@@ -2315,9 +2357,14 @@ function SignupPage({ t, lang, setLang, theme, setTheme }) {
         <h1 className="auth-title">{a.signupTitle}</h1>
         <p className="auth-subtitle">{a.signupSub}</p>
 
-        <button onClick={handleGoogle} className="auth-google-btn">
-          <GoogleIcon /><span>{a.googleSignup}</span>
-        </button>
+        <div className="auth-oauth-row">
+          <button onClick={handleGoogle} className="auth-google-btn">
+            <GoogleIcon /><span>{a.googleSignup}</span>
+          </button>
+          <button onClick={handleApple} className="auth-apple-btn">
+            <AppleIcon /><span>{a.appleSignup}</span>
+          </button>
+        </div>
 
         <div className="auth-divider"><span>{a.or}</span></div>
 
@@ -3136,6 +3183,107 @@ function MerchantProfileCard({ shop, setShop, t, lang }) {
 function DataPage(props) { return <DashboardPage {...props} /> }
 function SettingsPage(props) { return <DashboardPage {...props} /> }
 
+/* ─── Reset Password Page ─── */
+function ResetPasswordPage({ t, lang, setLang, theme, setTheme }) {
+  const a = t.auth
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [ready, setReady] = useState(false)
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    // Check if session already established from hash (race condition fix)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) setReady(true)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleReset = async (e) => {
+    e.preventDefault()
+    if (password.length < 6) { setError(a.errPassword); return }
+    if (password !== confirm) { setError(a.resetErrMatch); return }
+    setLoading(true); setError('')
+    const { error: err } = await supabase.auth.updateUser({ password })
+    if (err) { setError(err.message); setLoading(false) }
+    else setDone(true)
+  }
+
+  const topBar = (
+    <div className="auth-top-bar">
+      <button onClick={() => navigate('/')} className="auth-back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d={lang === 'ar' ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'}/></svg>
+        {a.back}
+      </button>
+      <div className="auth-top-actions">
+        <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
+          {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+        </button>
+        <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
+          <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
+        </button>
+      </div>
+    </div>
+  )
+
+  if (done) {
+    return (
+      <div className="auth-page">
+        {topBar}
+        <motion.div className="auth-card" style={{ textAlign: 'center' }} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+          <h1 className="auth-title">{a.resetSuccess}</h1>
+          <p className="auth-subtitle">{a.resetSuccessMsg}</p>
+          <button onClick={() => navigate('/login')} className="auth-submit-btn" style={{ marginTop: 24 }}>{a.goLogin}</button>
+        </motion.div>
+      </div>
+    )
+  }
+
+  if (!ready) {
+    return (
+      <div className="auth-page">
+        {topBar}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
+          <div style={{ textAlign: 'center', color: '#888' }}>...</div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="auth-page">
+      {topBar}
+      <motion.div className="auth-card" initial={{ opacity: 0, y: 30, filter: 'blur(12px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
+        <motion.div className="auth-brand" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }}><Logo size={100} /></motion.div>
+        <motion.h1 className="auth-title" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>{a.resetTitle}</motion.h1>
+        <motion.p className="auth-subtitle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>{a.resetSub}</motion.p>
+        <form onSubmit={handleReset} className="auth-form">
+          <motion.div className="auth-field" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
+            <label>{a.resetNewPass}</label>
+            <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError('') }}
+              placeholder={a.resetNewPassPh} dir="ltr" autoFocus />
+          </motion.div>
+          <motion.div className="auth-field" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45 }}>
+            <label>{a.resetConfirmPass}</label>
+            <input type="password" value={confirm} onChange={e => { setConfirm(e.target.value); setError('') }}
+              placeholder={a.resetNewPassPh} dir="ltr" />
+          </motion.div>
+          <AnimatePresence>{error && <motion.p className="auth-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>{error}</motion.p>}</AnimatePresence>
+          <motion.button type="submit" disabled={loading} className="auth-submit-btn" whileHover={{ scale: 1.02, boxShadow: '0 8px 30px rgba(16,185,129,0.25)' }} whileTap={{ scale: 0.97 }}>
+            {loading ? a.resetSaving : a.resetBtn}
+          </motion.button>
+        </form>
+      </motion.div>
+    </div>
+  )
+}
+
 /* ─── Auth Redirect (redirects logged-in users away from landing/login/signup) ─── */
 function AuthRedirect({ children }) {
   const { user, loading } = useAuth()
@@ -3260,6 +3408,7 @@ export default function App() {
     if (p === '/billing/return') return 'billing-return'
     if (p === '/billing/cancel') return 'billing-cancel'
     if (p === '/admin/events') return 'admin-events'
+    if (p === '/reset-password') return 'reset-password'
     if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
     if (p.startsWith('/w/')) return 'enroll'
     if (p.startsWith('/wallet/')) return 'wallet'
@@ -3297,6 +3446,7 @@ export default function App() {
   if (page === 'terms') return <AuthProvider><TermsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'login') return <AuthProvider><LoginPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'signup') return <AuthProvider><SignupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'reset-password') return <AuthProvider><ResetPasswordPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'setup') return <AuthProvider><SetupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'dashboard') return <AuthProvider><DashboardPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'data') return <AuthProvider><DataPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>

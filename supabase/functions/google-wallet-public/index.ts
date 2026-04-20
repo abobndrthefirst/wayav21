@@ -147,7 +147,6 @@ Deno.serve(async (req: Request) => {
     const loyaltyClass: Record<string, unknown> = {
       id: classId,
       issuerName: "Waya",
-      reviewStatus: "UNDER_REVIEW",
       programName: programWithShopName.name || programWithShopName.shop_name || "Loyalty",
       hexBackgroundColor: hexColor,
       countryCode: "SA",
