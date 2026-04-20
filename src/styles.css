@@ -406,10 +406,21 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.18s ease;
 }
-.nav-logo img { display: block; height: 52px; width: auto; max-height: 52px; }
-.footer-logo img { display: block; height: 44px; width: auto; }
-.auth-brand img { display: block; height: 56px; width: auto; }
+.nav-logo:hover { transform: scale(1.04); }
+.nav-logo:active { transform: scale(0.98); }
+.nav-logo:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 4px;
+}
+.nav-logo img { display: block; height: 80px; width: auto; max-height: 80px; }
+.navbar.scrolled .nav-logo img { height: 56px; max-height: 56px; transition: height 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+.footer-logo img { display: block; height: 64px; width: auto; }
+.auth-brand img { display: block; height: 80px; width: auto; }
 
 .nav-logo-text {
   font-size: 20px;

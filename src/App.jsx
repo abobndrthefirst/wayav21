@@ -1323,9 +1323,17 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
       transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="nav-pill">
-        <div className="nav-logo">
-          <Logo size={44} />
-        </div>
+        <a
+          href="/"
+          className="nav-logo"
+          onClick={(e) => {
+            e.preventDefault()
+            navigate('/')
+          }}
+          aria-label="Waya home"
+        >
+          <Logo size={72} />
+        </a>
         <div className="nav-links">
           <a href="#how">{t.nav.how}</a>
           <a href="#features">{t.nav.features}</a>
