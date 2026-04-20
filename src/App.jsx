@@ -15,6 +15,7 @@ import './styles.css'
 import './components/loyalty-wizard.css'
 import './components/notifications-panel.css'
 import './components/pass-designer/pass-designer.css'
+import { ProblemExplainer, WhoWeServe, PosIntegrations } from './components/LoyaSections'
 
 // Lazy-load the heavy merchant + customer flows so the marketing landing
 // page doesn't ship a LoyaltyWizard / WalletEnrollPage bundle it never uses.
@@ -175,9 +176,9 @@ const content = {
       save: 'حفظ التغييرات', saving: 'جاري الحفظ...', saved: 'تم الحفظ ✓',
     },
     hero: {
-      title1: 'عميلك اللي يرجع',
-      title2: 'يسوى أكثر من عشرة جدد',
-      subtitle: 'وايا يحوّل زيارة وحدة إلى علاقة طويلة. برنامج ولاء جاهز، يشتغل من أول يوم — بدون جهاز مخصص، بدون تعقيد، وبدون ما تحتاج فريق تقني.',
+      title1: 'أغلى عميل',
+      title2: 'هو اللي ما يرجع.',
+      subtitle: 'وايا يخلّيه يرجع.',
       freeTrial: 'أول شهرين مجاناً للمشاريع الجديدة — بدون أي التزام — جربها بنفسك',
       inputPlaceholder: 'إيميلك أو رقم جوالك',
       storeNamePlaceholder: 'اسم متجرك',
@@ -351,6 +352,181 @@ const content = {
       subtitle: 'ابدأ مجاناً. بدون بطاقة. بدون التزام. وشوف الفرق من أول أسبوع.',
       btn: 'ابدأ تجربتك المجانية',
     },
+    explainer: {
+      badge: 'وش وايا؟',
+      problem: {
+        label: 'المشكلة',
+        text: 'عميل يجي محلك، يعجبه، ويختفي. ما عندك طريقة ترجّعه.',
+      },
+      waya: {
+        label: 'وايا',
+        text: 'بطاقة ولاء رقمية تنحفظ في جوال العميل — بدون تطبيق.',
+      },
+      how: {
+        label: 'كيف ترجّعه',
+        text: 'كل زيارة تكسبه نقاط. النقاط تتحوّل مكافأة. المكافأة ترجّعه.',
+      },
+    },
+    cardTypes: {
+      badge: 'آلية العمل',
+      title: 'كيف تعمل البطاقة؟',
+      steps: [
+        { num: '01', title: 'الخطوة الأولى', desc: 'وجّه كاميرا الجوال على كود QR عند الكاشير.' },
+        { num: '02', title: 'الخطوة الثانية', desc: 'تسجيل بسيط بثواني، بدون تحميل أي تطبيق.' },
+        { num: '03', title: 'الخطوة الثالثة', desc: 'أضف البطاقة مباشرة إلى Apple Wallet أو Google Wallet.' },
+      ],
+      typesTitle: 'أنواع البطاقات',
+      tabs: [
+        { key: 'stamp', label: 'الأختام' },
+        { key: 'points', label: 'النقاط' },
+        { key: 'cashback', label: 'الكاش باك' },
+        { key: 'subscription', label: 'الاشتراك' },
+        { key: 'discount', label: 'التخفيض' },
+        { key: 'gift', label: 'الإهداء' },
+        { key: 'membership', label: 'العضوية' },
+      ],
+      details: {
+        stamp: { title: 'بطاقة الأختام', desc: 'يجمع العميل أختاماً عند كل زيارة، وعند الاكتمال يستلم مكافأته في الزيارة القادمة.' },
+        points: { title: 'بطاقة النقاط', desc: 'كل فاتورة تحوّل إلى نقاط يصرفها العميل على مكافآت يحبها.' },
+        cashback: { title: 'بطاقة الكاش باك', desc: 'يرجع جزء من قيمة الفاتورة كرصيد يصرفه العميل في زيارته التالية.' },
+        subscription: { title: 'بطاقة الاشتراك', desc: 'اشتراك شهري أو سنوي بمزايا ثابتة — دخل متكرر ووفاء مضمون.' },
+        discount: { title: 'بطاقة التخفيض', desc: 'خصم ثابت للأعضاء كل زيارة — بدون عروض معقّدة.' },
+        gift: { title: 'بطاقة الإهداء', desc: 'إهداء رصيد أو منتج لصديق بضغطة — يوصله عبر جواله مباشرة.' },
+        membership: { title: 'بطاقة العضوية', desc: 'عضوية VIP رقمية تعرّف عملاءك المميزين وتعطيهم أولوية.' },
+      },
+    },
+    whoWeServe: {
+      badge: 'تعرّف على الفئات',
+      title: 'من نخدم؟',
+      cta: 'تواصل معنا لمعرفة كيف نخدم نشاطك التجاري',
+      items: [
+        { emoji: '🍽️', label: 'المطاعم' },
+        { emoji: '💅', label: 'مراكز المناكير والعناية' },
+        { emoji: '💆', label: 'مراكز المساج' },
+        { emoji: '☕', label: 'المقاهي والكوفيهات' },
+        { emoji: '🚘', label: 'مغاسل السيارات' },
+        { emoji: '🏥', label: 'العيادات والمراكز الصحية' },
+        { emoji: '💇', label: 'صالونات العناية بالشعر' },
+        { emoji: '🏋️', label: 'صالات الرياضة واللياقة' },
+        { emoji: '🛍️', label: 'متاجر التجزئة والسلع' },
+        { emoji: '➕', label: 'وأكثر من ذلك' },
+      ],
+    },
+    posIntegrations: {
+      badge: 'حوكمة وسهولة أكثر!',
+      title1: 'نربط مع أشهر أنظمة',
+      title2: 'نقاط البيع',
+      subtitle: 'اربط وايا بنظام نقاط البيع عندك وتمتع بسرعة ودقة أعلى — مع تفعيل الكاش باك والرصيد تلقائياً.',
+      ctaQuestion: 'عندك نظام نقاط بيع غير مدعوم؟',
+      ctaBtn: 'تواصل معنا وجاهزين نربطه',
+      logos: ['Foodics', 'Odoo', 'Lightspeed', 'Marn', 'Rewaa', 'Zid', 'Salla'],
+    },
+    partners: {
+      badge: 'نشتغل معك',
+      title: 'انضم إلى شركائنا',
+      logos: ['dIPd', 'DRIVE', 'Nawa', 'hjeen', 'BAC', 'MORFi', 'IRIS', 'Bocelli', 'OAKBERRY'],
+    },
+    pricingFounding: {
+      badge: 'باقة الأسعار',
+      title: 'باقة التأسيس',
+      subtitle: 'باقة واحدة، بكل المزايا — خصّيناها لأصحاب المشاريع الجدد.',
+      price: '٨٥',
+      sar: 'ر.س',
+      perMonth: 'شهرياً',
+      recommended: 'العرض الحالي',
+      freeTrial: 'اشتراك أول شهرين مجاناً',
+      featuresTitle: 'الباقة تحتوي على',
+      features: [
+        'اشتراك أول شهرين مجاناً',
+        'عدد بطاقات غير محدود',
+        'تصميم بطاقات مخصّص',
+        'عدد عملاء غير محدود',
+        'لوحة تحكم كاملة',
+        'استيراد بيانات العملاء من Excel',
+      ],
+      soonTitle: 'قريباً',
+      soonFeatures: [
+        'ميزة الإشعارات اللامحدودة',
+        'دعم منصات الكاشير المعروفة',
+      ],
+      cta: 'اشترك الآن',
+    },
+    pricingTiers: {
+      badge: 'باقات الأسعار',
+      title: 'تعرّف على باقاتنا',
+      subtitle: 'لا تشيل هم الإعداد — نجهّز لك كامل بيانات الحساب شامل التصميم ونسلّمه لك.',
+      monthly: 'شهري',
+      annual: 'سنوي — خصم ٢٥٪',
+      recommended: 'موصى به',
+      annualLabel: 'التكلفة السنوية',
+      perMonth: 'ر.س / شهرياً',
+      sar: 'ر.س',
+      ctaSubscribe: 'اشترك الآن',
+      ctaTrial: 'جرّب الخدمة مجاناً لمدة أسبوعين',
+      plans: [
+        {
+          key: 'basic',
+          name: 'الباقة الأساسية',
+          monthly: 75,
+          annualMonthly: 56,
+          annualTotal: 675,
+          desc: 'لا تشيل هم الإعداد — نجهّز لك كامل بيانات الحساب شامل التصميم ونسلّمه لك.',
+          features: [
+            { label: 'برنامج الولاء', on: true },
+            { label: 'عدد عملاء غير محدود', on: true },
+            { label: 'إرسال التنبيهات غير محدود', on: true },
+            { label: 'روابط لفروعك', on: true },
+            { label: 'ترحيب عند الموقع', on: true },
+            { label: 'عدد ١ من الحسابات الفرعية', on: true },
+            { label: 'عدد ١ من الحقول الإضافية', on: true },
+            { label: 'ربط مع أنظمة نقاط البيع', on: false },
+            { label: 'بطاقة إضافية', on: false },
+            { label: 'كروت مسبقة الدفع', on: false },
+          ],
+        },
+        {
+          key: 'standard',
+          name: 'الباقة القياسية',
+          monthly: 165,
+          annualMonthly: 124,
+          annualTotal: 1485,
+          recommended: true,
+          desc: 'الخيار الأفضل لأغلب الأنشطة — كل ما تحتاجه لإدارة برنامج ولاء احترافي.',
+          features: [
+            { label: 'برنامج الولاء', on: true },
+            { label: 'عدد عملاء غير محدود', on: true },
+            { label: 'إرسال التنبيهات غير محدود', on: true },
+            { label: 'روابط لفروعك', on: true },
+            { label: 'ترحيب عند الموقع', on: true },
+            { label: 'عدد ٢ بطاقات إضافية', on: true },
+            { label: 'عدد ٥ من الحسابات الفرعية', on: true },
+            { label: 'عدد ٣ من الحقول الإضافية', on: true },
+            { label: 'ربط مع أنظمة نقاط البيع', on: true },
+            { label: 'كروت مسبقة الدفع', on: false },
+          ],
+        },
+        {
+          key: 'pro',
+          name: 'الباقة الاحترافية',
+          monthly: 315,
+          annualMonthly: 236,
+          annualTotal: 2835,
+          desc: 'بدون حدود — للأنشطة الكبيرة والسلاسل اللي تبي تنطلق.',
+          features: [
+            { label: 'برنامج الولاء', on: true },
+            { label: 'عدد عملاء غير محدود', on: true },
+            { label: 'إرسال التنبيهات غير محدود', on: true },
+            { label: 'روابط لفروعك', on: true },
+            { label: 'ترحيب عند الموقع', on: true },
+            { label: 'عدد بطاقات غير محدود', on: true },
+            { label: 'عدد غير محدود حسابات فرعية', on: true },
+            { label: 'عدد غير محدود حقول فرعية', on: true },
+            { label: 'ربط مع أنظمة نقاط البيع', on: true },
+            { label: 'كروت مسبقة الدفع', on: true },
+          ],
+        },
+      ],
+    },
     footer: {
       copy: '2026 وايا.',
       links: { privacy: 'الخصوصية', terms: 'الشروط' },
@@ -447,9 +623,9 @@ const content = {
       save: 'Save Changes', saving: 'Saving...', saved: 'Saved ✓',
     },
     hero: {
-      title1: 'A returning customer',
-      title2: 'is worth more than ten new ones',
-      subtitle: 'Waya turns a single visit into a lasting relationship. A ready-made loyalty program that works from day one — no extra device, no complexity, and no tech team needed.',
+      title1: 'Your most expensive customer',
+      title2: "is the one who doesn't return.",
+      subtitle: 'Waya brings them back.',
       freeTrial: 'First 2 months FREE for founding businesses — no commitment — try it yourself',
       inputPlaceholder: 'Your email or phone number',
       storeNamePlaceholder: 'Your store name',
@@ -622,6 +798,181 @@ const content = {
       title: 'Your next customer could be the last visit — or the first relationship.',
       subtitle: 'Start free. No card. No commitment. See the difference from week one.',
       btn: 'Start Your Free Trial',
+    },
+    explainer: {
+      badge: 'What is Waya?',
+      problem: {
+        label: 'The problem',
+        text: 'A customer walks in, loves you, and disappears. You have no way to bring them back.',
+      },
+      waya: {
+        label: 'Waya',
+        text: 'A digital loyalty card that lives in your customer\'s phone — no app required.',
+      },
+      how: {
+        label: 'How it works',
+        text: 'Each visit earns points. Points turn into a reward. The reward brings them back.',
+      },
+    },
+    cardTypes: {
+      badge: 'How It Works',
+      title: 'How does the card work?',
+      steps: [
+        { num: '01', title: 'Step One', desc: 'Point your phone camera at the QR code at the counter.' },
+        { num: '02', title: 'Step Two', desc: 'Quick signup in seconds — no app download required.' },
+        { num: '03', title: 'Step Three', desc: 'Add the card straight to Apple Wallet or Google Wallet.' },
+      ],
+      typesTitle: 'Card Types',
+      tabs: [
+        { key: 'stamp', label: 'Stamps' },
+        { key: 'points', label: 'Points' },
+        { key: 'cashback', label: 'Cashback' },
+        { key: 'subscription', label: 'Subscription' },
+        { key: 'discount', label: 'Discount' },
+        { key: 'gift', label: 'Gift' },
+        { key: 'membership', label: 'Membership' },
+      ],
+      details: {
+        stamp: { title: 'Stamp Card', desc: 'Customers collect stamps each visit — when complete, they get a reward on their next visit.' },
+        points: { title: 'Points Card', desc: 'Every receipt turns into points customers redeem on rewards they actually love.' },
+        cashback: { title: 'Cashback Card', desc: 'Part of each bill returns as balance for the customer to spend on their next visit.' },
+        subscription: { title: 'Subscription Card', desc: 'Monthly or yearly subscription with fixed perks — recurring revenue and guaranteed loyalty.' },
+        discount: { title: 'Discount Card', desc: 'Fixed member discount every visit — no complicated promos.' },
+        gift: { title: 'Gift Card', desc: 'Gift balance or a product to a friend with one tap — delivered straight to their phone.' },
+        membership: { title: 'Membership Card', desc: 'Digital VIP membership that identifies your top customers and gives them priority.' },
+      },
+    },
+    whoWeServe: {
+      badge: 'Who We Serve',
+      title: 'Who we serve',
+      cta: 'Contact us to learn how we can serve your business',
+      items: [
+        { emoji: '🍽️', label: 'Restaurants' },
+        { emoji: '💅', label: 'Nail & Beauty Centers' },
+        { emoji: '💆', label: 'Massage Centers' },
+        { emoji: '☕', label: 'Cafés & Coffee Shops' },
+        { emoji: '🚘', label: 'Car Washes' },
+        { emoji: '🏥', label: 'Clinics & Medical Centers' },
+        { emoji: '💇', label: 'Hair Salons' },
+        { emoji: '🏋️', label: 'Gyms & Fitness' },
+        { emoji: '🛍️', label: 'Retail Stores' },
+        { emoji: '➕', label: 'And many more' },
+      ],
+    },
+    posIntegrations: {
+      badge: 'Easier governance!',
+      title1: 'We integrate with the most popular',
+      title2: 'POS Systems',
+      subtitle: 'Connect Waya with your POS for higher speed and accuracy — with automatic cashback and balance activation.',
+      ctaQuestion: 'Using an unsupported POS system?',
+      ctaBtn: 'Contact us — we\'re ready to integrate',
+      logos: ['Foodics', 'Odoo', 'Lightspeed', 'Marn', 'Rewaa', 'Zid', 'Salla'],
+    },
+    partners: {
+      badge: 'We work with you',
+      title: 'Join our partners',
+      logos: ['dIPd', 'DRIVE', 'Nawa', 'hjeen', 'BAC', 'MORFi', 'IRIS', 'Bocelli', 'OAKBERRY'],
+    },
+    pricingFounding: {
+      badge: 'Pricing',
+      title: 'Founding Plan',
+      subtitle: 'One plan with everything — tailored for new business owners.',
+      price: '85',
+      sar: 'SAR',
+      perMonth: 'per month',
+      recommended: 'Current offer',
+      freeTrial: 'First 2 months free',
+      featuresTitle: 'Includes',
+      features: [
+        'First 2 months free',
+        'Unlimited cards',
+        'Custom card design',
+        'Unlimited customers',
+        'Full dashboard',
+        'Import customers from Excel',
+      ],
+      soonTitle: 'Coming soon',
+      soonFeatures: [
+        'Unlimited notifications',
+        'Popular POS integrations',
+      ],
+      cta: 'Subscribe Now',
+    },
+    pricingTiers: {
+      badge: 'Pricing Plans',
+      title: 'Explore our plans',
+      subtitle: "Don't worry about setup — we'll prepare your full account including design and deliver it to you.",
+      monthly: 'Monthly',
+      annual: 'Annual — 25% off',
+      recommended: 'Recommended',
+      annualLabel: 'Annual cost',
+      perMonth: 'SAR / month',
+      sar: 'SAR',
+      ctaSubscribe: 'Subscribe Now',
+      ctaTrial: 'Try it free for 2 weeks',
+      plans: [
+        {
+          key: 'basic',
+          name: 'Basic Plan',
+          monthly: 75,
+          annualMonthly: 56,
+          annualTotal: 675,
+          desc: "Don't worry about setup — we'll prepare your full account including design and deliver it to you.",
+          features: [
+            { label: 'Loyalty program', on: true },
+            { label: 'Unlimited customers', on: true },
+            { label: 'Unlimited notifications', on: true },
+            { label: 'Branch links', on: true },
+            { label: 'Location welcome', on: true },
+            { label: '1 sub-account', on: true },
+            { label: '1 extra field', on: true },
+            { label: 'POS integration', on: false },
+            { label: 'Extra card', on: false },
+            { label: 'Prepaid cards', on: false },
+          ],
+        },
+        {
+          key: 'standard',
+          name: 'Standard Plan',
+          monthly: 165,
+          annualMonthly: 124,
+          annualTotal: 1485,
+          recommended: true,
+          desc: 'The best fit for most businesses — everything you need to run a pro loyalty program.',
+          features: [
+            { label: 'Loyalty program', on: true },
+            { label: 'Unlimited customers', on: true },
+            { label: 'Unlimited notifications', on: true },
+            { label: 'Branch links', on: true },
+            { label: 'Location welcome', on: true },
+            { label: '2 extra cards', on: true },
+            { label: '5 sub-accounts', on: true },
+            { label: '3 extra fields', on: true },
+            { label: 'POS integration', on: true },
+            { label: 'Prepaid cards', on: false },
+          ],
+        },
+        {
+          key: 'pro',
+          name: 'Professional Plan',
+          monthly: 315,
+          annualMonthly: 236,
+          annualTotal: 2835,
+          desc: 'No limits — for larger businesses and chains ready to scale.',
+          features: [
+            { label: 'Loyalty program', on: true },
+            { label: 'Unlimited customers', on: true },
+            { label: 'Unlimited notifications', on: true },
+            { label: 'Branch links', on: true },
+            { label: 'Location welcome', on: true },
+            { label: 'Unlimited cards', on: true },
+            { label: 'Unlimited sub-accounts', on: true },
+            { label: 'Unlimited extra fields', on: true },
+            { label: 'POS integration', on: true },
+            { label: 'Prepaid cards', on: true },
+          ],
+        },
+      ],
     },
     footer: {
       copy: '2026 Waya.',
@@ -1801,24 +2152,10 @@ function SocialProof({ t }) {
 // Tier catalog lives alongside the server-side `plans` table (SAR, 20% annual).
 const PRICING_TIERS = [
   {
-    id: 'tier1', monthly: 85, annual: 816,
-    titleAr: 'باقة التأسيس', titleEn: 'Founding Plan',
-    featuresAr: [
-      'اشتراك أول شهرين مجاناً',
-      'عدد بطاقات غير محدود',
-      'تصميم بطاقات مخصّص',
-      'عدد عملاء غير محدود',
-      'لوحة تحكم كاملة',
-      'استيراد بيانات العملاء من Excel',
-    ],
-    featuresEn: [
-      'First 2 months free',
-      'Unlimited cards',
-      'Custom card design',
-      'Unlimited customers',
-      'Full dashboard',
-      'Import customers from Excel',
-    ],
+    id: 'tier1', monthly: 80, annual: 768,
+    titleAr: 'البداية', titleEn: 'Starter',
+    featuresAr: ['برنامج ولاء واحد', 'حتى 200 عميل', 'لوحة تحكم كاملة', 'دعم عبر البريد'],
+    featuresEn: ['1 loyalty program', 'Up to 200 customers', 'Full dashboard access', 'Email support'],
   },
   {
     id: 'tier2', monthly: 150, annual: 1440, featured: true,
@@ -1837,92 +2174,107 @@ const PRICING_TIERS = [
 
 function Pricing({ t, lang }) {
   const { user } = useAuth()
+  const [annual, setAnnual] = useState(true)
   const isAr = lang === 'ar'
 
-  const goCheckout = () => {
-    const target = `/billing?plan=tier1_monthly`
+  const goCheckout = (tierId) => {
+    const target = `/billing?plan=${tierId}_${annual ? 'annual' : 'monthly'}`
     if (user) navigate(target)
     else navigate(`/signup?next=${encodeURIComponent(target)}`)
   }
 
-  const founding = PRICING_TIERS[0]
-  const title = isAr ? founding.titleAr : founding.titleEn
-  const features = isAr ? founding.featuresAr : founding.featuresEn
-  const price = founding.monthly
-  const unit = isAr ? 'ر.س / شهرياً' : 'SAR / month'
-  const recommended = isAr ? '✨ العرض الحالي' : '✨ Current offer'
-  const freeTrial = isAr ? 'اشتراك أول شهرين مجاناً' : 'First 2 months free'
-  const featuresTitle = isAr ? 'الباقة تحتوي على' : 'Includes'
-  const soonTitle = isAr ? 'قريباً' : 'Coming soon'
-  const soonFeatures = isAr
-    ? ['ميزة الإشعارات اللامحدودة', 'دعم منصات الكاشير المعروفة']
-    : ['Unlimited notifications', 'Popular POS integrations']
-  const cta = isAr ? 'اشترك الآن' : 'Subscribe Now'
+  const toggleMonthly = isAr ? 'شهري' : 'Monthly'
+  const toggleAnnual = isAr ? 'سنوي — خصم 20%' : 'Annual — save 20%'
+  const unitMonth = isAr ? 'ر.س / شهر' : 'SAR / month'
+  const unitYear = isAr ? 'ر.س / سنة' : 'SAR / year'
+  const saveLabel = isAr ? 'وفّر 20%' : 'Save 20%'
 
   return (
     <section className="section" id="pricing">
       <Reveal>
         <div className="section-badge">{t.pricing.badge}</div>
-        <h2 className="section-title">{title}</h2>
+        <h2 className="section-title">{t.pricing.title}</h2>
       </Reveal>
 
       <Reveal delay={0.1}>
         <motion.div
-          className="founding-plan-card"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          className="founding-banner"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          whileHover={{ y: -6 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="founding-plan-badge">{recommended}</div>
-          <div className="founding-plan-free">{freeTrial}</div>
-
-          <div className="founding-plan-price">
-            <span className="founding-plan-amount">{price}</span>
-            <div className="founding-plan-unit">
-              <span className="founding-plan-sar">{isAr ? 'ر.س' : 'SAR'}</span>
-              <span className="founding-plan-per">{isAr ? 'شهرياً' : 'per month'}</span>
-            </div>
+          <span className="founding-icon">🎁</span>
+          <div className="founding-text">
+            <strong>{t.pricing.foundingBanner}</strong>
+            <span>{t.pricing.foundingSub}</span>
           </div>
-
-          <div className="founding-plan-divider" />
-
-          <span className="founding-plan-features-title">{featuresTitle}</span>
-          <ul className="founding-plan-features">
-            {features.map((f, i) => (
-              <li key={i}>
-                <span className="founding-plan-check">
-                  <CheckIcon color="#ffffff" />
-                </span>
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="founding-plan-soon">
-            <span className="founding-plan-soon-label">{soonTitle}</span>
-            <ul className="founding-plan-soon-list">
-              {soonFeatures.map((f, i) => (
-                <li key={i}>
-                  <span className="founding-plan-soon-dot">●</span>
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <motion.button
-            className="founding-plan-cta"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={goCheckout}
-          >
-            {cta}
-          </motion.button>
-
-          <span className="founding-plan-unit-hint">{unit}</span>
         </motion.div>
+      </Reveal>
+
+      <Reveal delay={0.15}>
+        <div className="billing-toggle billing-toggle-landing">
+          <button
+            className={`billing-toggle-btn ${!annual ? 'billing-toggle-active' : ''}`}
+            onClick={() => setAnnual(false)}
+          >{toggleMonthly}</button>
+          <button
+            className={`billing-toggle-btn ${annual ? 'billing-toggle-active' : ''}`}
+            onClick={() => setAnnual(true)}
+          >{toggleAnnual}</button>
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.2}>
+        <div className="pricing-cards pricing-cards-3">
+          {PRICING_TIERS.map((tier) => {
+            const price = annual ? tier.annual : tier.monthly
+            const unit = annual ? unitYear : unitMonth
+            const title = isAr ? tier.titleAr : tier.titleEn
+            const features = isAr ? tier.featuresAr : tier.featuresEn
+            const badge = isAr ? tier.badgeAr : tier.badgeEn
+            return (
+              <motion.div
+                key={tier.id}
+                className={`pricing-card ${tier.featured ? 'pricing-card-featured' : ''}`}
+                whileHover={{ y: -8, boxShadow: '0 20px 50px rgba(16,185,129,0.08)' }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                {tier.featured && badge ? (
+                  <div className="pricing-plan-label-row">
+                    <span className="pricing-plan-label">{title}</span>
+                    <span className="save-badge">{badge}</span>
+                  </div>
+                ) : (
+                  <span className="pricing-plan-label">{title}</span>
+                )}
+                <div className="pricing-amount">
+                  <span className="price">{price.toLocaleString('en-US')}</span>
+                  <span className="price-label">{unit}</span>
+                </div>
+                {annual && (
+                  <p className="price-note" style={{ color: '#10B981', fontWeight: 600 }}>{saveLabel}</p>
+                )}
+                <ul className="pricing-features">
+                  {features.map((f, i) => (
+                    <li key={i}><CheckIcon color="#10B981" /> <span>{f}</span></li>
+                  ))}
+                </ul>
+                <motion.button
+                  className="pricing-cta"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => goCheckout(tier.id)}
+                >
+                  {t.pricing.cta}
+                </motion.button>
+              </motion.div>
+            )
+          })}
+        </div>
       </Reveal>
     </section>
   )
@@ -3464,13 +3816,10 @@ export default function App() {
         <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
           <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
           <Hero t={t} />
-          <StatsBar t={t} />
-          <HowItWorks t={t} />
-          <Audience t={t} />
-          <ProductDemo t={t} />
-          <Features t={t} />
+          <ProblemExplainer t={t} />
+          <WhoWeServe t={t} />
           <WalletCards t={t} />
-          <Comparison t={t} />
+          <PosIntegrations t={t} />
           <SocialProof t={t} />
           <Calculator t={t} lang={lang} />
           <Pricing t={t} lang={lang} />

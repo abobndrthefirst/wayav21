@@ -353,33 +353,47 @@ body {
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 32px 64px;
-  transition: padding 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  padding: 24px 32px;
+  transition: padding 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .navbar.scrolled {
-  padding: 12px 64px;
+  padding: 10px 32px;
 }
 
 .nav-pill {
-  max-width: var(--max-w);
+  max-width: calc(var(--max-w) - 120px);
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 16px;
+  padding: 10px 18px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.1);
-  transition: background 0.4s ease, box-shadow 0.4s ease;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.08);
+  transition:
+    max-width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.4s ease,
+    box-shadow 0.4s ease,
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .navbar.scrolled .nav-pill {
+  max-width: 720px;
+  padding: 6px 12px;
   background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+[data-theme="light"] .navbar.scrolled .nav-pill {
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .nav-left-group {
@@ -1079,14 +1093,20 @@ body {
 /* ─── ROI Calculator ─── */
 .calculator-section {
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .calc-container {
-  max-width: var(--max-w);
+  max-width: 960px;
+  width: 100%;
   margin: 48px auto 0;
   display: flex;
   flex-direction: column;
   gap: 32px;
+  text-align: start;
 }
 
 .calc-sliders {
@@ -2235,207 +2255,6 @@ body {
 .billing-return-icon { display: flex; justify-content: center; margin-bottom: 20px; }
 .billing-return-title { font-size: 1.6rem; font-weight: 700; color: var(--white); margin-bottom: 10px; }
 .billing-return-sub { color: var(--gray-dim); font-size: 0.95rem; }
-
-/* ─── Single Founding Plan card ──────────────────────────── */
-.founding-plan-card {
-  max-width: 480px;
-  margin: 32px auto 0;
-  position: relative;
-  background: linear-gradient(165deg, #10B981 0%, #047857 100%);
-  color: #fff;
-  border-radius: 28px;
-  padding: 40px 32px 32px;
-  text-align: start;
-  box-shadow: 0 30px 80px rgba(16,185,129,0.32);
-  overflow: hidden;
-}
-
-.founding-plan-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 80% 0%, rgba(255,255,255,0.22), transparent 55%);
-  pointer-events: none;
-}
-
-.founding-plan-card > * { position: relative; z-index: 1; }
-
-.founding-plan-badge {
-  display: inline-block;
-  background: #111;
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
-}
-
-.founding-plan-free {
-  display: inline-block;
-  background: rgba(255,255,255,0.2);
-  color: #fff;
-  padding: 8px 14px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 18px;
-  backdrop-filter: blur(10px);
-}
-
-.founding-plan-price {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-[dir="ltr"] .founding-plan-price { flex-direction: row-reverse; justify-content: flex-end; }
-
-.founding-plan-amount {
-  font-size: 84px;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  color: #fff;
-}
-
-.founding-plan-unit {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.founding-plan-sar {
-  font-size: 22px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.founding-plan-per {
-  font-size: 14px;
-  opacity: 0.85;
-  color: #fff;
-}
-
-.founding-plan-divider {
-  height: 1px;
-  background: rgba(255,255,255,0.25);
-  margin-bottom: 20px;
-}
-
-.founding-plan-features-title {
-  display: block;
-  font-size: 14px;
-  font-weight: 700;
-  opacity: 0.95;
-  margin-bottom: 14px;
-  color: #fff;
-}
-
-.founding-plan-features {
-  list-style: none;
-  margin: 0 0 22px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.founding-plan-features li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 15px;
-  line-height: 1.4;
-  color: #fff;
-}
-
-.founding-plan-check {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.25);
-  display: grid;
-  place-items: center;
-}
-
-.founding-plan-soon {
-  background: rgba(255,255,255,0.12);
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 24px;
-  backdrop-filter: blur(10px);
-}
-
-.founding-plan-soon-label {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  background: rgba(255,255,255,0.2);
-  padding: 3px 10px;
-  border-radius: 999px;
-  margin-bottom: 10px;
-  color: #fff;
-}
-
-.founding-plan-soon-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.founding-plan-soon-list li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  opacity: 0.95;
-  color: #fff;
-}
-
-.founding-plan-soon-dot {
-  color: #fff;
-  font-size: 8px;
-  opacity: 0.7;
-}
-
-.founding-plan-cta {
-  display: block;
-  width: 100%;
-  text-align: center;
-  padding: 16px 24px;
-  background: #fff;
-  color: var(--green);
-  border: none;
-  border-radius: 16px;
-  font-size: 16px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.18);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-  font-family: inherit;
-}
-
-.founding-plan-cta:hover {
-  box-shadow: 0 16px 34px rgba(0,0,0,0.22);
-}
-
-.founding-plan-unit-hint {
-  display: block;
-  text-align: center;
-  margin-top: 10px;
-  font-size: 12px;
-  opacity: 0.78;
-  color: #fff;
-}
 
 .pricing-card {
   position: relative;
