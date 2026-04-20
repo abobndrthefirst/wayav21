@@ -15,7 +15,7 @@ import './styles.css'
 import './components/loyalty-wizard.css'
 import './components/notifications-panel.css'
 import './components/pass-designer/pass-designer.css'
-import { ProblemExplainer, WhoWeServe, PosIntegrations } from './components/LoyaSections'
+import { WhoWeServe, PosIntegrations } from './components/LoyaSections'
 
 // Lazy-load the heavy merchant + customer flows so the marketing landing
 // page doesn't ship a LoyaltyWizard / WalletEnrollPage bundle it never uses.
@@ -1492,6 +1492,30 @@ function Hero({ t }) {
           >
             {t.hero.subtitle}
           </motion.p>
+
+          <motion.div
+            className="hero-explainer-grid"
+            initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.8, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="hero-explainer-card hero-explainer-problem">
+              <span className="hero-explainer-icon" aria-hidden>❓</span>
+              <span className="hero-explainer-label">{t.explainer.problem.label}</span>
+              <p className="hero-explainer-text">{t.explainer.problem.text}</p>
+            </div>
+            <div className="hero-explainer-card hero-explainer-waya">
+              <span className="hero-explainer-icon" aria-hidden>💚</span>
+              <span className="hero-explainer-label">{t.explainer.waya.label}</span>
+              <p className="hero-explainer-text">{t.explainer.waya.text}</p>
+            </div>
+            <div className="hero-explainer-card hero-explainer-how">
+              <span className="hero-explainer-icon" aria-hidden>→</span>
+              <span className="hero-explainer-label">{t.explainer.how.label}</span>
+              <p className="hero-explainer-text">{t.explainer.how.text}</p>
+            </div>
+          </motion.div>
+
           <motion.div
             className="hero-free-badge"
             initial={{ opacity: 0, scale: 0.8, filter: 'blur(6px)' }}
@@ -3809,7 +3833,6 @@ export default function App() {
       <AuthRedirect>
         <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
           <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
-          <ProblemExplainer t={t} />
           <Hero t={t} />
           <WhoWeServe t={t} />
           <WalletCards t={t} />

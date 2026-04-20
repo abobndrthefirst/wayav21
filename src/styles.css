@@ -636,6 +636,81 @@ body {
   max-width: 576px;
 }
 
+/* ─── Hero inline explainer (problem → waya → how) ─── */
+.hero-explainer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 16px 0 20px;
+  max-width: 576px;
+}
+
+.hero-explainer-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: start;
+}
+
+.hero-explainer-card.hero-explainer-waya {
+  background: linear-gradient(165deg, #10B981 0%, #047857 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(16,185,129,0.25);
+}
+
+.hero-explainer-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(16,185,129,0.12);
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hero-explainer-problem .hero-explainer-icon {
+  background: rgba(239,68,68,0.12);
+  color: #EF4444;
+}
+
+.hero-explainer-waya .hero-explainer-icon {
+  background: rgba(255,255,255,0.22);
+  color: #fff;
+}
+
+.hero-explainer-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gray-dim);
+}
+
+.hero-explainer-waya .hero-explainer-label { color: rgba(255,255,255,0.88); }
+
+.hero-explainer-text {
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--white);
+  margin: 0;
+}
+
+.hero-explainer-waya .hero-explainer-text { color: #fff; }
+
+@media (max-width: 720px) {
+  .hero-explainer-grid { grid-template-columns: 1fr; gap: 8px; }
+}
+
 .hero-free-badge {
   display: inline-block;
   padding: 8px 20px;
