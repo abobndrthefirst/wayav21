@@ -249,11 +249,19 @@ export function PosIntegrations({ t }) {
 
       <div className="loya-marquee">
         <div className="loya-marquee-track">
-          {logos.map((name, i) => (
-            <div key={`${name}-${i}`} className="loya-logo-tile">
-              <span>{name}</span>
-            </div>
-          ))}
+          {logos.map((logo, i) => {
+            const name = typeof logo === 'string' ? logo : logo.name
+            const src = typeof logo === 'string' ? null : logo.src
+            return (
+              <div key={`${name}-${i}`} className="loya-logo-tile">
+                {src ? (
+                  <img src={src} alt={name} className="loya-logo-img" />
+                ) : (
+                  <span>{name}</span>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 

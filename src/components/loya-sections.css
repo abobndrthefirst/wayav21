@@ -528,8 +528,8 @@
 
 .loya-logo-tile {
   flex-shrink: 0;
-  width: 140px;
-  height: 84px;
+  width: 180px;
+  height: 100px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -539,6 +539,21 @@
   font-weight: 700;
   font-size: 18px;
   letter-spacing: -0.01em;
+  padding: 18px 24px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.loya-logo-tile:hover {
+  border-color: rgba(16,185,129,0.3);
+  box-shadow: 0 10px 24px rgba(16,185,129,0.08);
+}
+
+.loya-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .loya-brand-tile {

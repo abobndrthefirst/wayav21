@@ -419,7 +419,15 @@ const content = {
       subtitle: 'اربط وايا بنظام نقاط البيع عندك وتمتع بسرعة ودقة أعلى — مع تفعيل الكاش باك والرصيد تلقائياً.',
       ctaQuestion: 'عندك نظام نقاط بيع غير مدعوم؟',
       ctaBtn: 'تواصل معنا وجاهزين نربطه',
-      logos: ['Foodics', 'Odoo', 'Lightspeed', 'Marn', 'Rewaa', 'Zid', 'Salla'],
+      logos: [
+        { name: 'Foodics', src: '/Foodics_id-xUyauWo_0.svg' },
+        { name: 'Odoo', src: '/Odoo_id34J-r875_0.svg' },
+        { name: 'Zid' },
+        { name: 'Salla' },
+        { name: 'Rewaa' },
+        { name: 'Marn' },
+        { name: 'Lightspeed' },
+      ],
     },
     partners: {
       badge: 'نشتغل معك',
@@ -866,7 +874,15 @@ const content = {
       subtitle: 'Connect Waya with your POS for higher speed and accuracy — with automatic cashback and balance activation.',
       ctaQuestion: 'Using an unsupported POS system?',
       ctaBtn: 'Contact us — we\'re ready to integrate',
-      logos: ['Foodics', 'Odoo', 'Lightspeed', 'Marn', 'Rewaa', 'Zid', 'Salla'],
+      logos: [
+        { name: 'Foodics', src: '/Foodics_id-xUyauWo_0.svg' },
+        { name: 'Odoo', src: '/Odoo_id34J-r875_0.svg' },
+        { name: 'Zid' },
+        { name: 'Salla' },
+        { name: 'Rewaa' },
+        { name: 'Marn' },
+        { name: 'Lightspeed' },
+      ],
     },
     partners: {
       badge: 'We work with you',
@@ -1130,7 +1146,7 @@ function ParallaxLayer({ children, speed = 0.5, className = '' }) {
 
 /* ─── Logo ─── */
 function Logo({ size = 34 }) {
-  return <img src="/waya-logo.png" alt="وايا" style={{ height: size, width: 'auto' }} />
+  return <img src="/Arabic Letters Midjourney (1).svg" alt="وايا" style={{ height: size, width: 'auto' }} />
 }
 
 /* ─── Icons ─── */
