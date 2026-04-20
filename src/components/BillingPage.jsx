@@ -400,15 +400,15 @@ export default function BillingPage({ lang = 'ar' }) {
           </motion.div>
         )}
 
-        <div className="pricing-cards billing-tiers">
-          {TIERS.map((tier, idx) => {
+        <div className="pricing-cards billing-tiers billing-tiers-single">
+          {TIERS.filter((t) => t.id === 'tier1').map((tier, idx) => {
             const price = interval === 'monthly' ? tier.monthly : tier.annual
             const unit = interval === 'monthly' ? strings.unitMonth : strings.unitYear
             const label = isAr ? tier.titleAr : tier.titleEn
             const features = isAr ? tier.featuresAr : tier.featuresEn
             const badge = isAr ? tier.badgeAr : tier.badgeEn
-            const featured = tier.id === 'tier2'
-            const isSelected = selectedTier === idx + 1
+            const featured = true
+            const isSelected = selectedTier === 1
             return (
               <motion.div
                 key={tier.id}
@@ -446,7 +446,7 @@ export default function BillingPage({ lang = 'ar' }) {
                 </ul>
 
                 <motion.button
-                  onClick={() => onSubscribe(idx + 1)}
+                  onClick={() => onSubscribe(1)}
                   disabled={submitting || hasActive}
                   className="pricing-cta"
                   whileHover={{ scale: submitting ? 1 : 1.02 }}

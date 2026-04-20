@@ -2189,6 +2189,11 @@ body {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   max-width: 1100px;
 }
+.billing-tiers-single {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 480px;
+  margin-inline: auto;
+}
 @media (max-width: 900px) {
   .billing-tiers { grid-template-columns: 1fr; }
 }
