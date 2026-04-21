@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../../lib/supabase'
 import DesignerEditorPanel from './DesignerEditorPanel'
 import DesignerPreviewPanel from './DesignerPreviewPanel'
+import TemplateGallery from './TemplateGallery'
+import useDesignState from './useDesignState'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
@@ -19,80 +21,146 @@ const BackArrow = ({ isAr }) => (
   </svg>
 )
 
+function relativeTime(ts, isAr) {
+  const diff = Date.now() - ts
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return isAr ? 'الآن' : 'just now'
+  if (min < 60) return isAr ? `قبل ${min} دقيقة` : `${min}m ago`
+  const hr = Math.floor(min / 60)
+  if (hr < 24) return isAr ? `قبل ${hr} ساعة` : `${hr}h ago`
+  const d = Math.floor(hr / 24)
+  return isAr ? `قبل ${d} يوم` : `${d}d ago`
+}
+
 export default function PassDesignerPage({ program, shop, onBack, onCreated, lang = 'en' }) {
   const isAr = lang === 'ar'
   const T = (en, ar) => (isAr ? ar : en)
   const isNew = !program?.id
 
-  const [name, setName] = useState(program?.name || shop?.name || '')
-  const [loyaltyType, setLoyaltyType] = useState(program?.loyalty_type || 'stamp')
-  const [stampsRequired, setStampsRequired] = useState(program?.stamps_required || 10)
-  const [rewardThreshold, setRewardThreshold] = useState(program?.reward_threshold || 10)
-  const [cardColor, setCardColor] = useState(program?.card_color || '#10B981')
-  const [textColor, setTextColor] = useState(program?.text_color || '#FFFFFF')
-  const [logoUrl, setLogoUrl] = useState(program?.logo_url || shop?.logo_url || '')
-  const [backgroundUrl, setBackgroundUrl] = useState(program?.background_url || '')
-  const [rewardIconUrl, setRewardIconUrl] = useState(program?.reward_icon_url || '')
-  const [rewardTitle, setRewardTitle] = useState(program?.reward_title || T('Free coffee', 'قهوة مجانية'))
-  const [rewardDescription, setRewardDescription] = useState(program?.reward_description || '')
-  const [barcodeType, setBarcodeType] = useState(program?.barcode_type || 'QR')
+  const {
+    design, error, canUndo, canRedo, isDirty,
+    setField, loadTemplate, loadDesign,
+    undo, redo, markSaved, setError, clearError,
+    loadDraftFromStorage, clearDraft,
+  } = useDesignState({ program, shop })
 
   const [saving, setSaving] = useState(false)
   const [savedProgram, setSavedProgram] = useState(program?.id ? program : null)
   const [appleLoading, setAppleLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [toast, setToast] = useState(null)
+  const [draftBanner, setDraftBanner] = useState(null)
+  const [showGallery, setShowGallery] = useState(isNew)
+  const [sampleBalance, setSampleBalance] = useState(0)
+  const [darkPreview, setDarkPreview] = useState(false)
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
+  useEffect(() => {
+    if (!isNew) return
+    const draft = loadDraftFromStorage()
+    if (draft?.design) setDraftBanner(draft)
+  }, [isNew, loadDraftFromStorage])
+
+  useEffect(() => {
+    if (!isDirty) return
+    const handler = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [isDirty])
+
+  const handleBack = () => {
+    if (isDirty) {
+      const ok = window.confirm(T('You have unsaved changes. Leave without saving?', 'لديك تغييرات غير محفوظة. الخروج دون حفظ؟'))
+      if (!ok) return
+    }
+    onBack?.()
+  }
+
+  const saveRef = useRef()
+  useEffect(() => {
+    const onKey = (e) => {
+      const mod = e.metaKey || e.ctrlKey
+      if (!mod) return
+      const key = e.key.toLowerCase()
+      if (key === 's') { e.preventDefault(); saveRef.current?.() }
+      else if (key === 'z' && !e.shiftKey) { e.preventDefault(); undo() }
+      else if ((key === 'z' && e.shiftKey) || key === 'y') { e.preventDefault(); redo() }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [undo, redo])
+
   const previewData = {
-    name: name || shop?.name || '',
-    loyaltyType,
-    stampsRequired,
-    rewardThreshold,
-    rewardTitle,
-    couponDiscount: program?.coupon_discount || '',
-    cardColor, textColor, logoUrl, backgroundUrl, rewardIconUrl, barcodeType,
+    name: design.name || shop?.name || '',
+    loyaltyType: design.loyalty_type,
+    stampsRequired: design.stamps_required,
+    rewardThreshold: design.reward_threshold,
+    rewardTitle: design.reward_title,
+    couponDiscount: design.coupon_discount || '',
+    couponCode: design.coupon_code || '',
+    tiers: design.tiers,
+    cardColor: design.card_color,
+    cardGradient: design.card_gradient,
+    textColor: design.text_color,
+    logoUrl: design.logo_url,
+    backgroundUrl: design.background_url,
+    rewardIconUrl: design.reward_icon_url,
+    barcodeType: design.barcode_type,
+    sampleBalance,
+    darkPreview,
   }
 
   const handleSave = async () => {
-    if (!name.trim()) { showToast(T('Card name is required', 'اسم البطاقة مطلوب')); return }
-    setSaving(true)
+    if (!design.name.trim()) { showToast(T('Card name is required', 'اسم البطاقة مطلوب')); return }
+    setSaving(true); clearError()
 
     const payload = {
       shop_id: shop.id,
-      name: name.trim(),
-      loyalty_type: loyaltyType,
-      stamps_required: loyaltyType === 'stamp' ? stampsRequired : null,
-      reward_threshold: loyaltyType === 'points' ? rewardThreshold : null,
-      reward_title: rewardTitle.trim() || 'Reward',
-      reward_description: rewardDescription.trim() || null,
-      reward_icon_url: rewardIconUrl || null,
-      card_color: cardColor,
-      text_color: textColor,
-      logo_url: logoUrl || null,
-      background_url: backgroundUrl || null,
-      barcode_type: barcodeType,
+      name: design.name.trim(),
+      loyalty_type: design.loyalty_type,
+      stamps_required: design.loyalty_type === 'stamp' ? design.stamps_required : null,
+      reward_threshold: design.loyalty_type === 'points' ? design.reward_threshold : null,
+      reward_title: design.reward_title?.trim() || 'Reward',
+      reward_description: design.reward_description?.trim() || null,
+      reward_icon_url: design.reward_icon_url || null,
+      card_color: design.card_color,
+      text_color: design.text_color,
+      card_gradient: design.card_gradient || null,
+      logo_url: design.logo_url || null,
+      background_url: design.background_url || null,
+      barcode_type: design.barcode_type,
+      coupon_discount: design.coupon_discount?.trim() || null,
+      coupon_code: design.coupon_code?.trim() || null,
+      tiers: design.tiers || null,
+      terms: design.terms?.trim() || null,
+      website_url: design.website_url?.trim() || null,
+      phone: design.phone?.trim() || null,
+      address: design.address?.trim() || null,
+      google_maps_url: design.google_maps_url?.trim() || null,
+      pass_language: design.pass_language || 'auto',
       is_active: true,
       updated_at: new Date().toISOString(),
     }
 
     let result
     if (savedProgram?.id) {
-      const { data, error } = await supabase.from('loyalty_programs').update(payload).eq('id', savedProgram.id).select().single()
-      if (error) { showToast(T('Error: ', 'خطأ: ') + error.message); setSaving(false); return }
+      const { data, error: dbErr } = await supabase.from('loyalty_programs').update(payload).eq('id', savedProgram.id).select().single()
+      if (dbErr) { setError({ message: dbErr.message, code: dbErr.code }); showToast(T('Save failed', 'فشل الحفظ')); setSaving(false); return }
       result = data
     } else {
-      const { data, error } = await supabase.from('loyalty_programs').insert(payload).select().single()
-      if (error) { showToast(T('Error: ', 'خطأ: ') + error.message); setSaving(false); return }
+      const { data, error: dbErr } = await supabase.from('loyalty_programs').insert(payload).select().single()
+      if (dbErr) { setError({ message: dbErr.message, code: dbErr.code }); showToast(T('Save failed', 'فشل الحفظ')); setSaving(false); return }
       result = data
       onCreated?.(result)
     }
 
     setSavedProgram(result)
+    markSaved()
     setSaving(false)
     showToast(isNew && !savedProgram ? T('Card created!', 'تم إنشاء البطاقة!') : T('Design saved!', 'تم حفظ التصميم!'))
   }
+  saveRef.current = handleSave
 
   const mintToken = async (programId) => {
     const { data, error } = await supabase.functions.invoke('mint-enrollment-token', {
@@ -116,7 +184,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url; a.download = `${(name || 'pass').replace(/[^\w]/g, '_')}.pkpass`
+      a.href = url; a.download = `${(design.name || 'pass').replace(/[^\w]/g, '_')}.pkpass`
       document.body.appendChild(a); a.click(); document.body.removeChild(a)
       URL.revokeObjectURL(url)
       showToast(T('Apple Pass downloaded!', 'تم تحميل بطاقة آبل!'))
@@ -141,26 +209,107 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
     setGoogleLoading(false)
   }
 
+  if (showGallery && isNew) {
+    return (
+      <TemplateGallery
+        T={T}
+        isAr={isAr}
+        onPick={(tpl) => { loadTemplate({ ...tpl, name: tpl.name || shop?.name || '' }); setShowGallery(false) }}
+        onStartBlank={() => setShowGallery(false)}
+        onBack={onBack}
+      />
+    )
+  }
+
   return (
     <div className="pd-page" dir={isAr ? 'rtl' : 'ltr'}>
-      <button type="button" className="pd-back" onClick={onBack}>
-        <BackArrow isAr={isAr} />
-        {T('Back', 'رجوع')}
-      </button>
+      <div className="pd-top-bar">
+        <button type="button" className="pd-back" onClick={handleBack}>
+          <BackArrow isAr={isAr} />
+          {T('Back', 'رجوع')}
+        </button>
+
+        <div className="pd-top-actions">
+          <button
+            type="button"
+            className="pd-icon-btn"
+            onClick={undo}
+            disabled={!canUndo}
+            title={T('Undo (⌘Z)', 'تراجع (⌘Z)')}
+          >↶</button>
+          <button
+            type="button"
+            className="pd-icon-btn"
+            onClick={redo}
+            disabled={!canRedo}
+            title={T('Redo (⌘⇧Z)', 'إعادة (⌘⇧Z)')}
+          >↷</button>
+        </div>
+      </div>
 
       <h2 className="pd-title">
-        {isNew && !savedProgram ? T('Create New Card', 'إنشاء بطاقة جديدة') : T('Design Pass', 'تصميم البطاقة')}{savedProgram?.name ? ` — ${savedProgram.name}` : ''}
+        {isNew && !savedProgram ? T('Create New Card', 'إنشاء بطاقة جديدة') : T('Design Pass', 'تصميم البطاقة')}
+        {savedProgram?.name ? ` — ${savedProgram.name}` : ''}
+        {isDirty && <span className="pd-dirty-dot" title={T('Unsaved changes', 'تغييرات غير محفوظة')} />}
       </h2>
+
+      <AnimatePresence>
+        {draftBanner && (
+          <motion.div
+            className="pd-banner pd-banner-info"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <span>
+              {T('Unsaved draft found from ', 'مسودة غير محفوظة من ')}
+              <strong>{relativeTime(draftBanner.ts, isAr)}</strong>.
+            </span>
+            <div className="pd-banner-actions">
+              <button type="button" onClick={() => { loadDesign(draftBanner.design); setDraftBanner(null) }}>
+                {T('Restore', 'استعادة')}
+              </button>
+              <button type="button" className="ghost" onClick={() => { clearDraft(); setDraftBanner(null) }}>
+                {T('Discard', 'تجاهل')}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            className="pd-banner pd-banner-error"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <span>
+              <strong>{T('Save failed', 'فشل الحفظ')}:</strong> {error.message}
+              {error.code ? ` (${error.code})` : ''}
+            </span>
+            <div className="pd-banner-actions">
+              <button type="button" onClick={clearError}>{T('Dismiss', 'إغلاق')}</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="pd-grid">
         <div className="pd-editor">
-          {/* Card info section (always shown in create mode, collapsible in edit) */}
           <h3 className="pd-section-title" style={{ borderTop: 'none', paddingTop: 0 }}>
             {T('Card Info', 'معلومات البطاقة')}
           </h3>
           <div className="pd-field">
             <label>{T('Card name', 'اسم البطاقة')}</label>
-            <input className="pd-field-input" type="text" value={name} onChange={e => setName(e.target.value)} placeholder={T('e.g. Sultan Café', 'مثال: مقهى السلطان')} />
+            <input
+              className="pd-field-input"
+              type="text"
+              value={design.name}
+              onChange={e => setField('name', e.target.value)}
+              placeholder={T('e.g. Sultan Café', 'مثال: مقهى السلطان')}
+            />
           </div>
           <div className="pd-field">
             <label>{T('Loyalty type', 'نوع الولاء')}</label>
@@ -169,11 +318,13 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
                 <button
                   key={t.key}
                   type="button"
-                  onClick={() => setLoyaltyType(t.key)}
+                  onClick={() => setField('loyalty_type', t.key)}
                   style={{
-                    padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${loyaltyType === t.key ? '#10B981' : '#e5e8ec'}`,
-                    background: loyaltyType === t.key ? '#f0fdf4' : '#fff', cursor: 'pointer', textAlign: 'center',
-                    fontSize: 13, fontWeight: loyaltyType === t.key ? 600 : 400, transition: 'all .15s',
+                    padding: '10px 12px', borderRadius: 10,
+                    border: `1.5px solid ${design.loyalty_type === t.key ? '#10B981' : '#e5e8ec'}`,
+                    background: design.loyalty_type === t.key ? '#f0fdf4' : '#fff',
+                    cursor: 'pointer', textAlign: 'center',
+                    fontSize: 13, fontWeight: design.loyalty_type === t.key ? 600 : 400, transition: 'all .15s',
                   }}
                 >
                   <span style={{ fontSize: 20, display: 'block', marginBottom: 2 }}>{t.emoji}</span>
@@ -182,38 +333,52 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
               ))}
             </div>
           </div>
-          {loyaltyType === 'stamp' && (
+          {design.loyalty_type === 'stamp' && (
             <div className="pd-field">
               <label>{T('Stamps for reward', 'أختام للمكافأة')}</label>
-              <input className="pd-field-input" type="number" min={1} max={50} value={stampsRequired} onChange={e => setStampsRequired(Number(e.target.value))} />
+              <input
+                className="pd-field-input"
+                type="number"
+                min={1}
+                max={50}
+                value={design.stamps_required}
+                onChange={e => setField('stamps_required', Number(e.target.value))}
+              />
             </div>
           )}
-          {loyaltyType === 'points' && (
+          {design.loyalty_type === 'points' && (
             <div className="pd-field">
               <label>{T('Points for reward', 'نقاط للمكافأة')}</label>
-              <input className="pd-field-input" type="number" min={1} value={rewardThreshold} onChange={e => setRewardThreshold(Number(e.target.value))} />
+              <input
+                className="pd-field-input"
+                type="number"
+                min={1}
+                value={design.reward_threshold}
+                onChange={e => setField('reward_threshold', Number(e.target.value))}
+              />
             </div>
           )}
 
           <DesignerEditorPanel
+            design={design}
+            setField={setField}
             shopId={shop.id}
-            cardColor={cardColor} setCardColor={setCardColor}
-            textColor={textColor} setTextColor={setTextColor}
-            logoUrl={logoUrl} setLogoUrl={setLogoUrl}
-            backgroundUrl={backgroundUrl} setBackgroundUrl={setBackgroundUrl}
-            rewardIconUrl={rewardIconUrl} setRewardIconUrl={setRewardIconUrl}
-            rewardTitle={rewardTitle} setRewardTitle={setRewardTitle}
-            rewardDescription={rewardDescription} setRewardDescription={setRewardDescription}
-            barcodeType={barcodeType} setBarcodeType={setBarcodeType}
             T={T}
             embedded
           />
         </div>
 
-        <DesignerPreviewPanel previewData={previewData} T={T} isAr={isAr} />
+        <DesignerPreviewPanel
+          previewData={previewData}
+          sampleBalance={sampleBalance}
+          onSampleBalanceChange={setSampleBalance}
+          darkPreview={darkPreview}
+          onDarkPreviewChange={setDarkPreview}
+          T={T}
+          isAr={isAr}
+        />
       </div>
 
-      {/* Help CTA Banner */}
       <div className="pd-help-banner">
         <div className="pd-help-content">
           <div className="pd-help-icon">
@@ -243,7 +408,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       </div>
 
       <div className="pd-actions">
-        <button type="button" className="pd-action-btn ghost" onClick={onBack}>
+        <button type="button" className="pd-action-btn ghost" onClick={handleBack}>
           {T('Cancel', 'إلغاء')}
         </button>
         {savedProgram?.id && (
@@ -258,8 +423,9 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
             </button>
           </>
         )}
-        <button type="button" className="pd-action-btn save" onClick={handleSave} disabled={saving}>
+        <button type="button" className={`pd-action-btn save ${isDirty ? 'dirty' : ''}`} onClick={handleSave} disabled={saving}>
           {saving ? '...' : isNew && !savedProgram ? T('Create Card', 'إنشاء البطاقة') : T('Save Design', 'حفظ التصميم')}
+          {isDirty && !saving && <span className="pd-save-dot" />}
         </button>
       </div>
 

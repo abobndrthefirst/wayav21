@@ -46,7 +46,8 @@ export function PixelFrame({ children }) {
   )
 }
 
-export default function PhoneMockup({ platform, children }) {
-  if (platform === 'google') return <PixelFrame>{children}</PixelFrame>
-  return <IPhoneFrame>{children}</IPhoneFrame>
+export default function PhoneMockup({ platform, dark, children }) {
+  const className = dark ? 'pd-phone-dark' : ''
+  if (platform === 'google') return <div className={className}><PixelFrame>{children}</PixelFrame></div>
+  return <div className={className}><IPhoneFrame>{children}</IPhoneFrame></div>
 }

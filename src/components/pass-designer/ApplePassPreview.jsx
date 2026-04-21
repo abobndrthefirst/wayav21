@@ -1,47 +1,35 @@
 import { motion } from 'framer-motion'
 import BarcodePreview from './BarcodePreview'
-
-function StampRow({ total, earned, icon, textColor }) {
-  const max = Math.min(total || 10, 12)
-  return (
-    <div className="pd-stamps" dir="ltr">
-      {Array.from({ length: max }).map((_, i) => {
-        const filled = i < earned
-        return (
-          <span key={i} className={`pd-stamp ${filled ? 'filled' : ''}`} style={{ borderColor: textColor, color: textColor }}>
-            {filled && icon ? <img src={icon} alt="" /> : filled ? <span>★</span> : icon ? <img src={icon} alt="" style={{ opacity: .25 }} /> : <span style={{ opacity: .35 }}>★</span>}
-          </span>
-        )
-      })}
-    </div>
-  )
-}
+import StampRow from './StampRow'
 
 export default function ApplePassPreview({ data, sampleName, T }) {
-  const { name, loyaltyType, stampsRequired, rewardThreshold, rewardTitle, couponDiscount, cardColor, textColor, logoUrl, backgroundUrl, rewardIconUrl, barcodeType } = data
+  const { name, loyaltyType, stampsRequired, rewardThreshold, rewardTitle, couponDiscount, cardColor, cardGradient, textColor, logoUrl, backgroundUrl, rewardIconUrl, barcodeType, sampleBalance = 0, tiers } = data
 
-  const balance = loyaltyType === 'points' ? `0 / ${rewardThreshold}`
-    : loyaltyType === 'tiered' ? T('Bronze', 'برونزي')
+  const balance = loyaltyType === 'points' ? `${sampleBalance} / ${rewardThreshold}`
+    : loyaltyType === 'stamp' ? `${Math.min(sampleBalance, stampsRequired)} / ${stampsRequired}`
+    : loyaltyType === 'tiered' ? (tiers?.[0]?.name || T('Bronze', 'برونزي'))
     : loyaltyType === 'coupon' ? couponDiscount
     : null
 
-  const balanceLabel = loyaltyType === 'stamp' ? null
-    : loyaltyType === 'points' ? T('Points', 'النقاط')
-    : loyaltyType === 'tiered' ? T('Tier', 'المستوى')
-    : T('Offer', 'العرض')
+  const balanceLabel = loyaltyType === 'stamp' ? T('STAMPS', 'الأختام')
+    : loyaltyType === 'points' ? T('POINTS', 'النقاط')
+    : loyaltyType === 'tiered' ? T('TIER', 'المستوى')
+    : T('OFFER', 'العرض')
 
   const bgStyle = backgroundUrl
     ? { backgroundImage: `url(${backgroundUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {}
+    : cardGradient?.from && cardGradient?.to
+      ? { backgroundImage: `linear-gradient(${cardGradient.angle ?? 135}deg, ${cardGradient.from}, ${cardGradient.to})` }
+      : {}
 
   return (
     <motion.div
       className="pd-pass pd-pass-apple"
-      animate={{ backgroundColor: backgroundUrl ? undefined : cardColor, color: textColor }}
+      animate={{ backgroundColor: backgroundUrl || cardGradient ? undefined : cardColor, color: textColor }}
       transition={{ duration: .4 }}
     >
       <div className="pd-pass-body" style={bgStyle}>
-        {backgroundUrl && <div className="pd-pass-overlay" />}
+        {(backgroundUrl || cardGradient) && <div className="pd-pass-overlay" />}
 
         <div className="pd-pass-header">
           <div className="pd-pass-logo-wrap">
@@ -51,20 +39,18 @@ export default function ApplePassPreview({ data, sampleName, T }) {
             }
             <span className="pd-pass-org">{name || T('Business', 'النشاط')}</span>
           </div>
-          {balanceLabel && (
+          {balanceLabel && balance != null && (
             <div className="pd-pass-balance-area">
-              <div className="pd-pass-balance-label">{T('BALANCE', 'الرصيد')}</div>
+              <div className="pd-pass-balance-label">{balanceLabel}</div>
               <div className="pd-pass-balance-val">{balance}</div>
             </div>
           )}
         </div>
 
         <div className="pd-pass-mid">
-          {loyaltyType === 'stamp' ? (
-            <StampRow total={stampsRequired} earned={0} icon={rewardIconUrl} textColor={textColor} />
-          ) : backgroundUrl ? (
-            null
-          ) : null}
+          {loyaltyType === 'stamp' && (
+            <StampRow total={stampsRequired} earned={sampleBalance} icon={rewardIconUrl} textColor={textColor} />
+          )}
         </div>
 
         <div className="pd-pass-fields">
@@ -73,8 +59,8 @@ export default function ApplePassPreview({ data, sampleName, T }) {
             <div className="pd-pass-field-value">{sampleName}</div>
           </div>
           <div className="pd-pass-field" style={{ textAlign: 'end' }}>
-            <div className="pd-pass-field-label">{T('STATUS', 'الحالة')}</div>
-            <div className="pd-pass-field-value">{T('Member', 'عضو')}</div>
+            <div className="pd-pass-field-label">{T('REWARD', 'المكافأة')}</div>
+            <div className="pd-pass-field-value">{rewardTitle || T('Reward', 'مكافأة')}</div>
           </div>
         </div>
       </div>
@@ -87,8 +73,8 @@ export default function ApplePassPreview({ data, sampleName, T }) {
           animate={{ opacity: 1 }}
           transition={{ duration: .3 }}
         >
-          <BarcodePreview type={barcodeType} />
-          <div className="pd-pass-barcode-hint">{T('Scan to earn points', 'امسح لكسب النقاط')}</div>
+          <BarcodePreview type={barcodeType} value={`waya:preview:${name || 'draft'}`} />
+          <div className="pd-pass-barcode-hint">{T('Scan to earn', 'امسح لكسب')}</div>
         </motion.div>
       )}
     </motion.div>

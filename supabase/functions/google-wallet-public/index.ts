@@ -18,6 +18,9 @@ import { clientIp, rateLimit, rateLimitHeaders } from "../_shared/rateLimit.ts";
 import { parseEnrollmentInput, ValidationError } from "../_shared/validation.ts";
 import { verifyEnrollmentToken } from "../_shared/enrollmentToken.ts";
 import { events } from "../_shared/events.ts";
+import { pickLang, labelFor } from "../_shared/passLabels.ts";
+import { googleSignatureTextModule, googleSignatureLink } from "../_shared/wayaSignature.ts";
+import { pickHero, legendaryLabel, legendaryValue } from "../_shared/easterEgg.ts";
 
 function getPrivateKey(): string {
   let raw = Deno.env.get("GOOGLE_WALLET_PRIVATE_KEY") || "";
@@ -60,6 +63,15 @@ async function signJwt(payload: Record<string, unknown>): Promise<string> {
 function isImageUrl(u?: string | null): boolean {
   if (!u) return false;
   return u.includes("/storage/") || /\.(png|jpg|jpeg|webp)/i.test(u);
+}
+
+// Origins the save-to-wallet JWT is valid for. Must include every host that
+// serves the enrollment page (prod, www, any custom subdomains). Falls back
+// to the known production domains if ALLOWED_ORIGINS isn't set.
+function walletOrigins(): string[] {
+  const raw = Deno.env.get("GOOGLE_WALLET_ORIGINS") || Deno.env.get("ALLOWED_ORIGINS") || "";
+  const list = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  return list.length > 0 ? list : ["https://trywaya.com", "https://www.trywaya.com"];
 }
 
 Deno.serve(async (req: Request) => {
@@ -105,6 +117,7 @@ Deno.serve(async (req: Request) => {
     if (error || !program) throw new Error("Program not found");
     const shop = (program as any).shop;
     const programWithShopName: any = { ...program, shop_name: shop?.name };
+    const lang = pickLang((program as any).pass_language, req.headers.get("accept-language"));
 
     const GW_ISSUER_ID = Deno.env.get("GOOGLE_WALLET_ISSUER_ID");
     const GW_SERVICE_ACCOUNT_EMAIL = Deno.env.get("GOOGLE_WALLET_SERVICE_ACCOUNT_EMAIL");
@@ -165,21 +178,30 @@ Deno.serve(async (req: Request) => {
     }
 
     const textModules: any[] = [
-      { header: "Shop", body: programWithShopName.name || programWithShopName.shop_name, id: "shop" },
+      { header: labelFor(lang, "SHOP"), body: programWithShopName.name || programWithShopName.shop_name, id: "shop" },
     ];
     if (programWithShopName.reward_title) {
       textModules.push({
-        header: "Reward",
+        header: labelFor(lang, "REWARD"),
         body: programWithShopName.reward_title + (programWithShopName.reward_description ? " — " + programWithShopName.reward_description : ""),
         id: "reward",
       });
     }
-    if (programWithShopName.terms) textModules.push({ header: "Terms", body: (programWithShopName.terms as string).slice(0, 500), id: "terms" });
+    if (programWithShopName.terms) textModules.push({ header: labelFor(lang, "TERMS"), body: (programWithShopName.terms as string).slice(0, 500), id: "terms" });
+
+    // Easter-egg Layer 1: Legendary text module, hero derived from object id.
+    const hero = await pickHero(objectId);
+    textModules.push({ header: legendaryLabel(lang), body: legendaryValue(hero, lang), id: "legendary" });
+
+    // Waya signature — always last, non-removable.
+    textModules.push(googleSignatureTextModule(lang));
 
     const linksModule: any = { uris: [] };
-    if (programWithShopName.google_maps_url) linksModule.uris.push({ uri: programWithShopName.google_maps_url, description: "Find us on Maps", id: "maps" });
-    if (programWithShopName.website_url) linksModule.uris.push({ uri: programWithShopName.website_url, description: "Website", id: "web" });
-    if (programWithShopName.phone) linksModule.uris.push({ uri: `tel:${programWithShopName.phone}`, description: "Call", id: "phone" });
+    if (programWithShopName.google_maps_url) linksModule.uris.push({ uri: programWithShopName.google_maps_url, description: labelFor(lang, "FIND_US"), id: "maps" });
+    if (programWithShopName.website_url) linksModule.uris.push({ uri: programWithShopName.website_url, description: labelFor(lang, "WEBSITE"), id: "web" });
+    if (programWithShopName.phone) linksModule.uris.push({ uri: `tel:${programWithShopName.phone}`, description: labelFor(lang, "PHONE"), id: "phone" });
+    // Waya brand link — always present.
+    linksModule.uris.push({ ...googleSignatureLink(), id: "waya_link" });
 
     const loyaltyObject: any = {
       id: objectId,
@@ -197,18 +219,23 @@ Deno.serve(async (req: Request) => {
     };
     if (linksModule.uris.length > 0) loyaltyObject.linksModuleData = linksModule;
 
+    const haveStamps = existing?.stamps ?? 0;
+    const havePoints = existing?.points ?? 0;
     if (programWithShopName.loyalty_type === "stamp") {
       const need = programWithShopName.stamps_required || 10;
-      const max = Math.min(need, 12);
-      const row = "\u2606".repeat(max);
-      loyaltyObject.loyaltyPoints = { label: `Stamps 0/${need}`, balance: { string: row } };
+      loyaltyObject.loyaltyPoints = {
+        label: labelFor(lang, "STAMPS"),
+        balance: { string: `${haveStamps} / ${need}` },
+      };
     } else if (programWithShopName.loyalty_type === "tiered") {
-      loyaltyObject.loyaltyPoints = { label: "Points", balance: { int: 0 } };
-      loyaltyObject.secondaryLoyaltyPoints = { label: "Tier", balance: { string: "Bronze" } };
+      const tierName = existing?.tier || (Array.isArray(programWithShopName.tiers) && programWithShopName.tiers[0]?.name) || labelFor(lang, "BRONZE");
+      loyaltyObject.loyaltyPoints = { label: labelFor(lang, "POINTS"), balance: { int: havePoints } };
+      loyaltyObject.secondaryLoyaltyPoints = { label: labelFor(lang, "TIER"), balance: { string: tierName } };
     } else if (programWithShopName.loyalty_type === "coupon") {
-      loyaltyObject.loyaltyPoints = { label: "Offer", balance: { string: programWithShopName.coupon_discount || "Discount" } };
+      loyaltyObject.loyaltyPoints = { label: labelFor(lang, "OFFER"), balance: { string: programWithShopName.coupon_discount || "Discount" } };
     } else {
-      loyaltyObject.loyaltyPoints = { label: "Points", balance: { int: 0 } };
+      const need = programWithShopName.reward_threshold || 10;
+      loyaltyObject.loyaltyPoints = { label: `${labelFor(lang, "POINTS")} (${havePoints}/${need})`, balance: { int: havePoints } };
     }
 
     if (programWithShopName.expires_at) {
@@ -229,10 +256,11 @@ Deno.serve(async (req: Request) => {
     }
 
     const now = Math.floor(Date.now() / 1000);
+    const origins = walletOrigins();
     const claims = {
       iss: GW_SERVICE_ACCOUNT_EMAIL,
       aud: "google",
-      origins: ["https://trywaya.com", "https://www.trywaya.com"],
+      origins,
       typ: "savetowallet",
       iat: now,
       exp: now + 3600,
@@ -256,7 +284,15 @@ Deno.serve(async (req: Request) => {
       shop_id: shop.id,
       program_id: input.program_id,
       message: `Google Wallet pass issued for ${programWithShopName.name}`,
-      metadata: { platform: "google", loyalty_type: programWithShopName.loyalty_type, object_id: objectId },
+      metadata: {
+        platform: "google",
+        loyalty_type: programWithShopName.loyalty_type,
+        object_id: objectId,
+        class_id: classId,
+        issuer_id: GW_ISSUER_ID,
+        service_account: GW_SERVICE_ACCOUNT_EMAIL?.replace(/(.{4}).+(@.+)/, "$1…$2"),
+        origins,
+      },
       req,
     });
 
@@ -286,7 +322,13 @@ Deno.serve(async (req: Request) => {
         source: "google-wallet-public",
         message: msg,
         error_code: "GOOGLE_WALLET_FAIL",
-        metadata: { platform: "google" },
+        metadata: {
+          platform: "google",
+          issuer_id: Deno.env.get("GOOGLE_WALLET_ISSUER_ID") || null,
+          service_account: (Deno.env.get("GOOGLE_WALLET_SERVICE_ACCOUNT_EMAIL") || "")
+            .replace(/(.{4}).+(@.+)/, "$1…$2") || null,
+          origins: walletOrigins(),
+        },
         req,
       });
     }

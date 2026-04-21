@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion'
 import BarcodePreview from './BarcodePreview'
+import StampRow from './StampRow'
 
 export default function GooglePassPreview({ data, sampleName, T }) {
-  const { name, loyaltyType, stampsRequired, rewardThreshold, rewardTitle, couponDiscount, cardColor, textColor, logoUrl, backgroundUrl, rewardIconUrl, barcodeType } = data
+  const { name, loyaltyType, stampsRequired, rewardThreshold, rewardTitle, couponDiscount, cardColor, cardGradient, textColor, logoUrl, backgroundUrl, rewardIconUrl, barcodeType, sampleBalance = 0, tiers } = data
 
-  const balance = loyaltyType === 'points' ? `0 / ${rewardThreshold}`
-    : loyaltyType === 'tiered' ? T('Bronze', 'برونزي')
-    : loyaltyType === 'stamp' ? `0 / ${stampsRequired}`
+  const balance = loyaltyType === 'points' ? `${sampleBalance} / ${rewardThreshold}`
+    : loyaltyType === 'tiered' ? (tiers?.[0]?.name || T('Bronze', 'برونزي'))
+    : loyaltyType === 'stamp' ? `${Math.min(sampleBalance, stampsRequired)} / ${stampsRequired}`
     : loyaltyType === 'coupon' ? couponDiscount
     : '0'
 
@@ -17,16 +18,18 @@ export default function GooglePassPreview({ data, sampleName, T }) {
 
   const bgStyle = backgroundUrl
     ? { backgroundImage: `url(${backgroundUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {}
+    : cardGradient?.from && cardGradient?.to
+      ? { backgroundImage: `linear-gradient(${cardGradient.angle ?? 135}deg, ${cardGradient.from}, ${cardGradient.to})` }
+      : {}
 
   return (
     <motion.div
       className="pd-pass pd-pass-google"
-      animate={{ backgroundColor: backgroundUrl ? undefined : cardColor, color: textColor }}
+      animate={{ backgroundColor: backgroundUrl || cardGradient ? undefined : cardColor, color: textColor }}
       transition={{ duration: .4 }}
     >
       <div className="pd-pass-body" style={bgStyle}>
-        {backgroundUrl && <div className="pd-pass-overlay" />}
+        {(backgroundUrl || cardGradient) && <div className="pd-pass-overlay" />}
 
         <div className="pd-pass-header">
           <div className="pd-pass-logo-wrap">
@@ -39,18 +42,22 @@ export default function GooglePassPreview({ data, sampleName, T }) {
         </div>
 
         <div className="pd-pass-mid">
-          <div style={{ textAlign: 'center' }}>
-            <div className="pd-pass-balance-label">{balanceLabel}</div>
-            <motion.div
-              className="pd-pass-balance-val"
-              key={balance}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: .25 }}
-            >
-              {balance}
-            </motion.div>
-          </div>
+          {loyaltyType === 'stamp' ? (
+            <StampRow total={stampsRequired} earned={sampleBalance} icon={rewardIconUrl} textColor={textColor} />
+          ) : (
+            <div style={{ textAlign: 'center' }}>
+              <div className="pd-pass-balance-label">{balanceLabel}</div>
+              <motion.div
+                className="pd-pass-balance-val"
+                key={String(balance)}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: .25 }}
+              >
+                {balance}
+              </motion.div>
+            </div>
+          )}
         </div>
 
         <div className="pd-pass-fields">
@@ -75,8 +82,8 @@ export default function GooglePassPreview({ data, sampleName, T }) {
           animate={{ opacity: 1 }}
           transition={{ duration: .3 }}
         >
-          <BarcodePreview type={barcodeType} />
-          <div className="pd-pass-barcode-hint">{T('Scan to earn points', 'امسح لكسب النقاط')}</div>
+          <BarcodePreview type={barcodeType} value={`waya:preview:${name || 'draft'}`} />
+          <div className="pd-pass-barcode-hint">{T('Scan to earn', 'امسح لكسب')}</div>
         </motion.div>
       )}
     </motion.div>

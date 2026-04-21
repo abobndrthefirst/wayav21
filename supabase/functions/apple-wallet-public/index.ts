@@ -8,6 +8,13 @@
 //     in the generated pass. Legacy plaintext rows are transparently migrated
 //     to hashed form on next pass re-issue.
 //   - Logos are read from Supabase Storage only (no external URL fetch).
+//
+// Pass contents:
+//   - Bilingual labels (en/ar) driven by program.pass_language.
+//   - Stamp primary field now shows {have}/{need}, not "★★★☆☆".
+//   - Reward icon (from program.reward_icon_url) used as thumbnail.
+//   - Every pass carries a non-removable Waya signature back field
+//     and a hidden "Legendary" Easter-egg field.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -20,6 +27,9 @@ import { parseEnrollmentInput, ValidationError } from "../_shared/validation.ts"
 import { verifyEnrollmentToken } from "../_shared/enrollmentToken.ts";
 import { hashSecret } from "../_shared/hash.ts";
 import { events } from "../_shared/events.ts";
+import { pickLang, labelFor } from "../_shared/passLabels.ts";
+import { appleSignatureBackField, passDescription } from "../_shared/wayaSignature.ts";
+import { pickHero, legendaryLabel, legendaryValue, CREDITS_STRING } from "../_shared/easterEgg.ts";
 
 const FALLBACK_ICON_29 = Uint8Array.from(atob(
   "iVBORw0KGgoAAAANSUhEUgAAAB0AAAAdCAYAAABWk2cPAAAAGUlEQVR42mNkYGD4z0AEYBxVSF+FAAEGAAgyAQEAhuNGAAAAAElFTkSuQmCC"
@@ -97,28 +107,51 @@ async function fetchStorageImage(supabaseUrl: string, url: string | null | undef
   } catch { return null; }
 }
 
+/**
+ * Decodes a data: URL of the form "data:image/png;base64,AAAA..." to PNG bytes.
+ * Returns null if the URL isn't a valid base64 PNG data URL.
+ */
+function decodeDataUrlPng(url: string | null | undefined): Uint8Array | null {
+  if (!url || !url.startsWith("data:image/")) return null;
+  const commaIdx = url.indexOf(",");
+  if (commaIdx < 0) return null;
+  const header = url.slice(0, commaIdx);
+  if (!header.includes(";base64")) return null;
+  try {
+    const bytes = Uint8Array.from(atob(url.slice(commaIdx + 1)), c => c.charCodeAt(0));
+    if (bytes[0] === 0x89 && bytes[1] === 0x50) return bytes;
+    return null;
+  } catch { return null; }
+}
+
+async function loadImageFromAnySource(supabaseUrl: string, url: string | null | undefined): Promise<Uint8Array | null> {
+  if (!url) return null;
+  const data = decodeDataUrlPng(url);
+  if (data) return data;
+  return await fetchStorageImage(supabaseUrl, url);
+}
+
 function hexToRgb(hex: string): string {
   const h = hex.replace("#", "");
   return `rgb(${parseInt(h.slice(0, 2), 16)}, ${parseInt(h.slice(2, 4), 16)}, ${parseInt(h.slice(4, 6), 16)})`;
 }
 
-function buildPassFields(program: any, customer: any) {
+function buildPassFields(program: any, customer: any, lang: "en" | "ar") {
   const type = program.loyalty_type || "stamp";
   const rewards = customer.rewards_balance || 0;
   const rewardsField = rewards > 0
-    ? { key: "rewards", label: "REWARDS", value: `${rewards}x ${program.reward_title || "Reward"}` }
-    : { key: "rewards", label: "REWARD", value: program.reward_title || "Reward" };
+    ? { key: "rewards", label: labelFor(lang, "REWARDS"), value: `${rewards}x ${program.reward_title || labelFor(lang, "REWARD")}` }
+    : { key: "rewards", label: labelFor(lang, "REWARD"), value: program.reward_title || labelFor(lang, "REWARD") };
+  const memberName = customer.customer_name || labelFor(lang, "MEMBER_VALUE");
 
   if (type === "stamp") {
     const need = program.stamps_required || 10;
     const have = customer.stamps || 0;
-    const max = Math.min(need, 12);
-    const filled = Math.min(have, max);
-    const stampRow = "\u2605".repeat(filled) + "\u2606".repeat(max - filled);
     return {
-      headerFields: [{ key: "count", label: "STAMPS", value: `${have}/${need}` }],
-      primaryFields: [{ key: "stamps", label: customer.customer_name || "Member", value: stampRow }],
-      secondaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
+      headerFields: [{ key: "count", label: labelFor(lang, "STAMPS"), value: `${have}/${need}` }],
+      // Primary shows the count as text (no more star-row unicode).
+      primaryFields: [{ key: "stamps", label: memberName, value: `${have} / ${need}` }],
+      secondaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
       auxiliaryFields: [rewardsField],
     };
   }
@@ -126,25 +159,27 @@ function buildPassFields(program: any, customer: any) {
     const need = program.reward_threshold || 10;
     const have = customer.points || 0;
     return {
-      headerFields: [{ key: "points", label: "POINTS", value: `${have}/${need}` }],
-      primaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
-      secondaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
+      headerFields: [{ key: "points", label: labelFor(lang, "POINTS"), value: `${have}/${need}` }],
+      primaryFields: [{ key: "member", label: labelFor(lang, "MEMBER"), value: memberName }],
+      secondaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
       auxiliaryFields: [rewardsField],
     };
   }
   if (type === "tiered") {
+    const tierName = customer.tier || (Array.isArray(program.tiers) && program.tiers[0]?.name) || labelFor(lang, "BRONZE");
     return {
-      headerFields: [{ key: "points", label: "POINTS", value: customer.points || 0 }],
-      primaryFields: [{ key: "tier", label: "TIER", value: customer.tier || "Bronze" }],
-      secondaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
-      auxiliaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
+      headerFields: [{ key: "points", label: labelFor(lang, "POINTS"), value: String(customer.points ?? 0) }],
+      primaryFields: [{ key: "tier", label: labelFor(lang, "TIER"), value: tierName }],
+      secondaryFields: [{ key: "member", label: labelFor(lang, "MEMBER"), value: memberName }],
+      auxiliaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
     };
   }
+  // coupon
   return {
-    headerFields: [{ key: "value", label: "OFFER", value: program.coupon_discount || "DISCOUNT" }],
-    primaryFields: [{ key: "code", label: "CODE", value: program.coupon_code || "—" }],
-    secondaryFields: [{ key: "member", label: "MEMBER", value: customer.customer_name || "Member" }],
-    auxiliaryFields: [{ key: "shop", label: "SHOP", value: program.name || program.shop_name }],
+    headerFields: [{ key: "value", label: labelFor(lang, "OFFER"), value: program.coupon_discount || "DISCOUNT" }],
+    primaryFields: [{ key: "code", label: labelFor(lang, "CODE"), value: program.coupon_code || "—" }],
+    secondaryFields: [{ key: "member", label: labelFor(lang, "MEMBER"), value: memberName }],
+    auxiliaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
   };
 }
 
@@ -187,6 +222,8 @@ Deno.serve(async (req: Request) => {
     if (error || !data) throw new Error("Program not found");
     const program: any = { ...data, shop_name: (data as any).shop?.name };
     const shop: any = (data as any).shop;
+
+    const lang = pickLang(program.pass_language, req.headers.get("accept-language"));
 
     const passTypeId = Deno.env.get("APPLE_PASS_TYPE_ID");
     const teamId = Deno.env.get("APPLE_TEAM_ID");
@@ -241,9 +278,6 @@ Deno.serve(async (req: Request) => {
         pass_row.apple_serial = serial;
       }
     } else {
-      // Existing pass: we need to emit a pkpass but we CAN'T recover the
-      // plaintext auth token from the hash. Rotate the token so the new pass
-      // supersedes the old one. Old pass will get 401s and Apple auto-removes it.
       plaintextAuthToken = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
       const hashedAuthToken = await hashSecret(plaintextAuthToken);
       await supabase.from("customer_passes").update({
@@ -252,19 +286,29 @@ Deno.serve(async (req: Request) => {
       }).eq("id", pass_row.id);
     }
 
-    const fields = buildPassFields(program, { ...pass_row, customer_name: input.customer_name });
+    const fields = buildPassFields(program, { ...pass_row, customer_name: input.customer_name }, lang);
     const bgRgb = (program.card_color || "#10B981").startsWith("#") ? hexToRgb(program.card_color) : program.card_color;
     const fgRgb = (program.text_color || "#FFFFFF").startsWith("#") ? hexToRgb(program.text_color) : program.text_color;
 
     const backFields: any[] = [];
-    if (program.reward_description) backFields.push({ key: "rewardDesc", label: "Reward", value: program.reward_description });
-    if (program.terms) backFields.push({ key: "terms", label: "Terms & Conditions", value: program.terms });
-    if (program.expires_at) backFields.push({ key: "expires", label: "Expires", value: new Date(program.expires_at).toLocaleDateString() });
-    if (program.google_maps_url) backFields.push({ key: "maps", label: "Find us", value: program.google_maps_url, attributedValue: `<a href='${program.google_maps_url}'>Open in Maps</a>` });
-    if (program.website_url) backFields.push({ key: "web", label: "Website", value: program.website_url });
-    if (program.phone) backFields.push({ key: "phone", label: "Phone", value: program.phone });
-    if (program.address) backFields.push({ key: "address", label: "Address", value: program.address });
-    backFields.push({ key: "powered", label: "Powered by", value: "Waya \u2014 trywaya.com" });
+    if (program.reward_description) backFields.push({ key: "rewardDesc", label: labelFor(lang, "REWARD_DESC"), value: program.reward_description });
+    if (program.terms) backFields.push({ key: "terms", label: labelFor(lang, "TERMS"), value: program.terms });
+    if (program.expires_at) backFields.push({ key: "expires", label: labelFor(lang, "EXPIRES"), value: new Date(program.expires_at).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US") });
+    if (program.google_maps_url) backFields.push({ key: "maps", label: labelFor(lang, "FIND_US"), value: program.google_maps_url, attributedValue: `<a href='${program.google_maps_url}'>${labelFor(lang, "OPEN_IN_MAPS")}</a>` });
+    if (program.website_url) backFields.push({ key: "web", label: labelFor(lang, "WEBSITE"), value: program.website_url });
+    if (program.phone) backFields.push({ key: "phone", label: labelFor(lang, "PHONE"), value: program.phone });
+    if (program.address) backFields.push({ key: "address", label: labelFor(lang, "ADDRESS"), value: program.address });
+
+    // Easter-egg Layer 1: Legendary back field, hero derived from serial.
+    const hero = await pickHero(pass_row.apple_serial);
+    backFields.push({
+      key: "legendary",
+      label: legendaryLabel(lang),
+      value: legendaryValue(hero, lang),
+    });
+
+    // Waya signature — always last, non-removable.
+    backFields.push(appleSignatureBackField(lang));
 
     const passKey = program.loyalty_type === "coupon" ? "coupon" : "storeCard";
     const pass: any = {
@@ -273,11 +317,13 @@ Deno.serve(async (req: Request) => {
       serialNumber: pass_row.apple_serial,
       teamIdentifier: teamId,
       organizationName: orgName,
-      description: `${program.name || program.shop_name} Loyalty`,
+      description: passDescription(program.name || program.shop_name),
       logoText: program.name || program.shop_name,
       foregroundColor: fgRgb,
       backgroundColor: bgRgb,
       labelColor: fgRgb,
+      // Easter-egg Layer 3: hidden credits field at root of pass.json.
+      $credits: CREDITS_STRING,
       ...(() => {
         const bt = program.barcode_type || "QR";
         if (bt === "NONE") return {};
@@ -297,7 +343,7 @@ Deno.serve(async (req: Request) => {
         };
       })(),
       webServiceURL,
-      authenticationToken: plaintextAuthToken, // plaintext only leaves server in the pass file
+      authenticationToken: plaintextAuthToken,
       [passKey]: { ...fields, backFields },
     };
     if (program.expires_at) pass.expirationDate = new Date(program.expires_at).toISOString();
@@ -318,6 +364,7 @@ Deno.serve(async (req: Request) => {
 
     const remoteIcon = await fetchStorageImage(supabaseUrl, program.logo_url || shop?.logo_url);
     const remoteBg = await fetchStorageImage(supabaseUrl, program.background_url);
+    const rewardIcon = await loadImageFromAnySource(supabaseUrl, program.reward_icon_url);
     const icon29 = remoteIcon || FALLBACK_ICON_29;
     const icon58 = remoteIcon || FALLBACK_ICON_58;
     const files: Record<string, Uint8Array> = {
@@ -330,6 +377,12 @@ Deno.serve(async (req: Request) => {
     if (remoteBg) {
       files["strip.png"] = remoteBg;
       files["strip@2x.png"] = remoteBg;
+    }
+    // Thumbnail reflects the merchant's reward icon (coffee, scissors, etc.)
+    // Apple renders thumbnail.png on the pass front for storeCard/coupon/eventTicket.
+    if (rewardIcon) {
+      files["thumbnail.png"] = rewardIcon;
+      files["thumbnail@2x.png"] = rewardIcon;
     }
 
     const manifestObj: Record<string, string> = {};
@@ -359,7 +412,7 @@ Deno.serve(async (req: Request) => {
       program_id: input.program_id,
       customer_pass_id: pass_row?.id ?? null,
       message: `Apple Wallet pass issued for ${program.name || program.shop_name}`,
-      metadata: { platform: "apple", loyalty_type: program.loyalty_type, serial: pass_row?.apple_serial },
+      metadata: { platform: "apple", loyalty_type: program.loyalty_type, serial: pass_row?.apple_serial, lang },
       req,
     });
 
