@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Waya</title>
+  <style>
+    :root { --green: #10B981; --text: #0B0A09; --muted: #6B7280; --border: #E5E7EB; --bg: #FFFFFF; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); margin: 0; padding: 0; line-height: 1.6; }
+    .wrap { max-width: 780px; margin: 0 auto; padding: 48px 24px 96px; }
+    header { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; color: var(--green); text-decoration: none; }
+    h1 { font-size: 32px; margin: 16px 0 4px; letter-spacing: -0.02em; }
+    .eff { color: var(--muted); font-size: 14px; margin: 0; }
+    h2 { font-size: 20px; margin-top: 32px; letter-spacing: -0.01em; }
+    h3 { font-size: 16px; margin-top: 20px; color: var(--text); }
+    p, li { font-size: 15px; color: var(--text); }
+    ul { padding-inline-start: 20px; }
+    a { color: var(--green); }
+    section.ar { margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--border); direction: rtl; text-align: right; font-family: -apple-system, "SF Arabic", "Geeza Pro", Tahoma, sans-serif; }
+    section.ar ul { padding-inline-start: 20px; padding-inline-end: 0; }
+    .toc a { display: inline-block; margin-inline-end: 8px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .toc a:hover { color: var(--green); }
+    footer { margin-top: 64px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); padding-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="/">Waya</a>
+      <h1>Privacy Policy</h1>
+      <p class="eff">Effective: April 21, 2026</p>
+      <p class="toc">
+        <a href="#en">English</a>
+        <a href="#ar">العربية</a>
+      </p>
+    </header>
+
+    <section id="en">
+      <p>This Privacy Policy explains how Waya (“we”, “us”, “our”) collects, uses, stores, and protects personal data when you use the Waya Merchant mobile app, the Waya customer loyalty passes, and related services (together, the “Service”). By using the Service, you agree to this Policy.</p>
+
+      <h2>1. Who we are</h2>
+      <p>Waya operates a digital loyalty platform used by merchants in Saudi Arabia to manage customer rewards via Apple Wallet and Google Wallet passes. Questions about this Policy can be sent to <a href="mailto:privacy@trywaya.com">privacy@trywaya.com</a>.</p>
+
+      <h2>2. Data we collect</h2>
+      <h3>2.1 From merchants using the Waya Merchant app</h3>
+      <ul>
+        <li>Account identifiers: email address, password (stored only as a salted hash), and Supabase-generated user ID.</li>
+        <li>Shop/business information you enter: shop name, phone number, branding, and loyalty program configuration.</li>
+        <li>Loyalty activity you record: customer points, stamps, and reward redemptions you submit using the app.</li>
+        <li>Device and usage information: app version, iOS/Android version, anonymous crash reports.</li>
+      </ul>
+      <h3>2.2 From customers enrolled in a merchant’s loyalty program</h3>
+      <ul>
+        <li>Name and mobile phone number (Saudi format), provided by the customer when they enroll for an Apple/Google Wallet loyalty pass.</li>
+        <li>Loyalty balance and redemption history for that merchant only.</li>
+      </ul>
+      <p>We do not collect payment card numbers, government ID numbers, or location data.</p>
+
+      <h2>3. How we use data</h2>
+      <ul>
+        <li>To create and operate your merchant account and your customers’ loyalty passes.</li>
+        <li>To push loyalty balance updates to each customer’s Apple Wallet or Google Wallet in real time when you record a transaction.</li>
+        <li>To secure the Service (rate limiting, abuse prevention, authentication).</li>
+        <li>To diagnose crashes and improve reliability using aggregated, non-identifying telemetry.</li>
+      </ul>
+      <p>We do not sell personal data. We do not use personal data for advertising.</p>
+
+      <h2>4. How data is shared</h2>
+      <ul>
+        <li><strong>Supabase</strong> — our backend database and authentication provider. Data is stored in Supabase-managed infrastructure under our account, protected by row-level security.</li>
+        <li><strong>Apple</strong> — for APNs push notifications that update Apple Wallet passes when a customer’s balance changes. Only the pass serial number and the update signal are transmitted to Apple.</li>
+        <li><strong>Google</strong> — for Google Wallet Object API updates, using only the Google Wallet object ID and the balance delta.</li>
+      </ul>
+      <p>We do not share data with advertisers, data brokers, or any third party not listed above.</p>
+
+      <h2>5. Where data is stored</h2>
+      <p>Data is stored in Supabase-managed data centers. Transport is always encrypted using TLS 1.2+. Passwords are stored only as salted hashes and are never visible to us or anyone else.</p>
+
+      <h2>6. Retention and deletion</h2>
+      <p>We keep data for as long as your account is active. You can permanently delete your Waya merchant account at any time from the Waya Merchant app: open the Profile screen and tap “Delete account”. Deletion is immediate and removes your shop, customers, and all loyalty history. Backups are purged within 30 days.</p>
+      <p>Customers who want their loyalty pass removed can contact the issuing merchant or email <a href="mailto:privacy@trywaya.com">privacy@trywaya.com</a>.</p>
+
+      <h2>7. Your rights</h2>
+      <ul>
+        <li>Access — you can view the data we hold about you directly in the app.</li>
+        <li>Correction — update your shop info from the app.</li>
+        <li>Deletion — delete your account in-app (see §6).</li>
+        <li>Complaint — contact the Saudi Data &amp; AI Authority (SDAIA) if you believe your rights under KSA Personal Data Protection Law (PDPL) have been violated.</li>
+      </ul>
+
+      <h2>8. Children</h2>
+      <p>The Waya Merchant app is intended for business owners aged 18+. It is not directed at children. We do not knowingly collect personal data from children under 13.</p>
+
+      <h2>9. Changes to this Policy</h2>
+      <p>If we make a material change to this Policy we will update the Effective date at the top of this page and, where practical, notify merchants in the app or by email before the change takes effect.</p>
+
+      <h2>10. Contact</h2>
+      <p>Email: <a href="mailto:privacy@trywaya.com">privacy@trywaya.com</a><br>Website: <a href="https://trywaya.com">https://trywaya.com</a></p>
+    </section>
+
+    <section class="ar" id="ar">
+      <h1>سياسة الخصوصية</h1>
+      <p class="eff">تاريخ السريان: 21 أبريل 2026</p>
+
+      <p>توضح هذه السياسة كيف تقوم وايا («نحن») بجمع المعلومات الشخصية واستخدامها وتخزينها وحمايتها عند استخدامك تطبيق «تاجر وايا» وبطاقات وايا للعملاء والخدمات المتصلة بها («الخدمة»). باستخدامك للخدمة فإنك توافق على هذه السياسة.</p>
+
+      <h2>١. من نحن</h2>
+      <p>تُشغّل وايا منصة ولاء رقمية يستخدمها التجار في المملكة العربية السعودية لإدارة مكافآت العملاء عبر بطاقات Apple Wallet وGoogle Wallet. للاستفسارات: <a href="mailto:privacy@trywaya.com">privacy@trywaya.com</a>.</p>
+
+      <h2>٢. البيانات التي نجمعها</h2>
+      <h3>٢.١ من التجار</h3>
+      <ul>
+        <li>البريد الإلكتروني وكلمة المرور (مخزّنة كقيمة هاش مع ملح) ومعرّف المستخدم.</li>
+        <li>معلومات المتجر التي تُدخلها: الاسم ورقم الجوال والشعار وإعدادات برنامج الولاء.</li>
+        <li>نشاط الولاء الذي تسجّله: النقاط والأختام وعمليات الاستبدال.</li>
+        <li>معلومات الجهاز والاستخدام: إصدار التطبيق، إصدار النظام، وتقارير الأعطال المجهولة الهوية.</li>
+      </ul>
+      <h3>٢.٢ من العملاء المسجّلين في برنامج ولاء تاجر</h3>
+      <ul>
+        <li>الاسم ورقم الجوال السعودي، الذي يُقدّمه العميل عند تسجيل بطاقة Apple/Google Wallet.</li>
+        <li>رصيد الولاء وسجل الاستبدال لذلك التاجر فقط.</li>
+      </ul>
+      <p>لا نجمع أرقام بطاقات الدفع ولا الهوية الوطنية ولا بيانات الموقع.</p>
+
+      <h2>٣. كيف نستخدم البيانات</h2>
+      <ul>
+        <li>لإنشاء وتشغيل حسابك كتاجر وبطاقات عملائك.</li>
+        <li>لإرسال تحديثات الرصيد إلى Apple Wallet أو Google Wallet لدى العميل عند تسجيلك لعملية.</li>
+        <li>لتأمين الخدمة (التحقق من الهوية، الحد من إساءة الاستخدام).</li>
+        <li>لتحسين الموثوقية عبر بيانات تشخيصية مجهولة الهوية.</li>
+      </ul>
+      <p>لا نبيع البيانات الشخصية ولا نستخدمها لأغراض إعلانية.</p>
+
+      <h2>٤. مشاركة البيانات</h2>
+      <ul>
+        <li><strong>Supabase</strong> — قاعدة البيانات وخدمة المصادقة الخلفية لدينا، تحت حسابنا ومحمية بأمن السطر (RLS).</li>
+        <li><strong>Apple</strong> — لإرسال إشعارات APNs لتحديث بطاقات Apple Wallet. نرسل فقط معرّف البطاقة وإشارة التحديث.</li>
+        <li><strong>Google</strong> — لتحديث كائنات Google Wallet عبر الـ Object API، باستخدام المعرّف والفرق في الرصيد فقط.</li>
+      </ul>
+      <p>لا نشارك بياناتك مع معلنين أو وسطاء بيانات أو أي جهة غير مذكورة أعلاه.</p>
+
+      <h2>٥. أين تُخزّن البيانات</h2>
+      <p>تُخزّن البيانات في مراكز بيانات Supabase. جميع الاتصالات مشفّرة بـ TLS 1.2 أو أحدث. كلمات المرور مخزّنة كقيم هاش فقط.</p>
+
+      <h2>٦. الاحتفاظ والحذف</h2>
+      <p>نحتفظ بالبيانات طوال نشاط حسابك. يمكنك حذف حسابك نهائيًا من شاشة «الملف الشخصي» في التطبيق بالضغط على «حذف الحساب». يتم الحذف فورًا وتُحذف النسخ الاحتياطية خلال 30 يومًا.</p>
+
+      <h2>٧. حقوقك</h2>
+      <ul>
+        <li>الاطلاع على البيانات من داخل التطبيق.</li>
+        <li>تصحيح معلومات المتجر من داخل التطبيق.</li>
+        <li>الحذف النهائي للحساب (انظر البند ٦).</li>
+        <li>تقديم شكوى للهيئة السعودية للبيانات والذكاء الاصطناعي (سدايا) عند الاشتباه بمخالفة نظام حماية البيانات الشخصية.</li>
+      </ul>
+
+      <h2>٨. الأطفال</h2>
+      <p>التطبيق مخصص لأصحاب الأعمال البالغين (18+) ولا يستهدف الأطفال. لا نجمع عن علم بيانات من أطفال دون 13 عامًا.</p>
+
+      <h2>٩. تعديلات السياسة</h2>
+      <p>عند وجود تغييرات جوهرية سنحدّث تاريخ السريان أعلاه ونُخطر التجار قبل السريان متى كان ذلك ممكنًا.</p>
+
+      <h2>١٠. التواصل</h2>
+      <p>البريد: <a href="mailto:privacy@trywaya.com">privacy@trywaya.com</a><br>الموقع: <a href="https://trywaya.com">https://trywaya.com</a></p>
+    </section>
+
+    <footer>
+      &copy; 2026 Waya. All rights reserved.
+    </footer>
+  </div>
+</body>
+</html>
