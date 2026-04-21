@@ -29,7 +29,7 @@ begin
       'points',          cp.points,
       'stamps',          cp.stamps,
       'tier',            cp.tier,
-      'rewards_balance', cp.rewards,
+      'rewards_balance', cp.rewards_balance,
       'last_visit_at',   cp.last_visit_at,
       'loyalty_programs', case
         when lp.id is null then null
