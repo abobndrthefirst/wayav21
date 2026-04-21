@@ -3208,13 +3208,10 @@ function CustomersModal({ shop, lang, onClose }) {
     let cancelled = false
     const load = async () => {
       setLoading(true)
-      const { data } = await supabase
-        .from('customer_passes')
-        .select('id, customer_name, customer_phone, points, stamps, tier, rewards_balance, last_visit_at, loyalty_programs(name, loyalty_type, stamps_required)')
-        .eq('shop_id', shop.id)
-        .order('last_visit_at', { ascending: false, nullsFirst: false })
+      const { data, error } = await supabase.rpc('shop_customers', { _shop_id: shop.id })
       if (cancelled) return
-      setRows(data || [])
+      if (error) console.error('shop_customers', error)
+      setRows(Array.isArray(data) ? data : [])
       setLoading(false)
     }
     if (shop?.id) load()
@@ -3387,7 +3384,6 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
 
   const menuItems = [
     { id: 'home', label: d.navHome, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> },
-    { id: 'data', label: d.navData, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
     { id: 'scan', label: d.navScan, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M20 14h1M14 20h3M20 20h1"/></svg> },
     { id: 'designer', label: d.navDesigner, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
     { id: 'notifications', label: lang === 'ar' ? 'الإشعارات' : 'Notifications', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
