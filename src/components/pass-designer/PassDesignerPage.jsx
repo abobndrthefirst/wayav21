@@ -6,6 +6,7 @@ import DesignerPreviewPanel from './DesignerPreviewPanel'
 import TemplateGallery from './TemplateGallery'
 import useDesignState from './useDesignState'
 import { buildStripImage } from './buildStripImage'
+import { buildLogoImage } from './buildLogoImage'
 import { ProgramQR } from '../ProgramsList'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
@@ -141,6 +142,28 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       } catch (_) { /* non-fatal — pass will render without a strip */ }
     }
 
+    // Google Wallet REQUIRES a logo image URL — missing it surfaces as a
+    // generic "Something went wrong" on the save page. Auto-build a clean
+    // 512×512 square with the shop initial on the card color when the
+    // merchant hasn't uploaded one, and upload it so both wallets get a URL.
+    let logo_url = design.logo_url || shop?.logo_url || null
+    if (!logo_url) {
+      try {
+        const blob = await buildLogoImage({
+          name: design.name,
+          cardColor: design.card_color,
+        })
+        if (blob) {
+          const path = `${shop.id}/logo-auto-${Date.now()}.png`
+          const { error: upErr } = await supabase.storage.from('program-assets').upload(path, blob, { upsert: true, contentType: 'image/png' })
+          if (!upErr) {
+            const { data: urlData } = supabase.storage.from('program-assets').getPublicUrl(path)
+            logo_url = urlData.publicUrl
+          }
+        }
+      } catch (_) { /* non-fatal — but Google Wallet will likely fail */ }
+    }
+
     const payload = {
       shop_id: shop.id,
       name: design.name.trim(),
@@ -153,7 +176,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       card_color: design.card_color,
       text_color: design.text_color,
       card_gradient: design.card_gradient || null,
-      logo_url: design.logo_url || null,
+      logo_url,
       background_url,
       barcode_type: design.barcode_type,
       coupon_discount: design.coupon_discount?.trim() || null,
