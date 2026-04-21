@@ -3233,6 +3233,45 @@ function CustomersModal({ shop, lang, onClose }) {
     return d.toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })
   }
 
+  const exportCsv = () => {
+    const headers = [
+      T('Name', 'الاسم'),
+      T('Phone', 'الهاتف'),
+      T('Program', 'البرنامج'),
+      T('Stamps', 'الأختام'),
+      T('Points', 'النقاط'),
+      T('Tier', 'المستوى'),
+      T('Rewards balance', 'رصيد المكافآت'),
+      T('Last visit', 'آخر زيارة'),
+    ]
+    const esc = (v) => {
+      const s = v == null ? '' : String(v)
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+    }
+    const body = filtered.map(r => [
+      r.customer_name || '',
+      r.customer_phone || '',
+      r.loyalty_programs?.name || '',
+      r.stamps ?? 0,
+      r.points ?? 0,
+      r.tier || '',
+      r.rewards_balance ?? 0,
+      r.last_visit_at ? new Date(r.last_visit_at).toISOString().slice(0, 10) : '',
+    ].map(esc).join(','))
+    const csv = '\uFEFF' + [headers.map(esc).join(','), ...body].join('\r\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    const stamp = new Date().toISOString().slice(0, 10)
+    const slug = (shop?.name || 'waya').replace(/[^\w-]+/g, '-').toLowerCase()
+    a.href = url
+    a.download = `${slug}-customers-${stamp}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+
   return (
     <motion.div
       className="customers-modal-overlay"
@@ -3258,9 +3297,21 @@ function CustomersModal({ shop, lang, onClose }) {
               {loading ? '…' : `${filtered.length} ${T(filtered.length === 1 ? 'customer' : 'customers', 'عميل')}`}
             </span>
           </div>
-          <button className="customers-modal-close" onClick={onClose} aria-label={T('Close', 'إغلاق')}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+          <div className="customers-modal-actions">
+            <button
+              className="customers-modal-export"
+              onClick={exportCsv}
+              disabled={loading || filtered.length === 0}
+              aria-label={T('Export to Excel', 'تصدير إلى إكسل')}
+              title={T('Export to Excel (.csv)', 'تصدير إلى إكسل (.csv)')}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>{T('Export', 'تصدير')}</span>
+            </button>
+            <button className="customers-modal-close" onClick={onClose} aria-label={T('Close', 'إغلاق')}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
         </div>
         <div className="customers-modal-search">
           <input
