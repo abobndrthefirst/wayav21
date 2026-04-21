@@ -127,8 +127,12 @@ Deno.serve(async (req: Request) => {
 
     const idClean = input.program_id.replace(/-/g, "_");
     const phoneClean = input.customer_phone.replace(/[^\w]/g, "_");
-    const classId = `${GW_ISSUER_ID}.waya_loyalty_${idClean}`;
-    const objectId = `${GW_ISSUER_ID}.waya_member_${idClean}_${phoneClean}`;
+    // v2 suffix forces Google to create a fresh class, bypassing any bad state
+    // cached on their side from earlier attempts (stale heroImage, DRAFT status,
+    // etc.). Class upsert via JWT merges fields, so we can't remove stale ones
+    // — only option is a new classId.
+    const classId = `${GW_ISSUER_ID}.waya_loyalty_v2_${idClean}`;
+    const objectId = `${GW_ISSUER_ID}.waya_member_v2_${idClean}_${phoneClean}`;
 
     // Look up / create / update customer_pass
     const { data: existing } = await supabase
