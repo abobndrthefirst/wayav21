@@ -161,11 +161,11 @@ Deno.serve(async (req: Request) => {
     // Build the loyalty class
     const rawColor = programWithShopName.card_color || "#10B981";
     const hexColor = /^#[0-9A-Fa-f]{6}$/.test(rawColor) ? rawColor : "#10B981";
-    // reviewStatus is REQUIRED for classes to be issuable via save-to-wallet JWT.
-    // Without it, Google returns "Review status must be set" on any new class.
-    // UNDER_REVIEW → Google auto-approves for trusted issuers; trying to omit
-    // it (which we did briefly in commit 0d32940) only works for classes that
-    // were previously approved — any new program created after that breaks.
+    // UNDER_REVIEW is the ONLY accepted value for inline class creation via
+    // JWT. Google rejects "APPROVED" with "Invalid review status Optional[APPROVED]"
+    // because APPROVED can only be set via the REST API after human review.
+    // For trusted production issuers (our case) Google auto-promotes UNDER_REVIEW
+    // to issuable immediately.
     const loyaltyClass: Record<string, unknown> = {
       id: classId,
       issuerName: "Waya",
@@ -307,6 +307,10 @@ Deno.serve(async (req: Request) => {
         issuer_id: GW_ISSUER_ID,
         service_account: GW_SERVICE_ACCOUNT_EMAIL?.replace(/(.{4}).+(@.+)/, "$1…$2"),
         origins,
+        // DIAGNOSTIC: dump the exact payload we sent to Google so we can
+        // inspect after the user reports errors on the save-to-wallet page.
+        debug_class: loyaltyClass,
+        debug_object: loyaltyObject,
       },
       req,
     });
