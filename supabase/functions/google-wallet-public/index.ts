@@ -176,9 +176,15 @@ Deno.serve(async (req: Request) => {
         contentDescription: { defaultValue: { language: "en", value: programWithShopName.shop_name } },
       };
     }
-    if (isImageUrl(programWithShopName.background_url)) {
+    // Skip heroImage for auto-generated strips — they're sized for Apple's
+    // strip.png (2.6:1) and fail Google's heroImage validation (~3:1), which
+    // surfaces as a generic "Something went wrong" on the save-to-wallet page.
+    // Merchant-uploaded backgrounds are trusted to be Google-compatible.
+    const bgUrl = programWithShopName.background_url;
+    const isAutoStrip = typeof bgUrl === "string" && bgUrl.includes("/strip-auto-");
+    if (isImageUrl(bgUrl) && !isAutoStrip) {
       loyaltyClass.heroImage = {
-        sourceUri: { uri: programWithShopName.background_url },
+        sourceUri: { uri: bgUrl },
         contentDescription: { defaultValue: { language: "en", value: programWithShopName.name || "Loyalty" } },
       };
     }
