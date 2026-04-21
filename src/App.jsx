@@ -3174,12 +3174,124 @@ function DesignerTab({ shop, lang }) {
   )
 }
 
+function CustomersModal({ shop, lang, onClose }) {
+  const isAr = lang === 'ar'
+  const T = (en, ar) => (isAr ? ar : en)
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      const { data } = await supabase
+        .from('customer_passes')
+        .select('id, customer_name, customer_phone, points, stamps, tier, rewards_balance, last_visit_at, loyalty_programs(name, loyalty_type, stamps_required)')
+        .eq('shop_id', shop.id)
+        .order('last_visit_at', { ascending: false, nullsFirst: false })
+      if (cancelled) return
+      setRows(data || [])
+      setLoading(false)
+    }
+    if (shop?.id) load()
+    return () => { cancelled = true }
+  }, [shop?.id])
+
+  const filtered = rows.filter(r => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return (r.customer_name || '').toLowerCase().includes(q) || (r.customer_phone || '').includes(q)
+  })
+
+  const fmtDate = (iso) => {
+    if (!iso) return T('Never', 'لم يزر بعد')
+    const d = new Date(iso)
+    return d.toLocaleDateString(isAr ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
+  return (
+    <motion.div
+      className="customers-modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      onClick={onClose}
+      dir={isAr ? 'rtl' : 'ltr'}
+    >
+      <motion.div
+        className="customers-modal"
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="customers-modal-head">
+          <div>
+            <h2>{T('Customers', 'العملاء')}</h2>
+            <span className="customers-modal-count">
+              {loading ? '…' : `${filtered.length} ${T(filtered.length === 1 ? 'customer' : 'customers', 'عميل')}`}
+            </span>
+          </div>
+          <button className="customers-modal-close" onClick={onClose} aria-label={T('Close', 'إغلاق')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div className="customers-modal-search">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={T('Search by name or phone', 'بحث بالاسم أو الهاتف')}
+          />
+        </div>
+        <div className="customers-modal-body">
+          {loading && <div className="customers-modal-empty">{T('Loading…', 'جارٍ التحميل…')}</div>}
+          {!loading && filtered.length === 0 && (
+            <div className="customers-modal-empty">
+              {rows.length === 0
+                ? T('No customers yet. Share your QR code to start enrolling.', 'لا يوجد عملاء بعد. شارك رمز QR لتبدأ.')
+                : T('No matches.', 'لا توجد نتائج.')}
+            </div>
+          )}
+          {!loading && filtered.map(r => {
+            const program = r.loyalty_programs
+            const isStamp = program?.loyalty_type === 'stamp'
+            const progress = isStamp
+              ? `${r.stamps || 0}/${program?.stamps_required || 10} ${T('stamps', 'ختم')}`
+              : `${r.points || 0} ${T('points', 'نقطة')}`
+            return (
+              <div key={r.id} className="customers-row">
+                <div className="customers-row-main">
+                  <strong>{r.customer_name || T('Member', 'عضو')}</strong>
+                  <span className="customers-row-phone">{r.customer_phone || '—'}</span>
+                </div>
+                <div className="customers-row-meta">
+                  {program?.name && <span className="customers-row-program">{program.name}</span>}
+                  <span>{progress}</span>
+                  {r.tier && <span className="customers-row-tier">{r.tier}</span>}
+                  {(r.rewards_balance || 0) > 0 && (
+                    <span className="customers-row-reward">{r.rewards_balance}× {T('reward', 'مكافأة')}</span>
+                  )}
+                  <span className="customers-row-date">{T('Last visit', 'آخر زيارة')}: {fmtDate(r.last_visit_at)}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const { user, signOut, loading: authLoading } = useAuth()
   const d = t.dashboard
   const [shop, setShop] = useState(null)
   const [activeTab, setActiveTab] = useState('home')
   const [loadingShop, setLoadingShop] = useState(true)
+  const [showCustomers, setShowCustomers] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -3311,14 +3423,33 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
                 { key: 'visits', value: `${stats.repeatRatePct}%` },
                 { key: 'revenue', value: stats.rewardsSent.toLocaleString('en-US') },
                 { key: 'rewards', value: stats.rewardsRedeemed.toLocaleString('en-US') },
-              ]).map((s, i) => (
-                <motion.div key={s.key} className="data-stat-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}>
-                  <div className="data-stat-icon-wrap">{statIcons[i]}</div>
-                  <div className="data-stat-value"><CountUp value={typeof s.value === 'number' ? s.value.toLocaleString('en-US') : s.value} duration={2} delay={i * 0.15} /></div>
-                  <div className="data-stat-label">{d.statLabels[s.key]}</div>
-                </motion.div>
-              ))}
+              ]).map((s, i) => {
+                const clickable = s.key === 'customers'
+                return (
+                  <motion.div
+                    key={s.key}
+                    className={`data-stat-card${clickable ? ' clickable' : ''}`}
+                    role={clickable ? 'button' : undefined}
+                    tabIndex={clickable ? 0 : undefined}
+                    onClick={clickable ? () => setShowCustomers(true) : undefined}
+                    onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowCustomers(true) } } : undefined}
+                    initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+                  >
+                    <div className="data-stat-icon-wrap">{statIcons[i]}</div>
+                    <div className="data-stat-value"><CountUp value={typeof s.value === 'number' ? s.value.toLocaleString('en-US') : s.value} duration={2} delay={i * 0.15} /></div>
+                    <div className="data-stat-label">{d.statLabels[s.key]}</div>
+                  </motion.div>
+                )
+              })}
             </div>
+            <AnimatePresence>
+              {showCustomers && (
+                <CustomersModal shop={shop} lang={lang} onClose={() => setShowCustomers(false)} />
+              )}
+            </AnimatePresence>
 
             <motion.section className="dash-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
               <h2>{d.journey}</h2>
