@@ -20,7 +20,7 @@ import { verifyEnrollmentToken } from "../_shared/enrollmentToken.ts";
 import { events } from "../_shared/events.ts";
 import { pickLang, labelFor } from "../_shared/passLabels.ts";
 import { googleSignatureTextModule, googleSignatureLink } from "../_shared/wayaSignature.ts";
-import { pickHero, legendaryLabel, legendaryValue } from "../_shared/easterEgg.ts";
+import { GNKJ } from "../_shared/easterEgg.ts";
 
 function getPrivateKey(): string {
   let raw = Deno.env.get("GOOGLE_WALLET_PRIVATE_KEY") || "";
@@ -189,9 +189,8 @@ Deno.serve(async (req: Request) => {
     }
     if (programWithShopName.terms) textModules.push({ header: labelFor(lang, "TERMS"), body: (programWithShopName.terms as string).slice(0, 500), id: "terms" });
 
-    // Easter-egg Layer 1: Legendary text module, hero derived from object id.
-    const hero = await pickHero(objectId);
-    textModules.push({ header: legendaryLabel(lang), body: legendaryValue(hero, lang), id: "legendary" });
+    // Easter egg — just four letters. No header, no explanation.
+    textModules.push({ body: GNKJ, id: "gnkj" });
 
     // Waya signature — always last, non-removable.
     textModules.push(googleSignatureTextModule(lang));

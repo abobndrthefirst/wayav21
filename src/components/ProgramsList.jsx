@@ -124,7 +124,7 @@ function labelType(t, T) {
   return t
 }
 
-function ProgramQR({ program, onClose, lang }) {
+export function ProgramQR({ program, onClose, lang }) {
   const isAr = lang === 'ar'
   const T = (en, ar) => (isAr ? ar : en)
   const [token, setToken] = useState(null)

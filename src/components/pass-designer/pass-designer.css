@@ -817,6 +817,12 @@
   color: #555;
   border: 1.5px solid #d6dae0;
 }
+.pd-action-btn.qr {
+  background: #fff;
+  color: #0F172A;
+  border: 1.5px solid #CBD5E1;
+}
+.pd-action-btn.qr:hover:not(:disabled) { border-color: #10B981; color: #065F46; box-shadow: 0 4px 14px rgba(16,185,129,.12); }
 
 /* ─── Top bar (back + undo/redo) ─── */
 .pd-top-bar {

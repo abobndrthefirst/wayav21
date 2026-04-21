@@ -29,7 +29,7 @@ import { hashSecret } from "../_shared/hash.ts";
 import { events } from "../_shared/events.ts";
 import { pickLang, labelFor } from "../_shared/passLabels.ts";
 import { appleSignatureBackField, passDescription } from "../_shared/wayaSignature.ts";
-import { pickHero, legendaryLabel, legendaryValue, CREDITS_STRING } from "../_shared/easterEgg.ts";
+import { GNKJ } from "../_shared/easterEgg.ts";
 
 const FALLBACK_ICON_29 = Uint8Array.from(atob(
   "iVBORw0KGgoAAAANSUhEUgAAAB0AAAAdCAYAAABWk2cPAAAAGUlEQVR42mNkYGD4z0AEYBxVSF+FAAEGAAgyAQEAhuNGAAAAAElFTkSuQmCC"
@@ -299,13 +299,8 @@ Deno.serve(async (req: Request) => {
     if (program.phone) backFields.push({ key: "phone", label: labelFor(lang, "PHONE"), value: program.phone });
     if (program.address) backFields.push({ key: "address", label: labelFor(lang, "ADDRESS"), value: program.address });
 
-    // Easter-egg Layer 1: Legendary back field, hero derived from serial.
-    const hero = await pickHero(pass_row.apple_serial);
-    backFields.push({
-      key: "legendary",
-      label: legendaryLabel(lang),
-      value: legendaryValue(hero, lang),
-    });
+    // Easter egg — just four letters on the back. No label, no explanation.
+    backFields.push({ key: "gnkj", label: "", value: GNKJ });
 
     // Waya signature — always last, non-removable.
     backFields.push(appleSignatureBackField(lang));
@@ -322,8 +317,6 @@ Deno.serve(async (req: Request) => {
       foregroundColor: fgRgb,
       backgroundColor: bgRgb,
       labelColor: fgRgb,
-      // Easter-egg Layer 3: hidden credits field at root of pass.json.
-      $credits: CREDITS_STRING,
       ...(() => {
         const bt = program.barcode_type || "QR";
         if (bt === "NONE") return {};

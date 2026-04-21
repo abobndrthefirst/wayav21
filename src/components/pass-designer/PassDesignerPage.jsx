@@ -5,6 +5,8 @@ import DesignerEditorPanel from './DesignerEditorPanel'
 import DesignerPreviewPanel from './DesignerPreviewPanel'
 import TemplateGallery from './TemplateGallery'
 import useDesignState from './useDesignState'
+import { buildStripImage } from './buildStripImage'
+import { ProgramQR } from '../ProgramsList'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
@@ -53,6 +55,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
   const [showGallery, setShowGallery] = useState(isNew)
   const [sampleBalance, setSampleBalance] = useState(0)
   const [darkPreview, setDarkPreview] = useState(false)
+  const [showQr, setShowQr] = useState(false)
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
@@ -115,6 +118,29 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
     if (!design.name.trim()) { showToast(T('Card name is required', 'اسم البطاقة مطلوب')); return }
     setSaving(true); clearError()
 
+    // Auto-build a strip image from the reward icon when the merchant hasn't
+    // uploaded a custom cover. This is what makes the selected coffee/tag/etc.
+    // actually show up on the pass instead of a blank or default background.
+    let background_url = design.background_url || null
+    if (design.loyalty_type === 'stamp' && design.reward_icon_url && !background_url) {
+      try {
+        const blob = await buildStripImage({
+          iconUrl: design.reward_icon_url,
+          cardColor: design.card_color,
+          textColor: design.text_color,
+          count: design.stamps_required || 10,
+        })
+        if (blob) {
+          const path = `${shop.id}/strip-auto-${Date.now()}.png`
+          const { error: upErr } = await supabase.storage.from('program-assets').upload(path, blob, { upsert: true, contentType: 'image/png' })
+          if (!upErr) {
+            const { data: urlData } = supabase.storage.from('program-assets').getPublicUrl(path)
+            background_url = urlData.publicUrl
+          }
+        }
+      } catch (_) { /* non-fatal — pass will render without a strip */ }
+    }
+
     const payload = {
       shop_id: shop.id,
       name: design.name.trim(),
@@ -128,7 +154,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       text_color: design.text_color,
       card_gradient: design.card_gradient || null,
       logo_url: design.logo_url || null,
-      background_url: design.background_url || null,
+      background_url,
       barcode_type: design.barcode_type,
       coupon_discount: design.coupon_discount?.trim() || null,
       coupon_code: design.coupon_code?.trim() || null,
@@ -144,6 +170,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
     }
 
     let result
+    const wasFirstSave = !savedProgram
     if (savedProgram?.id) {
       const { data, error: dbErr } = await supabase.from('loyalty_programs').update(payload).eq('id', savedProgram.id).select().single()
       if (dbErr) { setError({ message: dbErr.message, code: dbErr.code }); showToast(T('Save failed', 'فشل الحفظ')); setSaving(false); return }
@@ -158,7 +185,10 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
     setSavedProgram(result)
     markSaved()
     setSaving(false)
-    showToast(isNew && !savedProgram ? T('Card created!', 'تم إنشاء البطاقة!') : T('Design saved!', 'تم حفظ التصميم!'))
+    showToast(wasFirstSave ? T('Card created!', 'تم إنشاء البطاقة!') : T('Design saved!', 'تم حفظ التصميم!'))
+
+    // Fresh save → show the QR view so the merchant can print it right away.
+    if (wasFirstSave) setShowQr(true)
   }
   saveRef.current = handleSave
 
@@ -219,6 +249,10 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
         onBack={onBack}
       />
     )
+  }
+
+  if (showQr && savedProgram?.id) {
+    return <ProgramQR program={savedProgram} lang={lang} onClose={() => setShowQr(false)} />
   }
 
   return (
@@ -413,6 +447,13 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
         </button>
         {savedProgram?.id && (
           <>
+            <button type="button" className="pd-action-btn qr" onClick={() => setShowQr(true)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 18, height: 18 }}>
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                <path d="M14 14h3v3h-3zM17 17h4M17 21h4M21 14v3"/>
+              </svg>
+              {T('QR & Print', 'رمز QR وطباعة')}
+            </button>
             <button type="button" className="pd-action-btn google" onClick={handleGooglePass} disabled={googleLoading}>
               <svg viewBox="0 0 18 18" fill="none" style={{ width: 18, height: 18 }}><path d="M17.2 9.2c0-.6-.1-1.2-.2-1.8H9v3.4h4.6c-.2 1.1-.8 2-1.7 2.6v2.1h2.7c1.6-1.5 2.6-3.6 2.6-6.3z" fill="#4285F4"/><path d="M9 18c2.3 0 4.3-.8 5.7-2.1l-2.7-2.1c-.8.5-1.8.9-3 .9-2.3 0-4.3-1.6-5-3.7H1.2v2.2C2.6 16 5.5 18 9 18z" fill="#34A853"/><path d="M4 11c-.2-.5-.3-1-.3-1.5s.1-1.1.3-1.5V5.8H1.2C.4 7.3 0 9.1 0 10.5c0 1.4.4 2.7 1.2 3.7L4 11z" fill="#FBBC05"/><path d="M9 3.6c1.3 0 2.5.4 3.4 1.3l2.5-2.5C13.2.9 11.3 0 9 0 5.5 0 2.6 2 1.2 4.8L4 7c.7-2.1 2.7-3.4 5-3.4z" fill="#EA4335"/></svg>
               {googleLoading ? '...' : T('Google Wallet', 'محفظة جوجل')}
