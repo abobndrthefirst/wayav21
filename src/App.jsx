@@ -3326,13 +3326,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
       })
   }, [user])
 
-  // Real stats once the shop has been activated; demo stats otherwise.
-  // Driven by shops.account_status, which the subscriptions trigger keeps
-  // in sync with the StreamPay payment status.
-  const stats = useShopStats({
-    shopId: shop?.id,
-    accountStatus: shop?.account_status,
-  })
+  const stats = useShopStats({ shopId: shop?.id })
 
   if (loadingShop) return <div className="auth-page"><div className="dash-loading"><Logo size={72} /></div></div>
   if (!shop) return null
