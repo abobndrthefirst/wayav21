@@ -3709,7 +3709,6 @@ body {
 }
 .sidebar-brand { display: flex; align-items: center; gap: 10px; }
 .sidebar-brand img { height: 48px; width: auto; }
-.sidebar-brand-name { font-size: 1.4rem; font-weight: 800; color: #111; letter-spacing: 0.3px; }
 .sidebar-shop-block {
   display: flex; align-items: center; gap: 12px;
   padding: 14px 20px;
@@ -3754,16 +3753,75 @@ body {
 .sidebar-logout .sidebar-item-icon { color: #ef4444; }
 .sidebar-logout:hover { background: rgba(239,68,68,0.06); color: #ef4444; }
 
-/* ─── Demo Banner ─── */
-.demo-banner {
-  background: linear-gradient(135deg, var(--green), #059669);
-  color: #fff;
-  text-align: center;
-  padding: 12px 24px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  line-height: 1.5;
+/* ─── Sidebar footer toggles (theme + language) ─── */
+.sidebar-footer-toggles {
+  display: flex;
+  gap: 8px;
+  padding: 6px 4px 10px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #eef0f3;
 }
+.sidebar-toggle-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #f6f7f9;
+  border: 1px solid #e6e8ec;
+  border-radius: 10px;
+  color: #2b2d31;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.sidebar-toggle-btn:hover { background: #eef5f0; border-color: #cfe2d4; color: var(--green); }
+.sidebar-toggle-btn svg { width: 16px; height: 16px; }
+.sidebar-toggle-label { font-size: 0.8rem; }
+
+/* ─── Dashboard CTA card (Create your first card) ─── */
+.dash-cta-card { text-align: center; padding: 32px 24px; }
+.dash-cta-content { max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.dash-cta-title { font-size: 1.35rem; font-weight: 800; color: #111; margin: 0; }
+.dash-cta-sub { font-size: 0.95rem; color: #6b7280; line-height: 1.5; margin: 0 0 12px; }
+.dash-cta-btn { min-width: 180px; }
+
+/* ─── Scan & Redeem screen ─── */
+.scan-redeem-wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.scan-lookup-card { display: flex; flex-direction: column; gap: 10px; padding: 20px 22px; }
+.scan-lookup-row { display: flex; gap: 8px; align-items: stretch; }
+.scan-lookup-input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid #e4e7eb;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  background: #fff;
+  color: #111;
+}
+.scan-lookup-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+.scan-lookup-btn { min-width: 100px; }
+.scan-customer-card { padding: 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+.scan-customer-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.scan-customer-name { font-size: 1.15rem; font-weight: 800; color: #111; margin: 0; }
+.scan-customer-phone { font-size: 0.85rem; color: #6b7280; margin: 2px 0 0; letter-spacing: 0.3px; direction: ltr; }
+.scan-stamp-counter { text-align: right; }
+.scan-stamp-big { font-size: 1.6rem; font-weight: 800; color: var(--green); line-height: 1; }
+.scan-stamp-small { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+.scan-progress { height: 10px; background: #eef0f3; border-radius: 999px; overflow: hidden; }
+.scan-progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), #059669); transition: width 0.35s ease; }
+.scan-actions { display: flex; gap: 10px; }
+.scan-actions .lw-btn { flex: 1; justify-content: center; }
+.scan-msg { font-size: 0.9rem; padding: 10px 14px; border-radius: 10px; text-align: center; }
+.scan-msg.success { background: rgba(16,185,129,0.12); color: #047857; }
+.scan-msg.error { background: rgba(239,68,68,0.1); color: #b91c1c; }
+.scan-msg.info { background: #f3f4f6; color: #4b5563; }
+html.ltr-mode .scan-customer-phone { direction: ltr; text-align: left; }
+html.ltr-mode .scan-stamp-counter { text-align: left; }
 
 /* ─── Light theme sidebar (already white by default) ─── */
 

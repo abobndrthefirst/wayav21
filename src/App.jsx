@@ -20,6 +20,7 @@ import { WhoWeServe, PosIntegrations } from './components/LoyaSections'
 // Lazy-load the heavy merchant + customer flows so the marketing landing
 // page doesn't ship a LoyaltyWizard / WalletEnrollPage bundle it never uses.
 const ProgramsList = lazy(() => import('./components/ProgramsList'))
+const ScanRedeemTab = lazy(() => import('./components/ScanRedeemTab'))
 const WalletEnrollPage = lazy(() => import('./components/WalletEnrollPage'))
 const EventsPanel = lazy(() => import('./components/EventsPanel'))
 const NotificationsPanel = lazy(() => import('./components/NotificationsPanel'))
@@ -134,9 +135,24 @@ const content = {
       activity: 'آخر النشاطات', noActivity: 'ما في نشاطات بعد — شارك كود QR مع عملائك!',
       scan: 'مسح', reward: 'مكافأة', pointsEarned: 'نقطة',
       home: 'الرئيسية', data: 'البيانات', loyalty: 'الولاء', settings: 'الإعدادات', logout: 'خروج',
-      navHome: 'الرئيسية', navData: 'البيانات', navLoyalty: 'برنامج الولاء', navCards: 'بطاقات الولاء', navDesigner: 'مصمم البطاقة', navSettings: 'الإعدادات',
+      navHome: 'الرئيسية', navData: 'البيانات', navLoyalty: 'برنامج الولاء', navDesigner: 'مصمم البطاقة', navScan: 'مسح واستبدال', navSettings: 'الإعدادات',
       visitSite: 'زيارة الموقع',
-      demoBanner: 'هذا عرض تجريبي — سنتواصل معك قريباً لتفعيل حسابك. في هذه الأثناء، استكشف لوحة التحكم!',
+      createFirstCardTitle: 'أنشئ بطاقتك الأولى',
+      createFirstCardSub: 'صمّم بطاقة ولاء جاهزة لمحفظة Apple وGoogle Wallet خلال دقائق.',
+      createFirstCardCta: 'ابدأ التصميم',
+      scanTitle: 'مسح واستبدال',
+      scanLookupLabel: 'رقم جوال العميل',
+      scanLookupPh: '05xxxxxxxx',
+      scanLookupBtn: 'بحث',
+      scanNotFound: 'ما لقينا عميل بهذا الرقم.',
+      scanStamps: 'النقاط',
+      scanRequired: 'مطلوب للمكافأة',
+      scanAddStamp: 'إضافة نقطة',
+      scanRedeem: 'استبدال مكافأة',
+      scanSuccessAdd: 'تمت إضافة النقطة ✓',
+      scanSuccessRedeem: 'تم استبدال المكافأة 🎉',
+      scanError: 'صار خطأ، جرّب مرة ثانية.',
+      scanRedeemDisabled: 'العميل ما وصل للمكافأة بعد.',
       statLabels: { customers: 'عميل نشط', visits: 'زيارات متكررة', revenue: 'إيرادات إضافية', rewards: 'مكافأة مرسلة' },
     },
     dataPage: {
@@ -589,9 +605,24 @@ const content = {
       activity: 'Recent Activity', noActivity: 'No activity yet — share your QR code with customers!',
       scan: 'Scan', reward: 'Reward', pointsEarned: 'points',
       home: 'Home', data: 'Data', loyalty: 'Loyalty', settings: 'Settings', logout: 'Log Out',
-      navHome: 'Home', navData: 'Analytics', navLoyalty: 'Loyalty Program', navCards: 'Loyalty Cards', navDesigner: 'Pass Designer', navSettings: 'Settings',
+      navHome: 'Home', navData: 'Analytics', navLoyalty: 'Loyalty Program', navDesigner: 'Pass Designer', navScan: 'Scan & Redeem', navSettings: 'Settings',
       visitSite: 'Visit Website',
-      demoBanner: "This is a demo view — we'll contact you soon to activate your account. Meanwhile, explore the dashboard!",
+      createFirstCardTitle: 'Create your first card',
+      createFirstCardSub: 'Design a loyalty card ready for Apple & Google Wallet in minutes.',
+      createFirstCardCta: 'Start designing',
+      scanTitle: 'Scan & Redeem',
+      scanLookupLabel: 'Customer phone number',
+      scanLookupPh: '05xxxxxxxx',
+      scanLookupBtn: 'Lookup',
+      scanNotFound: "We couldn't find a customer with that number.",
+      scanStamps: 'Stamps',
+      scanRequired: 'Needed for reward',
+      scanAddStamp: 'Add stamp',
+      scanRedeem: 'Redeem reward',
+      scanSuccessAdd: 'Stamp added ✓',
+      scanSuccessRedeem: 'Reward redeemed 🎉',
+      scanError: 'Something went wrong, try again.',
+      scanRedeemDisabled: 'Customer has not reached the reward yet.',
       statLabels: { customers: 'Active Customers', visits: 'Repeat Visits', revenue: 'Extra Revenue', rewards: 'Rewards Sent' },
     },
     dataPage: {
@@ -2797,14 +2828,6 @@ const demoData = {
     { key: 'revenue', value: '14.2K', change: '+22%' },
     { key: 'rewards', value: '3,891', change: '+34%' },
   ],
-  activity: [
-    { id: 1, name: 'أحمد محمد', action: 'scan', points: 3, time: '2 min' },
-    { id: 2, name: 'سارة علي', action: 'reward', points: 10, time: '15 min' },
-    { id: 3, name: 'خالد عبدالله', action: 'scan', points: 3, time: '32 min' },
-    { id: 4, name: 'نورة سعود', action: 'scan', points: 3, time: '1 hr' },
-    { id: 5, name: 'فهد ناصر', action: 'reward', points: 10, time: '2 hr' },
-    { id: 6, name: 'ريم خالد', action: 'scan', points: 3, time: '3 hr' },
-  ],
 }
 
 /* ─── Shop Setup Page (onboarding — no loyalty) ─── */
@@ -3320,7 +3343,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const menuItems = [
     { id: 'home', label: d.navHome, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> },
     { id: 'data', label: d.navData, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
-    { id: 'cards', label: d.navCards, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h4"/></svg> },
+    { id: 'scan', label: d.navScan, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M20 14h1M14 20h3M20 20h1"/></svg> },
     { id: 'designer', label: d.navDesigner, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
     { id: 'notifications', label: lang === 'ar' ? 'الإشعارات' : 'Notifications', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
     { id: 'settings', label: d.navSettings, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
@@ -3340,7 +3363,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
       {/* Persistent Sidebar (LoyaPro-style) */}
       <aside className="sidebar sidebar-persistent">
         <div className="sidebar-header">
-          <div className="sidebar-brand"><Logo size={72} /><span className="sidebar-brand-name">Waya</span></div>
+          <div className="sidebar-brand"><Logo size={72} /></div>
         </div>
         <div className="sidebar-shop-block">
           {shop.logo_url ? <img src={shop.logo_url} alt="" className="sidebar-logo" /> : <div className="sidebar-logo-ph"><Logo size={20} /></div>}
@@ -3356,6 +3379,24 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           ))}
         </div>
         <div className="sidebar-footer">
+          <div className="sidebar-footer-toggles">
+            <button
+              className="sidebar-toggle-btn"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              aria-label={lang === 'ar' ? 'تبديل الوضع' : 'Toggle theme'}
+              title={lang === 'ar' ? 'تبديل الوضع' : 'Toggle theme'}
+            >
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+            </button>
+            <button
+              className="sidebar-toggle-btn"
+              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+              aria-label={lang === 'ar' ? 'تغيير اللغة' : 'Switch language'}
+              title={lang === 'ar' ? 'English' : 'عربي'}
+            >
+              <GlobeIcon /><span className="sidebar-toggle-label">{lang === 'ar' ? 'EN' : 'عربي'}</span>
+            </button>
+          </div>
           <button className="sidebar-item sidebar-billing-link" onClick={() => navigate('/billing')}>
             <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h6"/></svg></span>
             <span className="sidebar-item-label">{lang === 'ar' ? 'الاشتراك' : 'Subscription'}</span>
@@ -3370,26 +3411,6 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           </button>
         </div>
       </aside>
-
-      {/* Top nav */}
-      <nav className="dash-nav">
-        <div className="dash-nav-left">
-          <div className="dash-nav-brand"><Logo size={72} /></div>
-        </div>
-        <div className="dash-nav-right">
-          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-          </button>
-          <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
-            <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
-          </button>
-        </div>
-      </nav>
-
-      {/* Demo banner */}
-      <div className="demo-banner">
-        <span>{d.demoBanner}</span>
-      </div>
 
       {/* Content */}
       <div className="dash-content">
@@ -3451,32 +3472,13 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               )}
             </AnimatePresence>
 
-            <motion.section className="dash-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-              <h2>{d.journey}</h2>
-              <div className="dash-journey">
-                {[d.step1, d.step2, d.step3, d.step4].map((label, i) => (
-                  <motion.div key={i} className="dash-journey-step" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 + i * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
-                    <div className="dash-journey-num">{i + 1}</div>
-                    <span className="dash-journey-label">{label}</span>
-                    {i < 3 && <div className="dash-journey-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2"><path d={lang === 'ar' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'}/></svg></div>}
-                  </motion.div>
-                ))}
-              </div>
-            </motion.section>
-
-            <motion.section className="dash-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: 0.4, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-              <h2>{d.activity}</h2>
-              <div className="dash-activity-list">
-                {demoData.activity.map((a, i) => (
-                  <motion.div key={a.id} className="dash-activity-item" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
-                    <div className="dash-activity-badge">{a.action === 'reward' ? '🎁' : '📱'}</div>
-                    <div className="dash-activity-info">
-                      <span className="dash-activity-name">{a.name}</span>
-                      <span className="dash-activity-action">{a.action === 'reward' ? d.reward : d.scan} · {a.points} {d.pointsEarned}</span>
-                    </div>
-                    <span className="dash-activity-time">{a.time}</span>
-                  </motion.div>
-                ))}
+            <motion.section className="dash-card dash-cta-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
+              <div className="dash-cta-content">
+                <h2 className="dash-cta-title">{d.createFirstCardTitle}</h2>
+                <p className="dash-cta-sub">{d.createFirstCardSub}</p>
+                <button className="lw-btn primary dash-cta-btn" onClick={() => setActiveTab('designer')}>
+                  {d.createFirstCardCta}
+                </button>
               </div>
             </motion.section>
 
@@ -3520,9 +3522,9 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           </>
         )}
 
-        {activeTab === 'cards' && (
+        {activeTab === 'scan' && (
           <Suspense fallback={<LazyFallback />}>
-            <ProgramsList shop={shop} lang={lang} />
+            <ScanRedeemTab shop={shop} lang={lang} d={d} />
           </Suspense>
         )}
 
