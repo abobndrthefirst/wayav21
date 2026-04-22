@@ -115,6 +115,20 @@ Deno.serve(async (req: Request) => {
     const { data: passes, error: pErr } = await passQuery;
     if (pErr) throw pErr;
 
+    // Staging guard: refuse large broadcasts on non-prod envs. Prevents a
+    // misconfigured cert/topic from blasting the whole staging recipient
+    // set. Bump or override only when load-testing intentionally.
+    const wayaEnv = (Deno.env.get("WAYA_ENV") || "production").toLowerCase();
+    if (wayaEnv !== "production" && (passes?.length || 0) > 10) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Staging broadcast limit: ${passes?.length} recipients exceeds max 10 on WAYA_ENV=${wayaEnv}`,
+        }),
+        { status: 400, headers: { ...cors, "Content-Type": "application/json" } },
+      );
+    }
+
     let appleTargets = 0;
     let googleTargets = 0;
     const sendRows: Array<Record<string, unknown>> = [];

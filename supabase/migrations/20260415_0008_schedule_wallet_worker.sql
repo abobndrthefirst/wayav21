@@ -15,7 +15,7 @@
 -- supports as of v1.5.
 -- ─────────────────────────────────────────────────────────────────────────────
 
-do $$
+do $outer$
 declare
   secret text := current_setting('app.waya_cron_secret', true);
   endpoint text := current_setting('app.waya_worker_endpoint', true);
@@ -34,7 +34,7 @@ begin
       'wallet-jobs-worker',
       '30 seconds',
       format(
-        $$select net.http_post(
+        $body$select net.http_post(
           url := %L,
           headers := jsonb_build_object(
             'Authorization', %L,
@@ -42,10 +42,10 @@ begin
           ),
           body := '{}'::jsonb,
           timeout_milliseconds := 25000
-        );$$,
+        );$body$,
         endpoint,
         'Bearer ' || secret
       )
     );
   end if;
-end $$;
+end $outer$;

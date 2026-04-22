@@ -24,6 +24,8 @@ import { getApnsJwt } from "../_shared/tokenCache.ts";
 import { events, logEvent } from "../_shared/events.ts";
 
 const BATCH_SIZE = 25;
+const WAYA_ENV = (Deno.env.get("WAYA_ENV") || "production").toLowerCase();
+const ENV_TAG = WAYA_ENV === "production" ? "" : `[${WAYA_ENV.toUpperCase()}] `;
 
 // Exponential backoff in seconds, capped.
 // attempts 1→30s, 2→2m, 3→8m, 4→30m, 5+→2h
@@ -203,18 +205,18 @@ async function finalizeJob(supabase: any, job: Job, outcome: {
         source: "process-wallet-jobs",
         shop_id: job.shop_id || undefined,
         customer_pass_id: job.customer_pass_id || undefined,
-        message: `APNs delivery gave up after ${job.attempts} attempts: ${err}`,
+        message: `${ENV_TAG}APNs delivery gave up after ${job.attempts} attempts: ${err}`,
         error_code: code,
-        metadata: { job_id: job.id, attempts: job.attempts, dead_token: !!outcome.deadToken },
+        metadata: { job_id: job.id, attempts: job.attempts, dead_token: !!outcome.deadToken, waya_env: WAYA_ENV },
       });
     } else {
       events.googleWalletApiError({
         source: "process-wallet-jobs",
         shop_id: job.shop_id || undefined,
         customer_pass_id: job.customer_pass_id || undefined,
-        message: `Google Wallet update gave up after ${job.attempts} attempts: ${err}`,
+        message: `${ENV_TAG}Google Wallet update gave up after ${job.attempts} attempts: ${err}`,
         error_code: code,
-        metadata: { job_id: job.id, attempts: job.attempts },
+        metadata: { job_id: job.id, attempts: job.attempts, waya_env: WAYA_ENV },
       });
     }
     return;
