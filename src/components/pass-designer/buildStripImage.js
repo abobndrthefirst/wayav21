@@ -34,7 +34,7 @@ export async function buildStripImage({ iconUrl, cardColor, count }) {
   const H = 432
   const total = Math.max(1, Math.min(count || 5, 10))
   const PADDING = 32
-  const gap = 20
+  const gap = 28
 
   const card = hexToRgb(cardColor)
   const cardDarker = darken(card, 0.22)
@@ -44,11 +44,14 @@ export async function buildStripImage({ iconUrl, cardColor, count }) {
   // card color (which risks low contrast when the card itself is light).
   const BACKDROP = '#FAF7F2'
 
-  // Compute slot geometry — fit N circles in the usable width with even gaps.
+  // Compute slot geometry. Cap the diameter so low stamp counts (2–3) don't
+  // produce absurdly huge circles that crash out of the strip area. Max of
+  // ~58% of strip height keeps them tactile but proportional.
+  const MAX_DIAMETER = Math.floor(H * 0.62)
   const usableW = W - PADDING * 2
   const slotW = (usableW - gap * (total - 1)) / total
   const slotH = H - PADDING * 2
-  const diameter = Math.min(slotW, slotH)
+  const diameter = Math.min(slotW, slotH, MAX_DIAMETER)
   const radius = diameter / 2
   const rowW = total * diameter + (total - 1) * gap
   const startX = (W - rowW) / 2

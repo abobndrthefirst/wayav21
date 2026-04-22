@@ -136,20 +136,23 @@ function hexToRgb(hex: string): string {
   return `rgb(${parseInt(h.slice(0, 2), 16)}, ${parseInt(h.slice(2, 4), 16)}, ${parseInt(h.slice(4, 6), 16)})`;
 }
 
-// Waya is a stamps-only product. The pass layout is fixed: STAMPS count in
-// the header, member name + progress as primary, shop as secondary, current
-// reward balance as auxiliary.
+// Waya is a stamps-only product. Layout mirrors aleef's reference pass:
+//   - headerFields: compact STAMPS x/y up in the corner
+//   - primaryFields: EMPTY. storeCard renders primary values as hero-size
+//     white text overlapping the strip image. Duplicating the count there
+//     was blowing up over the stamp circles. Strip is the hero — let it breathe.
+//   - secondaryFields: SHOP name below the strip
+//   - auxiliaryFields: REWARD title/rewards-balance below the strip
 function buildPassFields(program: any, customer: any, lang: "en" | "ar") {
   const rewards = customer.rewards_balance || 0;
   const rewardsField = rewards > 0
     ? { key: "rewards", label: labelFor(lang, "REWARDS"), value: `${rewards}x ${program.reward_title || labelFor(lang, "REWARD")}` }
     : { key: "rewards", label: labelFor(lang, "REWARD"), value: program.reward_title || labelFor(lang, "REWARD") };
-  const memberName = customer.customer_name || labelFor(lang, "MEMBER_VALUE");
   const need = program.stamps_required || 10;
   const have = customer.stamps || 0;
   return {
     headerFields: [{ key: "count", label: labelFor(lang, "STAMPS"), value: `${have}/${need}` }],
-    primaryFields: [{ key: "stamps", label: memberName, value: `${have} / ${need}` }],
+    primaryFields: [],
     secondaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
     auxiliaryFields: [rewardsField],
   };
