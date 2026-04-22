@@ -135,7 +135,11 @@ Deno.serve(async (req: Request) => {
       }
 
       if (req.method === "GET" && !serial) {
-        const since = url.searchParams.get("passesUpdatedSince");
+        const sinceRaw = url.searchParams.get("passesUpdatedSince");
+        const sinceMs = sinceRaw ? Number(sinceRaw) : NaN;
+        const sinceIso = Number.isFinite(sinceMs) && sinceMs > 0
+          ? new Date(sinceMs).toISOString()
+          : null;
         const { data: regs } = await supabase
           .from("apple_device_registrations")
           .select("serial_number")
@@ -146,7 +150,7 @@ Deno.serve(async (req: Request) => {
           return new Response("", { status: 204, headers: cors });
         }
         let q = supabase.from("customer_passes").select("apple_serial, updated_at").in("apple_serial", serials);
-        if (since) q = q.gt("updated_at", new Date(parseInt(since)).toISOString());
+        if (sinceIso) q = q.gt("updated_at", sinceIso);
         const { data: passes } = await q;
         if (!passes || passes.length === 0) {
           return new Response("", { status: 204, headers: cors });
@@ -175,10 +179,13 @@ Deno.serve(async (req: Request) => {
         });
         return new Response("Unauthorized", { status: 401, headers: cors });
       }
-      // NOTE: /v1/passes re-issues the pass but doesn't re-run public
-      // enrollment validation (token). This is a trusted Apple callback —
-      // device proved ownership via ApplePass auth header above.
-      // We call apple-wallet-public with a service-minted enrollment token.
+      // Grab the verified plaintext token so we can tell apple-wallet-public
+      // to reuse it on the re-issue instead of rotating. Rotating on every
+      // fetch was the stamps-don't-update bug — iOS' in-flight retries saw
+      // 401s because the DB had already moved to a new hash.
+      const authHeader = req.headers.get("authorization") || "";
+      const plaintextToken = (authHeader.match(/^ApplePass\s+(.+)$/i)?.[1] || "").trim();
+
       const { data: pass } = await supabase
         .from("customer_passes")
         .select("program_id, customer_name, customer_phone")
@@ -195,6 +202,7 @@ Deno.serve(async (req: Request) => {
         headers: {
           "Content-Type": "application/json",
           "x-enrollment-token": t,
+          ...(plaintextToken ? { "x-reissue-token": plaintextToken } : {}),
         },
         body: JSON.stringify({
           program_id: pass.program_id,

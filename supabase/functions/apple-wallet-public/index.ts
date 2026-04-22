@@ -258,12 +258,30 @@ Deno.serve(async (req: Request) => {
         pass_row.apple_serial = serial;
       }
     } else {
-      plaintextAuthToken = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
-      const hashedAuthToken = await hashSecret(plaintextAuthToken);
-      await supabase.from("customer_passes").update({
-        apple_auth_token: hashedAuthToken,
-        customer_name: input.customer_name,
-      }).eq("id", pass_row.id);
+      // Re-issue path. If the caller is apple-passkit (iOS asking for its
+      // latest pass), it passes the already-verified plaintext token in
+      // x-reissue-token so we can reuse it instead of rotating. Rotating on
+      // every re-issue is catastrophic: iOS saves the new pass with the new
+      // token, but any in-flight or retry request still using the previous
+      // token hits 401, so Apple stops fetching updates and the pass goes
+      // stale after the first stamp.
+      const reissueToken = req.headers.get("x-reissue-token");
+      if (reissueToken && await (async () => {
+        const { verifySecret } = await import("../_shared/hash.ts");
+        return await verifySecret(reissueToken, pass_row.apple_auth_token);
+      })()) {
+        plaintextAuthToken = reissueToken;
+        await supabase.from("customer_passes").update({
+          customer_name: input.customer_name,
+        }).eq("id", pass_row.id);
+      } else {
+        plaintextAuthToken = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+        const hashedAuthToken = await hashSecret(plaintextAuthToken);
+        await supabase.from("customer_passes").update({
+          apple_auth_token: hashedAuthToken,
+          customer_name: input.customer_name,
+        }).eq("id", pass_row.id);
+      }
     }
 
     const fields = buildPassFields(program, { ...pass_row, customer_name: input.customer_name }, lang);
