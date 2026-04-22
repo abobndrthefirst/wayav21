@@ -244,7 +244,7 @@ export function PosIntegrations({ t }) {
         <h2 className="loya-section-title loya-pos-title">
           {data.title1} <span className="loya-accent">{data.title2}</span>
         </h2>
-        <p className="loya-section-sub">{data.subtitle}</p>
+        {data.subtitle ? <p className="loya-section-sub">{data.subtitle}</p> : null}
       </Reveal>
 
       <div className="loya-marquee">

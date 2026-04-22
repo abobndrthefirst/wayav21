@@ -432,7 +432,7 @@ const content = {
       badge: 'حوكمة وسهولة أكثر!',
       title1: 'نربط مع أشهر أنظمة',
       title2: 'نقاط البيع',
-      subtitle: 'اربط وايا بنظام نقاط البيع عندك وتمتع بسرعة ودقة أعلى — مع تفعيل الكاش باك والرصيد تلقائياً.',
+      subtitle: '',
       ctaQuestion: 'عندك نظام نقاط بيع غير مدعوم؟',
       ctaBtn: 'تواصل معنا وجاهزين نربطه',
       logos: [
@@ -902,7 +902,7 @@ const content = {
       badge: 'Easier governance!',
       title1: 'We integrate with the most popular',
       title2: 'POS Systems',
-      subtitle: 'Connect Waya with your POS for higher speed and accuracy — with automatic cashback and balance activation.',
+      subtitle: '',
       ctaQuestion: 'Using an unsupported POS system?',
       ctaBtn: 'Contact us — we\'re ready to integrate',
       logos: [
@@ -1062,9 +1062,6 @@ function Reveal({ children, delay = 0, direction = 'up', className = '' }) {
 
 /* ─── Apple-style text reveal (word by word) ─── */
 function TextReveal({ children, delay = 0, className = '' }) {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-60px' })
-
   if (typeof children !== 'string') {
     return <Reveal delay={delay} className={className}>{children}</Reveal>
   }
@@ -1072,13 +1069,13 @@ function TextReveal({ children, delay = 0, className = '' }) {
   const words = children.split(' ')
 
   return (
-    <span ref={ref} className={className} style={{ display: 'inline' }}>
+    <span className={className} style={{ display: 'inline' }}>
       {words.map((word, i) => (
         <span key={i} style={{ display: 'inline-block', overflow: 'hidden' }}>
           <motion.span
             style={{ display: 'inline-block' }}
             initial={{ y: '100%', opacity: 0 }}
-            animate={isInView ? { y: 0, opacity: 1 } : { y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{
               duration: 0.5,
               delay: delay + i * 0.04,
@@ -1217,6 +1214,24 @@ function HeartIcon() {
   return (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  )
+}
+
+function SarSymbol({ size = '0.9em', style, className }) {
+  return (
+    <svg
+      viewBox="0 0 1124.14 1256.39"
+      width={size}
+      height={size}
+      fill="currentColor"
+      style={{ display: 'inline-block', verticalAlign: '-0.08em', ...style }}
+      className={className}
+      role="img"
+      aria-label="SAR"
+    >
+      <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z"/>
+      <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z"/>
     </svg>
   )
 }
@@ -2016,7 +2031,7 @@ function Calculator({ t, lang }) {
   const totalWithout = baseMonthlyRevenue + baseRepeatRevenue
   const totalWith = baseMonthlyRevenue + withWayaRepeatRevenue
   const extraRevenue = Math.round(totalWith - totalWithout)
-  const wayaCost = 75
+  const wayaCost = 85
   const netProfit = extraRevenue - wayaCost
   const roiMultiple = (extraRevenue / wayaCost).toFixed(1)
 
@@ -2032,7 +2047,7 @@ function Calculator({ t, lang }) {
         <p className="section-subtitle">{t.calculator.subtitle}</p>
       </Reveal>
 
-      <Reveal delay={0.15}>
+      <Reveal delay={0.15} className="calc-reveal-wrap">
         <div className="calc-container">
           {/* Sliders */}
           <div className="calc-sliders">
@@ -2059,7 +2074,7 @@ function Calculator({ t, lang }) {
             <div className="calc-slider-group">
               <div className="calc-slider-header">
                 <label>{t.calculator.avgOrderLabel}</label>
-                <span className="calc-slider-value">{fmt(avgOrder)} {t.calculator.currency}</span>
+                <span className="calc-slider-value">{fmt(avgOrder)} <SarSymbol /></span>
               </div>
               <input
                 type="range"
@@ -2084,7 +2099,7 @@ function Calculator({ t, lang }) {
                 <h4>{t.calculator.withoutTitle}</h4>
                 <div className="calc-big-number">
                   <span className="calc-amount">{fmt(Math.round(totalWithout))}</span>
-                  <span className="calc-unit">{t.calculator.currency} {t.calculator.perMonth}</span>
+                  <span className="calc-unit"><SarSymbol /> {t.calculator.perMonth}</span>
                 </div>
                 <div className="calc-detail">
                   <span>{t.calculator.repeatVisits}</span>
@@ -2092,7 +2107,7 @@ function Calculator({ t, lang }) {
                 </div>
                 <div className="calc-detail">
                   <span>{t.calculator.avgTicket}</span>
-                  <span>{fmt(avgOrder)} {t.calculator.currency}</span>
+                  <span>{fmt(avgOrder)} <SarSymbol /></span>
                 </div>
               </div>
 
@@ -2102,7 +2117,7 @@ function Calculator({ t, lang }) {
                 <h4>{t.calculator.withTitle}</h4>
                 <div className="calc-big-number calc-big-green">
                   <span className="calc-amount">{fmt(Math.round(totalWith))}</span>
-                  <span className="calc-unit">{t.calculator.currency} {t.calculator.perMonth}</span>
+                  <span className="calc-unit"><SarSymbol /> {t.calculator.perMonth}</span>
                 </div>
                 <div className="calc-detail">
                   <span>{t.calculator.repeatVisits}</span>
@@ -2110,7 +2125,7 @@ function Calculator({ t, lang }) {
                 </div>
                 <div className="calc-detail">
                   <span>{t.calculator.avgTicket}</span>
-                  <span className="calc-highlight">{fmt(Math.round(wayaAvgOrder))} {t.calculator.currency}</span>
+                  <span className="calc-highlight">{fmt(Math.round(wayaAvgOrder))} <SarSymbol /></span>
                 </div>
               </div>
             </div>
@@ -2119,17 +2134,17 @@ function Calculator({ t, lang }) {
             <div className="calc-summary">
               <div className="calc-summary-item">
                 <span className="calc-summary-label">{t.calculator.extraRevenue}</span>
-                <span className="calc-summary-value calc-green">+{fmt(extraRevenue)} {t.calculator.currency}</span>
+                <span className="calc-summary-value calc-green">+{fmt(extraRevenue)} <SarSymbol /></span>
               </div>
               <div className="calc-summary-divider" />
               <div className="calc-summary-item">
                 <span className="calc-summary-label">{t.calculator.wayaCost}</span>
-                <span className="calc-summary-value">-{fmt(wayaCost)} {t.calculator.currency}</span>
+                <span className="calc-summary-value">-{fmt(wayaCost)} <SarSymbol /></span>
               </div>
               <div className="calc-summary-divider" />
               <div className="calc-summary-item">
                 <span className="calc-summary-label">{t.calculator.netProfit}</span>
-                <span className="calc-summary-value calc-green-big">+{fmt(netProfit)} {t.calculator.currency}</span>
+                <span className="calc-summary-value calc-green-big">+{fmt(netProfit)} <SarSymbol /></span>
               </div>
               <div className="calc-summary-divider" />
               <div className="calc-summary-item">
@@ -2423,6 +2438,14 @@ function Footer({ t }) {
             <a href="mailto:hello@trywaya.com" className="footer-contact-link">
               <EmailIcon />
               <span>{t.footer.email}</span>
+            </a>
+            <a href="https://x.com/trywaya" target="_blank" rel="noopener noreferrer" className="footer-contact-link" aria-label="X / Twitter @trywaya">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.75l-5.29-6.93L4.4 22H1.14l8.02-9.17L1 2h6.9l4.78 6.32L18.244 2Zm-2.37 18h1.86L7.28 4h-1.96l10.555 16Z"/></svg>
+              <span>@trywaya</span>
+            </a>
+            <a href="https://instagram.com/trywaya" target="_blank" rel="noopener noreferrer" className="footer-contact-link" aria-label="Instagram @trywaya">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+              <span>@trywaya</span>
             </a>
           </div>
         </div>
