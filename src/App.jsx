@@ -2549,7 +2549,7 @@ function Footer({ t, lang = 'ar' }) {
     <footer className="footer">
       <div className="footer-content">
         <div className="footer-brand-col">
-          <Logo size={72} />
+          <Logo size={40} />
           <p className="footer-tagline">
             {isAr ? 'برنامج ولاء رقمي للمتاجر الصغيرة.' : 'A digital loyalty program for small businesses.'}
           </p>
