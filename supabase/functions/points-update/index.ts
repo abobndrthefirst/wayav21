@@ -14,6 +14,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeadersFor, preflightResponse } from "../_shared/cors.ts";
 import { events, logEvent } from "../_shared/events.ts";
+import { verifyUser } from "../_shared/auth.ts";
 
 Deno.serve(async (req: Request) => {
   const cors = corsHeadersFor(req, "POST, OPTIONS");
@@ -36,14 +37,7 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const authHeader = req.headers.get("authorization") || "";
-    const userClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
-    const { data: { user } } = await userClient.auth.getUser();
-    if (!user) throw new Error("Unauthorized");
+    const user = await verifyUser(req);
 
     const { data: pass } = await supabase.from("customer_passes")
       .select("*, shop:shops(user_id), program:loyalty_programs(*)")
@@ -75,7 +69,7 @@ Deno.serve(async (req: Request) => {
         updated_at: new Date().toISOString(),
         rewards_balance: bal - 1,
       };
-      await supabase.from("customer_passes").update(updates).eq("id", pass_id);
+      { const { error: updErr } = await supabase.from("customer_passes").update(updates).eq("id", pass_id); if (updErr) throw updErr; }
 
       try {
         await supabase.from("activity_log").insert({
@@ -176,7 +170,7 @@ Deno.serve(async (req: Request) => {
       if (t) updates.tier = t.name;
     }
 
-    await supabase.from("customer_passes").update(updates).eq("id", pass_id);
+    { const { error: updErr } = await supabase.from("customer_passes").update(updates).eq("id", pass_id); if (updErr) throw updErr; }
 
     // Insert activity_log with idempotency key. UNIQUE constraint makes
     // duplicate retries fail gracefully (we already bailed above).
