@@ -31,22 +31,21 @@ export default function ScanRedeemTab({ shop, lang, d }) {
   }
 
   const loadPass = async (phoneValue) => {
-    const normalized = normalizePhone(phoneValue)
-    if (!normalized) {
+    const raw = (phoneValue || '').trim()
+    if (!raw) {
       showMsg('error', isAr ? 'ادخل رقم جوال صحيح' : 'Enter a valid phone number')
       return null
     }
-    const { data, error } = await supabase
-      .from('customer_passes')
-      .select('id, customer_name, customer_phone, points, stamps, tier, rewards_balance, last_visit_at, loyalty_programs(name, loyalty_type, stamps_required, points_for_reward)')
-      .eq('shop_id', shop.id)
-      .or(`customer_phone.eq.${normalized},customer_phone.eq.${phoneValue}`)
-      .maybeSingle()
+    const { data, error } = await supabase.rpc('find_customer_pass', {
+      _shop_id: shop.id,
+      _phone: raw,
+    })
     if (error) {
+      console.error('find_customer_pass', error)
       showMsg('error', d.scanError)
       return null
     }
-    return data
+    return data || null
   }
 
   const handleLookup = async (e) => {
@@ -80,7 +79,7 @@ export default function ScanRedeemTab({ shop, lang, d }) {
 
   const isStamp = pass?.loyalty_programs?.loyalty_type !== 'points'
   const stampsRequired = pass?.loyalty_programs?.stamps_required || 10
-  const pointsForReward = pass?.loyalty_programs?.points_for_reward || 100
+  const pointsForReward = pass?.loyalty_programs?.reward_threshold || 100
   const currentStamps = pass?.stamps || 0
   const currentPoints = pass?.points || 0
   const rewardsBalance = pass?.rewards_balance || 0
