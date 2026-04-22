@@ -4695,3 +4695,72 @@ html.ltr-mode .scan-stamp-counter { text-align: left; }
 
 [data-theme="light"] .why-waya-card { background: #fff; }
 [data-theme="light"] .faq-item { background: #fff; }
+
+/* ─── Admin Metrics Dashboard ─── */
+.admin-metrics-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 120px 24px 80px;
+  text-align: start;
+}
+.admin-metrics-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.admin-metrics-head h1 { font-size: 32px; font-weight: 800; margin: 0; color: var(--cream); letter-spacing: -0.01em; }
+.admin-metrics-sub { font-size: 14px; color: var(--gray-dim); margin: 6px 0 0; }
+.admin-metric-error {
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+.admin-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) { .admin-metrics-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .admin-metrics-grid { grid-template-columns: 1fr; } }
+.admin-metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 22px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.admin-metric-card:hover { border-color: rgba(16,185,129,0.35); transform: translateY(-2px); }
+.admin-metric-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--gray-dim);
+  margin-bottom: 8px;
+}
+.admin-metric-value {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.admin-metric-sub {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--gray-dim);
+  line-height: 1.5;
+}
+.admin-metrics-foot {
+  margin-top: 28px;
+  font-size: 13px;
+  color: var(--gray-dim);
+  text-align: end;
+}
+[data-theme="light"] .admin-metric-card { background: #fff; }

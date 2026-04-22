@@ -4156,7 +4156,97 @@ function ProgramsPageWrapper({ lang, setLang, theme, setTheme, t }) {
 }
 
 /* ─── Admin-only events viewer (gated by email allowlist) ─── */
-const ADMIN_EMAILS = ['sultanhhaidar@gmail.com']
+const ADMIN_EMAILS = ['sultanhhaidar@gmail.com', 'hello@trywaya.com']
+
+/* ─── Admin Metrics Dashboard (auto-refresh every 15 min) ─── */
+function AdminMetricsPage({ lang, setLang, theme, setTheme, t }) {
+  const { user, loading } = useAuth()
+  const isAr = lang === 'ar'
+  const [metrics, setMetrics] = useState(null)
+  const [err, setErr] = useState(null)
+  const [fetching, setFetching] = useState(false)
+  const [lastRefresh, setLastRefresh] = useState(null)
+  const REFRESH_MS = 15 * 60 * 1000
+
+  const load = async () => {
+    setFetching(true)
+    const { data, error } = await supabase.rpc('platform_metrics')
+    if (error) { setErr(error.message); setMetrics(null); setFetching(false); return }
+    setMetrics(data)
+    setLastRefresh(new Date())
+    setErr(null)
+    setFetching(false)
+  }
+
+  useEffect(() => {
+    if (!user) return
+    load()
+    const id = setInterval(load, REFRESH_MS)
+    return () => clearInterval(id)
+  }, [user])
+
+  if (loading) return <div className="auth-page"><div className="dash-loading"><Logo size={72} /></div></div>
+  if (!user || !ADMIN_EMAILS.includes(user.email)) {
+    return (
+      <div className="auth-page" style={{ padding: 40, textAlign: 'center' }}>
+        <h2>{isAr ? 'غير مصرّح' : 'Not authorized'}</h2>
+        <p style={{ color: 'var(--muted)' }}>
+          {isAr ? 'هذه الصفحة للمسؤولين فقط.' : 'This page is for admins only.'}
+        </p>
+      </div>
+    )
+  }
+
+  const M = metrics || {}
+  const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('en-US'))
+  const card = (label, value, sub) => (
+    <div className="admin-metric-card">
+      <div className="admin-metric-label">{label}</div>
+      <div className="admin-metric-value">{fmt(value)}</div>
+      {sub != null && <div className="admin-metric-sub">{sub}</div>}
+    </div>
+  )
+
+  return (
+    <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
+      <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+      <section className="admin-metrics-page">
+        <div className="admin-metrics-head">
+          <div>
+            <h1>{isAr ? 'لوحة المقاييس' : 'Platform Metrics'}</h1>
+            <p className="admin-metrics-sub">
+              {isAr
+                ? `يحدّث تلقائياً كل 15 دقيقة${lastRefresh ? ` · آخر تحديث ${lastRefresh.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : ''}`
+                : `Auto-refresh every 15 min${lastRefresh ? ` · last updated ${lastRefresh.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : ''}`}
+            </p>
+          </div>
+          <button className="lw-btn" onClick={load} disabled={fetching}>
+            {fetching ? (isAr ? 'جاري التحديث…' : 'Refreshing…') : (isAr ? 'تحديث الآن' : 'Refresh now')}
+          </button>
+        </div>
+
+        {err && (
+          <div className="admin-metric-error">{err}</div>
+        )}
+
+        <div className="admin-metrics-grid">
+          {card(isAr ? 'المتاجر'         : 'Businesses',       M.shops_total,      isAr ? `${fmt(M.shops_active)} نشطة · ${fmt(M.shops_with_cards)} أصدرت بطاقات` : `${fmt(M.shops_active)} active · ${fmt(M.shops_with_cards)} have cards`)}
+          {card(isAr ? 'تسجيلات الدخول' : 'Signups',          M.users_total,      isAr ? `+${fmt(M.users_7d)} هذا الأسبوع · +${fmt(M.users_24h)} اليوم` : `+${fmt(M.users_7d)} this week · +${fmt(M.users_24h)} today`)}
+          {card(isAr ? 'العملاء (بطاقات)' : 'Customers (cards)', M.cards_total,      isAr ? `+${fmt(M.cards_7d)} هذا الأسبوع · +${fmt(M.cards_24h)} اليوم` : `+${fmt(M.cards_7d)} this week · +${fmt(M.cards_24h)} today`)}
+          {card(isAr ? 'الزيارات'         : 'Visits (stamps)',  M.visits_total,     isAr ? `+${fmt(M.visits_7d)} هذا الأسبوع · +${fmt(M.visits_24h)} اليوم` : `+${fmt(M.visits_7d)} this week · +${fmt(M.visits_24h)} today`)}
+          {card(isAr ? 'المكافآت المستبدلة' : 'Rewards redeemed', M.rewards_redeemed, isAr ? `+${fmt(M.rewards_redeemed_7d)} هذا الأسبوع` : `+${fmt(M.rewards_redeemed_7d)} this week`)}
+          {card(isAr ? 'إجمالي المكافآت الممنوحة' : 'Total rewards earned', M.rewards_earned_total, isAr ? 'مستبدلة + جاهزة' : 'redeemed + unredeemed')}
+        </div>
+
+        {M.last_activity_at && (
+          <div className="admin-metrics-foot">
+            {isAr ? 'آخر نشاط' : 'Last activity'}: {new Date(M.last_activity_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
+          </div>
+        )}
+      </section>
+    </div>
+  )
+}
 
 function AdminEventsPage({ lang, setLang, theme, setTheme }) {
   const { user, loading } = useAuth()
@@ -4235,6 +4325,7 @@ export default function App() {
     if (p === '/billing/return') return 'billing-return'
     if (p === '/billing/cancel') return 'billing-cancel'
     if (p === '/admin/events') return 'admin-events'
+    if (p === '/admin/metrics') return 'admin-metrics'
     if (p === '/reset-password') return 'reset-password'
     if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
     if (p.startsWith('/w/')) return 'enroll'
@@ -4285,6 +4376,7 @@ export default function App() {
   if (page === 'billing-return') return <AuthProvider><Suspense fallback={<LazyFallback />}><BillingReturnPage lang={lang} /></Suspense></AuthProvider>
   if (page === 'billing-cancel') return <AuthProvider><Suspense fallback={<LazyFallback />}><BillingCancelPage lang={lang} /></Suspense></AuthProvider>
   if (page === 'admin-events') return <AuthProvider><AdminEventsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} /></AuthProvider>
+  if (page === 'admin-metrics') return <AuthProvider><AdminMetricsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
 
   return (
     <AuthProvider>
