@@ -222,11 +222,15 @@ Deno.serve(async (req: Request) => {
     const hexColor = /^#[0-9A-Fa-f]{6}$/.test(rawColor) ? rawColor : "#10B981";
 
     // Loyalty class — posted to REST API, not embedded in JWT.
+    // issuerName is the MERCHANT name on the pass front (what the customer sees
+    // as the brand). Must be the shop's name, not "Waya" — Waya-branding lives
+    // in the "Powered by Waya · trywaya.com" text module below, not here.
+    const merchantName = programWithShopName.name || programWithShopName.shop_name || "Loyalty";
     const loyaltyClass: Record<string, unknown> = {
       id: classId,
-      issuerName: "Waya",
+      issuerName: merchantName,
       reviewStatus: "UNDER_REVIEW",
-      programName: programWithShopName.name || programWithShopName.shop_name || "Loyalty",
+      programName: merchantName,
       hexBackgroundColor: hexColor,
       countryCode: "SA",
     };
