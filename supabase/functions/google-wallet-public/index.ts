@@ -284,23 +284,10 @@ Deno.serve(async (req: Request) => {
     const accessToken = await getAccessToken(GW_SERVICE_ACCOUNT_EMAIL);
     await upsertLoyaltyClass(accessToken, classId, loyaltyClass);
 
-    // Loyalty object — the JWT carries this. textModulesData only holds the
-    // per-customer dynamic progress message; static modules come from the class.
-    const objectTextModules: any[] = [];
-    if (programWithShopName.loyalty_type === "stamp") {
-      const haveStampsForMsg = existing?.stamps ?? 0;
-      const haveRewardsForMsg = existing?.rewards_balance ?? 0;
-      objectTextModules.push({
-        body: stampProgressMessage(
-          haveStampsForMsg,
-          programWithShopName.stamps_required || 10,
-          programWithShopName.reward_title || labelFor(lang, "REWARD"),
-          haveRewardsForMsg,
-          lang,
-        ),
-        id: "progress",
-      });
-    }
+    // Stamps-only product: loyaltyPoints is always the stamp row.
+    const haveStamps = existing?.stamps ?? 0;
+    const haveRewards = existing?.rewards_balance ?? 0;
+    const need = programWithShopName.stamps_required || 10;
 
     const loyaltyObject: any = {
       id: objectId,
@@ -308,39 +295,27 @@ Deno.serve(async (req: Request) => {
       state: "ACTIVE",
       accountId: input.customer_phone,
       accountName: input.customer_name,
-    };
-    if (objectTextModules.length > 0) loyaltyObject.textModulesData = objectTextModules;
-
-    const bt = programWithShopName.barcode_type || "QR";
-    if (bt !== "NONE") {
-      const typeMap: Record<string, string> = { QR: "QR_CODE", CODE128: "CODE_128", AZTEC: "AZTEC", PDF417: "PDF_417" };
-      loyaltyObject.barcode = { type: typeMap[bt] || "QR_CODE", value: objectId, alternateText: input.customer_name };
-    }
-
-    const haveStamps = existing?.stamps ?? 0;
-    const havePoints = existing?.points ?? 0;
-    const haveRewards = existing?.rewards_balance ?? 0;
-    if (programWithShopName.loyalty_type === "stamp") {
-      const need = programWithShopName.stamps_required || 10;
-      loyaltyObject.loyaltyPoints = {
+      barcode: { type: "QR_CODE", value: objectId, alternateText: input.customer_name },
+      textModulesData: [{
+        body: stampProgressMessage(
+          haveStamps,
+          need,
+          programWithShopName.reward_title || labelFor(lang, "REWARD"),
+          haveRewards,
+          lang,
+        ),
+        id: "progress",
+      }],
+      loyaltyPoints: {
         label: `${labelFor(lang, "STAMPS")} ${haveStamps}/${need}`,
         balance: { string: stampRow(haveStamps, need) },
+      },
+    };
+    if (haveRewards > 0) {
+      loyaltyObject.secondaryLoyaltyPoints = {
+        label: labelFor(lang, "REWARDS"),
+        balance: { string: `${haveRewards}x ${programWithShopName.reward_title || labelFor(lang, "REWARD")}` },
       };
-      if (haveRewards > 0) {
-        loyaltyObject.secondaryLoyaltyPoints = {
-          label: labelFor(lang, "REWARDS"),
-          balance: { string: `${haveRewards}x ${programWithShopName.reward_title || labelFor(lang, "REWARD")}` },
-        };
-      }
-    } else if (programWithShopName.loyalty_type === "tiered") {
-      const tierName = existing?.tier || (Array.isArray(programWithShopName.tiers) && programWithShopName.tiers[0]?.name) || labelFor(lang, "BRONZE");
-      loyaltyObject.loyaltyPoints = { label: labelFor(lang, "POINTS"), balance: { int: havePoints } };
-      loyaltyObject.secondaryLoyaltyPoints = { label: labelFor(lang, "TIER"), balance: { string: tierName } };
-    } else if (programWithShopName.loyalty_type === "coupon") {
-      loyaltyObject.loyaltyPoints = { label: labelFor(lang, "OFFER"), balance: { string: programWithShopName.coupon_discount || "Discount" } };
-    } else {
-      const need = programWithShopName.reward_threshold || 10;
-      loyaltyObject.loyaltyPoints = { label: `${labelFor(lang, "POINTS")} (${havePoints}/${need})`, balance: { int: havePoints } };
     }
 
     if (programWithShopName.expires_at) {

@@ -11,13 +11,6 @@ import { ProgramQR } from '../ProgramsList'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
-const LOYALTY_TYPES = [
-  { key: 'stamp', emoji: '🎟️' },
-  { key: 'points', emoji: '⭐' },
-  { key: 'tiered', emoji: '🏆' },
-  { key: 'coupon', emoji: '🎁' },
-]
-
 const BackArrow = ({ isAr }) => (
   <svg viewBox="0 0 20 20" fill="currentColor" style={{ transform: isAr ? 'scaleX(-1)' : undefined }}>
     <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.56l4.72 4.72a.75.75 0 11-1.06 1.06l-6-6a.75.75 0 010-1.06l6-6a.75.75 0 011.06 1.06L5.56 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
@@ -97,20 +90,14 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
 
   const previewData = {
     name: design.name || shop?.name || '',
-    loyaltyType: design.loyalty_type,
     stampsRequired: design.stamps_required,
-    rewardThreshold: design.reward_threshold,
     rewardTitle: design.reward_title,
-    couponDiscount: design.coupon_discount || '',
-    couponCode: design.coupon_code || '',
-    tiers: design.tiers,
     cardColor: design.card_color,
     cardGradient: design.card_gradient,
     textColor: design.text_color,
     logoUrl: design.logo_url,
     backgroundUrl: design.background_url,
     rewardIconUrl: design.reward_icon_url,
-    barcodeType: design.barcode_type,
     sampleBalance,
     darkPreview,
   }
@@ -123,7 +110,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
     // uploaded a custom cover. This is what makes the selected coffee/tag/etc.
     // actually show up on the pass instead of a blank or default background.
     let background_url = design.background_url || null
-    if (design.loyalty_type === 'stamp' && design.reward_icon_url && !background_url) {
+    if (design.reward_icon_url && !background_url) {
       try {
         const blob = await buildStripImage({
           iconUrl: design.reward_icon_url,
@@ -167,9 +154,8 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
     const payload = {
       shop_id: shop.id,
       name: design.name.trim(),
-      loyalty_type: design.loyalty_type,
-      stamps_required: design.loyalty_type === 'stamp' ? design.stamps_required : null,
-      reward_threshold: design.loyalty_type === 'points' ? design.reward_threshold : null,
+      loyalty_type: 'stamp',
+      stamps_required: design.stamps_required,
       reward_title: design.reward_title?.trim() || 'Reward',
       reward_description: design.reward_description?.trim() || null,
       reward_icon_url: design.reward_icon_url || null,
@@ -178,10 +164,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       card_gradient: design.card_gradient || null,
       logo_url,
       background_url,
-      barcode_type: design.barcode_type,
-      coupon_discount: design.coupon_discount?.trim() || null,
-      coupon_code: design.coupon_code?.trim() || null,
-      tiers: design.tiers || null,
+      barcode_type: 'QR',
       terms: design.terms?.trim() || null,
       website_url: design.website_url?.trim() || null,
       phone: design.phone?.trim() || null,
@@ -369,52 +352,16 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
             />
           </div>
           <div className="pd-field">
-            <label>{T('Loyalty type', 'نوع الولاء')}</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {LOYALTY_TYPES.map(t => (
-                <button
-                  key={t.key}
-                  type="button"
-                  onClick={() => setField('loyalty_type', t.key)}
-                  style={{
-                    padding: '10px 12px', borderRadius: 10,
-                    border: `1.5px solid ${design.loyalty_type === t.key ? '#10B981' : '#e5e8ec'}`,
-                    background: design.loyalty_type === t.key ? '#f0fdf4' : '#fff',
-                    cursor: 'pointer', textAlign: 'center',
-                    fontSize: 13, fontWeight: design.loyalty_type === t.key ? 600 : 400, transition: 'all .15s',
-                  }}
-                >
-                  <span style={{ fontSize: 20, display: 'block', marginBottom: 2 }}>{t.emoji}</span>
-                  {t.key === 'stamp' ? T('Stamp', 'أختام') : t.key === 'points' ? T('Points', 'نقاط') : t.key === 'tiered' ? T('Tiered', 'مستويات') : T('Coupon', 'كوبون')}
-                </button>
-              ))}
-            </div>
+            <label>{T('Stamps for reward', 'أختام للمكافأة')}</label>
+            <input
+              className="pd-field-input"
+              type="number"
+              min={1}
+              max={50}
+              value={design.stamps_required}
+              onChange={e => setField('stamps_required', Number(e.target.value))}
+            />
           </div>
-          {design.loyalty_type === 'stamp' && (
-            <div className="pd-field">
-              <label>{T('Stamps for reward', 'أختام للمكافأة')}</label>
-              <input
-                className="pd-field-input"
-                type="number"
-                min={1}
-                max={50}
-                value={design.stamps_required}
-                onChange={e => setField('stamps_required', Number(e.target.value))}
-              />
-            </div>
-          )}
-          {design.loyalty_type === 'points' && (
-            <div className="pd-field">
-              <label>{T('Points for reward', 'نقاط للمكافأة')}</label>
-              <input
-                className="pd-field-input"
-                type="number"
-                min={1}
-                value={design.reward_threshold}
-                onChange={e => setField('reward_threshold', Number(e.target.value))}
-              />
-            </div>
-          )}
 
           <DesignerEditorPanel
             design={design}

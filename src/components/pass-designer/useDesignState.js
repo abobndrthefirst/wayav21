@@ -1,10 +1,12 @@
 import { useReducer, useEffect, useRef, useMemo, useCallback } from 'react'
 
+// Stamps-only product surface. Non-stamp fields stay here solely so old
+// program rows with those columns round-trip through the reducer cleanly
+// without being clobbered to null on save — they're never shown in the UI.
 export const DEFAULT_DESIGN = {
   name: '',
   loyalty_type: 'stamp',
   stamps_required: 10,
-  reward_threshold: 10,
   reward_title: '',
   reward_description: '',
   reward_icon_url: '',
@@ -14,9 +16,6 @@ export const DEFAULT_DESIGN = {
   logo_url: '',
   background_url: '',
   barcode_type: 'QR',
-  coupon_discount: '',
-  coupon_code: '',
-  tiers: null,
   terms: '',
   website_url: '',
   phone: '',

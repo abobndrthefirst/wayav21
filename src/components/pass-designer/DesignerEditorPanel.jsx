@@ -1,18 +1,11 @@
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import ColorPickerField, { TEXT_COLOR_PRESETS } from './ColorPickerField'
-import BarcodeSelector from './BarcodeSelector'
 import DragDropUploader from './DragDropUploader'
 import FieldEditor from './FieldEditor'
 import PresetIconPicker from './PresetIconPicker'
 import { extractPalette } from './extractPalette'
 import { pickReadableText } from './contrast'
-
-const DEFAULT_TIERS = [
-  { name: 'Bronze', nameAr: 'برونزي', threshold: 0, color: '#CD7F32' },
-  { name: 'Silver', nameAr: 'فضي', threshold: 100, color: '#C0C0C0' },
-  { name: 'Gold', nameAr: 'ذهبي', threshold: 500, color: '#FFD700' },
-]
 
 export default function DesignerEditorPanel({ design, setField, shopId, T, embedded }) {
   const [backOpen, setBackOpen] = useState(false)
@@ -42,22 +35,6 @@ export default function DesignerEditorPanel({ design, setField, shopId, T, embed
   const switchToSolid = () => {
     setBgMode('solid')
     setField('card_gradient', null)
-  }
-
-  const updateTier = (i, patch) => {
-    const next = [...(design.tiers || DEFAULT_TIERS)]
-    next[i] = { ...next[i], ...patch }
-    setField('tiers', next)
-  }
-  const addTier = () => {
-    const curr = design.tiers || DEFAULT_TIERS
-    const last = curr[curr.length - 1]
-    setField('tiers', [...curr, { name: 'Platinum', nameAr: 'بلاتيني', threshold: (last?.threshold || 0) + 500, color: '#E5E4E2' }])
-  }
-  const removeTier = (i) => {
-    const curr = design.tiers || DEFAULT_TIERS
-    if (curr.length <= 1) return
-    setField('tiers', curr.filter((_, idx) => idx !== i))
   }
 
   return (
@@ -151,9 +128,6 @@ export default function DesignerEditorPanel({ design, setField, shopId, T, embed
         T={T}
       />
 
-      <h3 className="pd-section-title">{T('Barcode', 'الباركود')}</h3>
-      <BarcodeSelector value={design.barcode_type} onChange={(v) => setField('barcode_type', v)} T={T} />
-
       <h3 className="pd-section-title">{T('Images', 'الصور')}</h3>
 
       <DragDropUploader
@@ -215,65 +189,6 @@ export default function DesignerEditorPanel({ design, setField, shopId, T, embed
         multiline
         T={T}
       />
-
-      {design.loyalty_type === 'coupon' && (
-        <>
-          <h3 className="pd-section-title">{T('Coupon', 'الكوبون')}</h3>
-          <FieldEditor
-            label={T('Discount (e.g. 30% OFF)', 'الخصم (مثال: 30%)')}
-            value={design.coupon_discount}
-            onChange={(v) => setField('coupon_discount', v)}
-            maxLength={30}
-            placeholder={T('30% OFF', 'خصم 30%')}
-            T={T}
-          />
-          <FieldEditor
-            label={T('Coupon code', 'رمز الكوبون')}
-            value={design.coupon_code}
-            onChange={(v) => setField('coupon_code', v)}
-            maxLength={20}
-            placeholder={'WELCOME30'}
-            T={T}
-          />
-        </>
-      )}
-
-      {design.loyalty_type === 'tiered' && (
-        <>
-          <h3 className="pd-section-title">{T('Tiers', 'المستويات')}</h3>
-          <div className="pd-tiers">
-            {(design.tiers || DEFAULT_TIERS).map((t, i) => (
-              <div key={i} className="pd-tier-row">
-                <input
-                  className="pd-field-input"
-                  value={t.name}
-                  onChange={(e) => updateTier(i, { name: e.target.value })}
-                  placeholder="Bronze"
-                  style={{ flex: 2 }}
-                />
-                <input
-                  className="pd-field-input"
-                  type="number"
-                  min={0}
-                  value={t.threshold}
-                  onChange={(e) => updateTier(i, { threshold: Number(e.target.value) })}
-                  style={{ flex: 1 }}
-                />
-                <input
-                  type="color"
-                  className="pd-color-native"
-                  value={t.color || '#CD7F32'}
-                  onChange={(e) => updateTier(i, { color: e.target.value })}
-                />
-                <button type="button" className="pd-tier-remove" onClick={() => removeTier(i)} aria-label="remove tier">×</button>
-              </div>
-            ))}
-            <button type="button" className="pd-tier-add" onClick={addTier}>
-              + {T('Add tier', 'أضف مستوى')}
-            </button>
-          </div>
-        </>
-      )}
 
       <h3 className="pd-section-title">{T('Pass language', 'لغة البطاقة')}</h3>
       <div className="pd-field">

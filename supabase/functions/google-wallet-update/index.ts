@@ -66,50 +66,32 @@ Deno.serve(async (req: Request) => {
     }
 
     const program = pass.program;
-    const points = pass.points || 0;
     const stamps = pass.stamps || 0;
     const rewards = pass.rewards_balance || 0;
     const lang = pickLang(program?.pass_language, null);
-    let loyaltyPoints: any;
-    if (program?.loyalty_type === "stamp") {
-      const need = program.stamps_required || 10;
-      loyaltyPoints = {
+    const need = program?.stamps_required || 10;
+
+    const patchBody: any = {
+      loyaltyPoints: {
         label: `${labelFor(lang, "STAMPS")} ${stamps}/${need}`,
         balance: { string: stampRow(stamps, need) },
-      };
-    } else if (program?.loyalty_type === "tiered") {
-      loyaltyPoints = { label: labelFor(lang, "POINTS"), balance: { int: points } };
-    } else if (program?.loyalty_type === "coupon") {
-      loyaltyPoints = { label: labelFor(lang, "OFFER"), balance: { string: program.coupon_discount || "Discount" } };
-    } else {
-      const need = program?.reward_threshold || 10;
-      loyaltyPoints = { label: `${labelFor(lang, "POINTS")} (${points}/${need})`, balance: { int: points } };
-    }
-
-    const patchBody: any = { loyaltyPoints };
-    if (program?.loyalty_type === "tiered" && pass.tier) {
-      patchBody.secondaryLoyaltyPoints = { label: labelFor(lang, "TIER"), balance: { string: pass.tier } };
-    } else if (rewards > 0) {
-      patchBody.secondaryLoyaltyPoints = {
-        label: labelFor(lang, "REWARDS"),
-        balance: { string: `${rewards}x ${program?.reward_title || labelFor(lang, "REWARD")}` },
-      };
-    }
-
-    // Refresh the progress text module on every scan so the customer sees
-    // "You are N stamps away..." / "🎁 Your reward is ready!" update live.
-    // PATCH replaces textModulesData wholesale, so we send a minimal set.
-    if (program?.loyalty_type === "stamp") {
-      patchBody.textModulesData = [{
+      },
+      textModulesData: [{
         body: stampProgressMessage(
           stamps,
-          program.stamps_required || 10,
-          program.reward_title || "reward",
+          need,
+          program?.reward_title || "reward",
           rewards,
           lang,
         ),
         id: "progress",
-      }];
+      }],
+    };
+    if (rewards > 0) {
+      patchBody.secondaryLoyaltyPoints = {
+        label: labelFor(lang, "REWARDS"),
+        balance: { string: `${rewards}x ${program?.reward_title || labelFor(lang, "REWARD")}` },
+      };
     }
 
     const accessToken = await getGoogleAccessToken();

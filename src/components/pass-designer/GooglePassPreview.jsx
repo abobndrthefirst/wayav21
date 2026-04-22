@@ -3,18 +3,7 @@ import BarcodePreview from './BarcodePreview'
 import StampRow from './StampRow'
 
 export default function GooglePassPreview({ data, sampleName, T }) {
-  const { name, loyaltyType, stampsRequired, rewardThreshold, rewardTitle, couponDiscount, cardColor, cardGradient, textColor, logoUrl, backgroundUrl, rewardIconUrl, barcodeType, sampleBalance = 0, tiers } = data
-
-  const balance = loyaltyType === 'points' ? `${sampleBalance} / ${rewardThreshold}`
-    : loyaltyType === 'tiered' ? (tiers?.[0]?.name || T('Bronze', 'برونزي'))
-    : loyaltyType === 'stamp' ? `${Math.min(sampleBalance, stampsRequired)} / ${stampsRequired}`
-    : loyaltyType === 'coupon' ? couponDiscount
-    : '0'
-
-  const balanceLabel = loyaltyType === 'stamp' ? T('Stamps', 'أختام')
-    : loyaltyType === 'points' ? T('Points', 'نقاط')
-    : loyaltyType === 'tiered' ? T('Tier', 'المستوى')
-    : T('Offer', 'العرض')
+  const { name, stampsRequired, rewardTitle, cardColor, cardGradient, textColor, logoUrl, backgroundUrl, rewardIconUrl, sampleBalance = 0 } = data
 
   const bgStyle = backgroundUrl
     ? { backgroundImage: `url(${backgroundUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -42,22 +31,13 @@ export default function GooglePassPreview({ data, sampleName, T }) {
         </div>
 
         <div className="pd-pass-mid">
-          {loyaltyType === 'stamp' ? (
-            <StampRow total={stampsRequired} earned={sampleBalance} icon={rewardIconUrl} textColor={textColor} />
-          ) : (
-            <div style={{ textAlign: 'center' }}>
-              <div className="pd-pass-balance-label">{balanceLabel}</div>
-              <motion.div
-                className="pd-pass-balance-val"
-                key={String(balance)}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: .25 }}
-              >
-                {balance}
-              </motion.div>
-            </div>
-          )}
+          <StampRow
+            total={stampsRequired}
+            earned={sampleBalance}
+            icon={rewardIconUrl}
+            cardColor={cardColor}
+            textColor={textColor}
+          />
         </div>
 
         <div className="pd-pass-fields">
@@ -74,18 +54,15 @@ export default function GooglePassPreview({ data, sampleName, T }) {
         </div>
       </div>
 
-      {barcodeType && barcodeType !== 'NONE' && (
-        <motion.div
-          className="pd-pass-barcode"
-          key={barcodeType}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: .3 }}
-        >
-          <BarcodePreview type={barcodeType} value={`waya:preview:${name || 'draft'}`} />
-          <div className="pd-pass-barcode-hint">{T('Scan to earn', 'امسح لكسب')}</div>
-        </motion.div>
-      )}
+      <motion.div
+        className="pd-pass-barcode"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: .3 }}
+      >
+        <BarcodePreview value={`waya:preview:${name || 'draft'}`} />
+        <div className="pd-pass-barcode-hint">{T('Scan to earn', 'امسح لكسب')}</div>
+      </motion.div>
     </motion.div>
   )
 }

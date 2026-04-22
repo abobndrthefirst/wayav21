@@ -136,50 +136,22 @@ function hexToRgb(hex: string): string {
   return `rgb(${parseInt(h.slice(0, 2), 16)}, ${parseInt(h.slice(2, 4), 16)}, ${parseInt(h.slice(4, 6), 16)})`;
 }
 
+// Waya is a stamps-only product. The pass layout is fixed: STAMPS count in
+// the header, member name + progress as primary, shop as secondary, current
+// reward balance as auxiliary.
 function buildPassFields(program: any, customer: any, lang: "en" | "ar") {
-  const type = program.loyalty_type || "stamp";
   const rewards = customer.rewards_balance || 0;
   const rewardsField = rewards > 0
     ? { key: "rewards", label: labelFor(lang, "REWARDS"), value: `${rewards}x ${program.reward_title || labelFor(lang, "REWARD")}` }
     : { key: "rewards", label: labelFor(lang, "REWARD"), value: program.reward_title || labelFor(lang, "REWARD") };
   const memberName = customer.customer_name || labelFor(lang, "MEMBER_VALUE");
-
-  if (type === "stamp") {
-    const need = program.stamps_required || 10;
-    const have = customer.stamps || 0;
-    return {
-      headerFields: [{ key: "count", label: labelFor(lang, "STAMPS"), value: `${have}/${need}` }],
-      // Primary shows the count as text (no more star-row unicode).
-      primaryFields: [{ key: "stamps", label: memberName, value: `${have} / ${need}` }],
-      secondaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
-      auxiliaryFields: [rewardsField],
-    };
-  }
-  if (type === "points") {
-    const need = program.reward_threshold || 10;
-    const have = customer.points || 0;
-    return {
-      headerFields: [{ key: "points", label: labelFor(lang, "POINTS"), value: `${have}/${need}` }],
-      primaryFields: [{ key: "member", label: labelFor(lang, "MEMBER"), value: memberName }],
-      secondaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
-      auxiliaryFields: [rewardsField],
-    };
-  }
-  if (type === "tiered") {
-    const tierName = customer.tier || (Array.isArray(program.tiers) && program.tiers[0]?.name) || labelFor(lang, "BRONZE");
-    return {
-      headerFields: [{ key: "points", label: labelFor(lang, "POINTS"), value: String(customer.points ?? 0) }],
-      primaryFields: [{ key: "tier", label: labelFor(lang, "TIER"), value: tierName }],
-      secondaryFields: [{ key: "member", label: labelFor(lang, "MEMBER"), value: memberName }],
-      auxiliaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
-    };
-  }
-  // coupon
+  const need = program.stamps_required || 10;
+  const have = customer.stamps || 0;
   return {
-    headerFields: [{ key: "value", label: labelFor(lang, "OFFER"), value: program.coupon_discount || "DISCOUNT" }],
-    primaryFields: [{ key: "code", label: labelFor(lang, "CODE"), value: program.coupon_code || "—" }],
-    secondaryFields: [{ key: "member", label: labelFor(lang, "MEMBER"), value: memberName }],
-    auxiliaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
+    headerFields: [{ key: "count", label: labelFor(lang, "STAMPS"), value: `${have}/${need}` }],
+    primaryFields: [{ key: "stamps", label: memberName, value: `${have} / ${need}` }],
+    secondaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
+    auxiliaryFields: [rewardsField],
   };
 }
 
@@ -305,7 +277,6 @@ Deno.serve(async (req: Request) => {
     // Waya signature — always last, non-removable.
     backFields.push(appleSignatureBackField(lang));
 
-    const passKey = program.loyalty_type === "coupon" ? "coupon" : "storeCard";
     const pass: any = {
       formatVersion: 1,
       passTypeIdentifier: passTypeId,
@@ -317,27 +288,15 @@ Deno.serve(async (req: Request) => {
       foregroundColor: fgRgb,
       backgroundColor: bgRgb,
       labelColor: fgRgb,
-      ...(() => {
-        const bt = program.barcode_type || "QR";
-        if (bt === "NONE") return {};
-        const formatMap: Record<string, string> = {
-          QR: "PKBarcodeFormatQR",
-          CODE128: "PKBarcodeFormatCode128",
-          AZTEC: "PKBarcodeFormatAztec",
-          PDF417: "PKBarcodeFormatPDF417",
-        };
-        return {
-          barcodes: [{
-            message: pass_row.apple_serial,
-            format: formatMap[bt] || "PKBarcodeFormatQR",
-            messageEncoding: "iso-8859-1",
-            altText: input.customer_name,
-          }],
-        };
-      })(),
+      barcodes: [{
+        message: pass_row.apple_serial,
+        format: "PKBarcodeFormatQR",
+        messageEncoding: "iso-8859-1",
+        altText: input.customer_name,
+      }],
       webServiceURL,
       authenticationToken: plaintextAuthToken,
-      [passKey]: { ...fields, backFields },
+      storeCard: { ...fields, backFields },
     };
     if (program.expires_at) pass.expirationDate = new Date(program.expires_at).toISOString();
 
