@@ -3403,7 +3403,8 @@ function CustomersModal({ shop, lang, onClose }) {
       T('Stamps', 'الأختام'),
       T('Points', 'النقاط'),
       T('Tier', 'المستوى'),
-      T('Rewards balance', 'رصيد المكافآت'),
+      T('Rewards available', 'مكافآت جاهزة'),
+      T('Rewards used', 'مكافآت مستبدلة'),
       T('Last visit', 'آخر زيارة'),
     ]
     const esc = (v) => {
@@ -3418,6 +3419,7 @@ function CustomersModal({ shop, lang, onClose }) {
       r.points ?? 0,
       r.tier || '',
       r.rewards_balance ?? 0,
+      r.rewards_used ?? 0,
       r.last_visit_at ? new Date(r.last_visit_at).toISOString().slice(0, 10) : '',
     ].map(esc).join(','))
     const csv = '\uFEFF' + [headers.map(esc).join(','), ...body].join('\r\n')
@@ -3497,19 +3499,28 @@ function CustomersModal({ shop, lang, onClose }) {
             const progress = isStamp
               ? `${r.stamps || 0}/${program?.stamps_required || 10} ${T('stamps', 'ختم')}`
               : `${r.points || 0} ${T('points', 'نقطة')}`
+            const rewardsHave = r.rewards_balance || 0
+            const rewardsUsed = r.rewards_used || 0
             return (
               <div key={r.id} className="customers-row">
                 <div className="customers-row-main">
                   <strong>{r.customer_name || T('Member', 'عضو')}</strong>
                   <span className="customers-row-phone">{r.customer_phone || '—'}</span>
                 </div>
+                <div className="customers-row-stats">
+                  <span className="customers-stat">
+                    <span className="customers-stat-value">{rewardsHave}</span>
+                    <span className="customers-stat-label">{T('Rewards available', 'مكافآت جاهزة')}</span>
+                  </span>
+                  <span className="customers-stat">
+                    <span className="customers-stat-value">{rewardsUsed}</span>
+                    <span className="customers-stat-label">{T('Rewards used', 'مكافآت مستبدلة')}</span>
+                  </span>
+                </div>
                 <div className="customers-row-meta">
                   {program?.name && <span className="customers-row-program">{program.name}</span>}
                   <span>{progress}</span>
                   {r.tier && <span className="customers-row-tier">{r.tier}</span>}
-                  {(r.rewards_balance || 0) > 0 && (
-                    <span className="customers-row-reward">{r.rewards_balance}× {T('reward', 'مكافأة')}</span>
-                  )}
                   <span className="customers-row-date">{T('Last visit', 'آخر زيارة')}: {fmtDate(r.last_visit_at)}</span>
                 </div>
               </div>
