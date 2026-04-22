@@ -6,7 +6,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeadersFor, preflightResponse } from "../_shared/cors.ts";
 import { getGoogleAccessToken } from "../_shared/tokenCache.ts";
 import { pickLang, labelFor } from "../_shared/passLabels.ts";
-import { stampRow } from "../_shared/stampRow.ts";
+import { stampRow, stampProgressMessage } from "../_shared/stampRow.ts";
 
 Deno.serve(async (req: Request) => {
   const cors = corsHeadersFor(req, "POST, OPTIONS");
@@ -94,6 +94,22 @@ Deno.serve(async (req: Request) => {
         label: labelFor(lang, "REWARDS"),
         balance: { string: `${rewards}x ${program?.reward_title || labelFor(lang, "REWARD")}` },
       };
+    }
+
+    // Refresh the progress text module on every scan so the customer sees
+    // "You are N stamps away..." / "🎁 Your reward is ready!" update live.
+    // PATCH replaces textModulesData wholesale, so we send a minimal set.
+    if (program?.loyalty_type === "stamp") {
+      patchBody.textModulesData = [{
+        body: stampProgressMessage(
+          stamps,
+          program.stamps_required || 10,
+          program.reward_title || "reward",
+          rewards,
+          lang,
+        ),
+        id: "progress",
+      }];
     }
 
     const accessToken = await getGoogleAccessToken();

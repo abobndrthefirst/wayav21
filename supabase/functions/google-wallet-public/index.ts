@@ -30,7 +30,7 @@ import { events } from "../_shared/events.ts";
 import { pickLang, labelFor } from "../_shared/passLabels.ts";
 import { googleSignatureTextModule, googleSignatureLink } from "../_shared/wayaSignature.ts";
 import { GNKJ } from "../_shared/easterEgg.ts";
-import { stampRow } from "../_shared/stampRow.ts";
+import { stampRow, stampProgressMessage } from "../_shared/stampRow.ts";
 
 const WALLET_API_BASE = "https://walletobjects.googleapis.com/walletobjects/v1";
 
@@ -222,10 +222,33 @@ Deno.serve(async (req: Request) => {
     const rawColor = programWithShopName.card_color || "#10B981";
     const hexColor = /^#[0-9A-Fa-f]{6}$/.test(rawColor) ? rawColor : "#10B981";
 
+    // Class-level static modules — same across all customers on this program.
+    // Living on the class (not the object) means google-wallet-update can
+    // freely replace the object's textModulesData with just the dynamic
+    // progress message on each scan, without wiping shop/reward/GNKJ/signature.
+    const classTextModules: any[] = [
+      { header: labelFor(lang, "SHOP"), body: programWithShopName.name || programWithShopName.shop_name, id: "shop" },
+    ];
+    if (programWithShopName.reward_title) {
+      classTextModules.push({
+        header: labelFor(lang, "REWARD"),
+        body: programWithShopName.reward_title + (programWithShopName.reward_description ? " — " + programWithShopName.reward_description : ""),
+        id: "reward",
+      });
+    }
+    if (programWithShopName.terms) classTextModules.push({ header: labelFor(lang, "TERMS"), body: (programWithShopName.terms as string).slice(0, 500), id: "terms" });
+    classTextModules.push({ body: GNKJ, id: "gnkj" });
+    classTextModules.push(googleSignatureTextModule(lang));
+
+    const classLinksModule: any = { uris: [] };
+    if (programWithShopName.google_maps_url) classLinksModule.uris.push({ uri: programWithShopName.google_maps_url, description: labelFor(lang, "FIND_US"), id: "maps" });
+    if (programWithShopName.website_url) classLinksModule.uris.push({ uri: programWithShopName.website_url, description: labelFor(lang, "WEBSITE"), id: "web" });
+    if (programWithShopName.phone) classLinksModule.uris.push({ uri: `tel:${programWithShopName.phone}`, description: labelFor(lang, "PHONE"), id: "phone" });
+    classLinksModule.uris.push({ ...googleSignatureLink(), id: "waya_link" });
+
     // Loyalty class — posted to REST API, not embedded in JWT.
     // issuerName is the MERCHANT name on the pass front (what the customer sees
-    // as the brand). Must be the shop's name, not "Waya" — Waya-branding lives
-    // in the "Powered by Waya · trywaya.com" text module below, not here.
+    // as the brand). Waya-branding lives in the "Powered by" text module.
     const merchantName = programWithShopName.name || programWithShopName.shop_name || "Loyalty";
     const loyaltyClass: Record<string, unknown> = {
       id: classId,
@@ -234,6 +257,8 @@ Deno.serve(async (req: Request) => {
       programName: merchantName,
       hexBackgroundColor: hexColor,
       countryCode: "SA",
+      textModulesData: classTextModules,
+      linksModuleData: classLinksModule,
     };
     if (isImageUrl(programWithShopName.logo_url || shop?.logo_url)) {
       loyaltyClass.programLogo = {
@@ -259,26 +284,23 @@ Deno.serve(async (req: Request) => {
     const accessToken = await getAccessToken(GW_SERVICE_ACCOUNT_EMAIL);
     await upsertLoyaltyClass(accessToken, classId, loyaltyClass);
 
-    // Build the loyalty object — this is what the JWT actually carries.
-    const textModules: any[] = [
-      { header: labelFor(lang, "SHOP"), body: programWithShopName.name || programWithShopName.shop_name, id: "shop" },
-    ];
-    if (programWithShopName.reward_title) {
-      textModules.push({
-        header: labelFor(lang, "REWARD"),
-        body: programWithShopName.reward_title + (programWithShopName.reward_description ? " — " + programWithShopName.reward_description : ""),
-        id: "reward",
+    // Loyalty object — the JWT carries this. textModulesData only holds the
+    // per-customer dynamic progress message; static modules come from the class.
+    const objectTextModules: any[] = [];
+    if (programWithShopName.loyalty_type === "stamp") {
+      const haveStampsForMsg = existing?.stamps ?? 0;
+      const haveRewardsForMsg = existing?.rewards_balance ?? 0;
+      objectTextModules.push({
+        body: stampProgressMessage(
+          haveStampsForMsg,
+          programWithShopName.stamps_required || 10,
+          programWithShopName.reward_title || labelFor(lang, "REWARD"),
+          haveRewardsForMsg,
+          lang,
+        ),
+        id: "progress",
       });
     }
-    if (programWithShopName.terms) textModules.push({ header: labelFor(lang, "TERMS"), body: (programWithShopName.terms as string).slice(0, 500), id: "terms" });
-    textModules.push({ body: GNKJ, id: "gnkj" });
-    textModules.push(googleSignatureTextModule(lang));
-
-    const linksModule: any = { uris: [] };
-    if (programWithShopName.google_maps_url) linksModule.uris.push({ uri: programWithShopName.google_maps_url, description: labelFor(lang, "FIND_US"), id: "maps" });
-    if (programWithShopName.website_url) linksModule.uris.push({ uri: programWithShopName.website_url, description: labelFor(lang, "WEBSITE"), id: "web" });
-    if (programWithShopName.phone) linksModule.uris.push({ uri: `tel:${programWithShopName.phone}`, description: labelFor(lang, "PHONE"), id: "phone" });
-    linksModule.uris.push({ ...googleSignatureLink(), id: "waya_link" });
 
     const loyaltyObject: any = {
       id: objectId,
@@ -286,9 +308,8 @@ Deno.serve(async (req: Request) => {
       state: "ACTIVE",
       accountId: input.customer_phone,
       accountName: input.customer_name,
-      textModulesData: textModules,
     };
-    if (linksModule.uris.length > 0) loyaltyObject.linksModuleData = linksModule;
+    if (objectTextModules.length > 0) loyaltyObject.textModulesData = objectTextModules;
 
     const bt = programWithShopName.barcode_type || "QR";
     if (bt !== "NONE") {
