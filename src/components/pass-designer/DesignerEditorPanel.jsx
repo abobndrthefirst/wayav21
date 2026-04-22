@@ -152,22 +152,28 @@ export default function DesignerEditorPanel({ design, setField, shopId, T, embed
         T={T}
       />
 
-      <h3 className="pd-section-title">{T('Reward icon', 'أيقونة المكافأة')}</h3>
-      <div className="pd-field">
-        <label>{T('Pick a preset', 'اختر من المعدّة مسبقاً')}</label>
-        <PresetIconPicker selected={design.reward_icon_url} onSelect={(v) => setField('reward_icon_url', v)} />
-      </div>
+      {/* Reward icon section hidden for now — preset grid + custom upload.
+          Re-enable by flipping this flag back to true. */}
+      {false && (
+        <>
+          <h3 className="pd-section-title">{T('Reward icon', 'أيقونة المكافأة')}</h3>
+          <div className="pd-field">
+            <label>{T('Pick a preset', 'اختر من المعدّة مسبقاً')}</label>
+            <PresetIconPicker selected={design.reward_icon_url} onSelect={(v) => setField('reward_icon_url', v)} />
+          </div>
 
-      <DragDropUploader
-        label={T('Or upload custom icon', 'أو ارفع أيقونة خاصة')}
-        hint={T('PNG, 90x90px recommended', 'PNG شفاف، 90×90 بكسل')}
-        accept="image/png"
-        url={design.reward_icon_url && !design.reward_icon_url.startsWith('data:') ? design.reward_icon_url : ''}
-        onUrlChange={(v) => setField('reward_icon_url', v)}
-        shopId={shopId}
-        kind="icon"
-        T={T}
-      />
+          <DragDropUploader
+            label={T('Or upload custom icon', 'أو ارفع أيقونة خاصة')}
+            hint={T('PNG, 90x90px recommended', 'PNG شفاف، 90×90 بكسل')}
+            accept="image/png"
+            url={design.reward_icon_url && !design.reward_icon_url.startsWith('data:') ? design.reward_icon_url : ''}
+            onUrlChange={(v) => setField('reward_icon_url', v)}
+            shopId={shopId}
+            kind="icon"
+            T={T}
+          />
+        </>
+      )}
 
       <h3 className="pd-section-title">{T('Content', 'المحتوى')}</h3>
 
