@@ -2069,7 +2069,7 @@ function WhyWaya({ t, lang }) {
       <Reveal>
         <div className="section-badge">{w.badge}</div>
         <div className="why-waya-logo">
-          <img src="/Bilingual Logo.svg" alt="Waya" />
+          <Logo size={140} />
         </div>
         <h2 className="section-title">{w.title}</h2>
         <p className="section-subtitle">{w.subtitle}</p>

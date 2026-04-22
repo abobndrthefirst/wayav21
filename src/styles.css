@@ -4588,9 +4588,9 @@ html.ltr-mode .scan-stamp-counter { text-align: left; }
 /* ─── Why Waya section ─── */
 .why-waya-section { padding-top: 80px; padding-bottom: 80px; }
 .why-waya-logo { display: flex; justify-content: center; margin: 12px 0 24px; }
-.why-waya-logo img { width: 220px; max-width: 60%; height: auto; display: block; }
+.why-waya-logo img { display: block; max-width: 100%; }
 @media (max-width: 720px) {
-  .why-waya-logo img { width: 160px; }
+  .why-waya-logo img { height: 96px !important; }
 }
 .why-waya-grid {
   display: grid;
