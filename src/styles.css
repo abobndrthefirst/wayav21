@@ -292,6 +292,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 88px;
   background: var(--bg);
   color: var(--cream);
   font-family: var(--font);
@@ -4583,3 +4584,91 @@ html.ltr-mode .scan-stamp-counter { text-align: left; }
 .ev-tr.ev-sev-error td, .ev-tr.ev-sev-critical td { background: #fef9f9; }
 .ev-tr.ev-sev-critical td:first-child { border-left: 3px solid #b91c1c; }
 .ev-table code { font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; color: #222; }
+
+/* ─── Why Waya section ─── */
+.why-waya-section { padding-top: 80px; padding-bottom: 80px; }
+.why-waya-logo { display: flex; justify-content: center; margin: 12px 0 24px; }
+.why-waya-logo img { width: 220px; max-width: 60%; height: auto; display: block; }
+@media (max-width: 720px) {
+  .why-waya-logo img { width: 160px; }
+}
+.why-waya-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 40px;
+}
+@media (max-width: 900px) {
+  .why-waya-grid { grid-template-columns: 1fr; gap: 14px; margin-top: 28px; }
+}
+.why-waya-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 24px;
+  text-align: start;
+  position: relative;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.why-waya-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--green) 0%, #059669 100%);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.15rem;
+  margin-bottom: 14px;
+}
+.why-waya-card-title { font-size: 1.15rem; font-weight: 800; margin: 0 0 8px; color: var(--cream); }
+.why-waya-card-desc { font-size: 0.95rem; color: var(--gray-dim); line-height: 1.7; margin: 0; }
+
+/* ─── FAQ section ─── */
+.faq-section { padding-top: 80px; padding-bottom: 80px; }
+.faq-list {
+  max-width: 780px;
+  margin: 32px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: start;
+}
+.faq-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.faq-item-open { border-color: rgba(16,185,129,0.35); box-shadow: 0 10px 30px rgba(16,185,129,0.08); }
+.faq-q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 22px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: inherit;
+  color: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.faq-chevron { flex-shrink: 0; color: var(--green); transition: transform 0.25s ease; }
+.faq-item-open .faq-chevron { transform: rotate(180deg); }
+.faq-a { padding: 0 22px; overflow: hidden; }
+.faq-a p { margin: 0 0 18px; color: var(--gray-dim); line-height: 1.75; font-size: 0.95rem; }
+@media (max-width: 720px) {
+  .faq-list { margin-top: 20px; }
+  .faq-q { padding: 14px 16px; font-size: 0.95rem; }
+  .faq-a { padding: 0 16px; }
+}
+
+[data-theme="light"] .why-waya-card { background: #fff; }
+[data-theme="light"] .faq-item { background: #fff; }

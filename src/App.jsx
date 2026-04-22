@@ -90,7 +90,7 @@ async function submitLead({ contact, store_name, industry }) {
 /* ─── i18n content ─── */
 const content = {
   ar: {
-    nav: { cta: 'ابدأ مجاناً', pricing: 'الأسعار', features: 'المميزات', how: 'كيف يعمل', login: 'دخول', signup: 'سجّل', logout: 'خروج', hi: 'مرحباً', dashboard: 'لوحة التحكم', subscription: 'الاشتراك' },
+    nav: { cta: 'ابدأ مجاناً', pricing: 'الأسعار', features: 'المميزات', how: 'كيف يعمل', why: 'لماذا وايا', faq: 'الأسئلة', login: 'دخول', signup: 'سجّل', logout: 'خروج', hi: 'مرحباً', dashboard: 'لوحة التحكم', subscription: 'الاشتراك' },
     auth: {
       loginTitle: 'تسجيل الدخول', loginSub: 'ادخل لحسابك وابدأ تدير برنامج الولاء',
       signupTitle: 'إنشاء حساب', signupSub: 'سجّل الحين وابدأ أسبوعك المجاني',
@@ -297,6 +297,28 @@ const content = {
       wayaCost: 'تكلفة وايا',
       netProfit: 'صافي الربح الإضافي',
       cta: 'ابدأ الآن وشوف الفرق',
+    },
+    whyWaya: {
+      badge: 'لماذا وايا',
+      title: 'لماذا وايا هو الخيار الأفضل لمتجرك',
+      subtitle: 'ثلاث أسباب تخليك ما تفكر ثاني.',
+      points: [
+        { title: 'يزيد مبيعاتك',    desc: 'العميل يرجع أكثر وينفق أعلى — حتى +18% في متوسط الفاتورة و+32% في الزيارات المتكررة.' },
+        { title: 'بدون تطبيق جديد', desc: 'البطاقة تنضاف مباشرة لـ Apple Wallet وGoogle Wallet — العميل ما يحتاج ينزّل شي.' },
+        { title: 'متكامل مع نظامك', desc: 'ربط مباشر مع Foodics وZid وSalla وأنظمة نقاط البيع — النقاط تنضاف تلقائي بعد كل فاتورة.' },
+      ],
+    },
+    faq: {
+      badge: 'الأسئلة الشائعة',
+      title: 'كل شي تحتاج تعرفه',
+      items: [
+        { q: 'كم عميل لازم يكون عندي قبل ما أستخدم وايا؟', a: 'ما يهم — حتى لو عندك 10 عملاء. الفكرة إنك تخلّي العملاء الحاليين يرجعون، مو إنك تجيب جدد.' },
+        { q: 'هل العميل يحتاج ينزّل تطبيق؟', a: 'لا. البطاقة تروح مباشرة إلى Apple Wallet أو Google Wallet. العميل يفتح محفظته ويشوف رصيده.' },
+        { q: 'كم ياخذ الإعداد؟', a: 'دقائق. تسجّل متجرك، تصمّم بطاقتك، وتشارك كود QR مع عملائك.' },
+        { q: 'هل أقدر ألغي بأي وقت؟', a: 'نعم بدون عقد. تقدر تلغي من لوحة التحكم، والخدمة تستمر لنهاية فترة الفوترة الحالية.' },
+        { q: 'أي أنظمة نقاط البيع مدعومة؟', a: 'Foodics وZid وSalla وRewaa وOdoo حالياً. لو عندك نظام غيرهم، تواصل معنا ونربطه لك.' },
+        { q: 'هل بياناتي آمنة؟', a: 'كلها مشفّرة، محفوظة في خوادم Supabase، وما نبيع ولا نشارك بياناتك مع أي طرف ثالث.' },
+      ],
     },
     comparison: {
       badge: 'ليش وايا؟',
@@ -560,7 +582,7 @@ const content = {
     },
   },
   en: {
-    nav: { cta: 'Start Free', pricing: 'Pricing', features: 'Features', how: 'How It Works', login: 'Log In', signup: 'Sign Up', logout: 'Log Out', hi: 'Hi', dashboard: 'Dashboard', subscription: 'Subscription' },
+    nav: { cta: 'Start Free', pricing: 'Pricing', features: 'Features', how: 'How It Works', why: 'Why Waya', faq: 'FAQ', login: 'Log In', signup: 'Sign Up', logout: 'Log Out', hi: 'Hi', dashboard: 'Dashboard', subscription: 'Subscription' },
     auth: {
       loginTitle: 'Log In', loginSub: 'Sign in to manage your loyalty program',
       signupTitle: 'Create Account', signupSub: 'Sign up and start your free trial',
@@ -767,6 +789,28 @@ const content = {
       wayaCost: 'Waya Cost',
       netProfit: 'Net Extra Profit',
       cta: 'Start now and see the difference',
+    },
+    whyWaya: {
+      badge: 'Why Waya',
+      title: 'Why Waya is the best loyalty program for your shop',
+      subtitle: 'Three reasons you won\'t need to think twice.',
+      points: [
+        { title: 'Grows your sales',      desc: 'Customers come back more often and spend more — up to +18% average ticket and +32% repeat visits.' },
+        { title: 'No app to download',    desc: 'Your card lives directly in Apple Wallet & Google Wallet — zero friction, nothing for your customer to install.' },
+        { title: 'Plugs into your stack', desc: 'Native integrations with Foodics, Zid, Salla, and other POS systems — points post automatically after each receipt.' },
+      ],
+    },
+    faq: {
+      badge: 'FAQ',
+      title: 'Everything you need to know',
+      items: [
+        { q: 'How many customers do I need before I start?',      a: "It doesn't matter — even 10 customers work. The point is getting your existing customers to come back, not finding new ones." },
+        { q: 'Does my customer need to install an app?',          a: 'No. The pass goes straight into their Apple Wallet or Google Wallet. They open their wallet and see their balance.' },
+        { q: 'How long does setup take?',                         a: 'A few minutes. Register your shop, design your card, and share the QR code with customers.' },
+        { q: 'Can I cancel anytime?',                             a: "Yes, no contract. Cancel from the dashboard; the service stays active until the end of the current billing period." },
+        { q: 'Which POS systems are supported?',                  a: 'Foodics, Zid, Salla, Rewaa, and Odoo today. If you use something else, contact us and we\'ll add it for you.' },
+        { q: 'Is my data safe?',                                  a: "Everything is encrypted, stored on Supabase, and we never sell or share your data with any third party." },
+      ],
     },
     comparison: {
       badge: 'Why Waya?',
@@ -1381,9 +1425,10 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
           <Logo size={72} />
         </a>
         <div className="nav-links">
+          <a href="#why">{t.nav.why}</a>
           <a href="#how">{t.nav.how}</a>
-          <a href="#features">{t.nav.features}</a>
           <a href="#pricing">{t.nav.pricing}</a>
+          <a href="#faq">{t.nav.faq}</a>
         </div>
         <div className="nav-left-group">
           <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
@@ -1414,9 +1459,10 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.25 }}
           >
+            <a href="#why" onClick={closeMenu}>{t.nav.why}</a>
             <a href="#how" onClick={closeMenu}>{t.nav.how}</a>
-            <a href="#features" onClick={closeMenu}>{t.nav.features}</a>
             <a href="#pricing" onClick={closeMenu}>{t.nav.pricing}</a>
+            <a href="#faq" onClick={closeMenu}>{t.nav.faq}</a>
             <MobileAuthButtons t={t} closeMenu={closeMenu} />
           </motion.div>
         )}
@@ -1986,7 +2032,7 @@ function WalletCards({ t }) {
   const rotations = [-6, 0, 6]
 
   return (
-    <section className="section wallet-section" ref={sectionRef}>
+    <section className="section wallet-section" id="how" ref={sectionRef}>
       <Reveal>
         <h2 className="section-title">{t.walletCards.title}</h2>
         <p className="section-subtitle">{t.walletCards.subtitle}</p>
@@ -2010,6 +2056,85 @@ function WalletCards({ t }) {
             <img src={card.src} alt={card.alt} className="wallet-card-img" />
           </motion.div>
         ))}
+      </div>
+    </section>
+  )
+}
+
+/* ─── Why Waya ─── */
+function WhyWaya({ t, lang }) {
+  const w = t.whyWaya
+  return (
+    <section className="section why-waya-section" id="why">
+      <Reveal>
+        <div className="section-badge">{w.badge}</div>
+        <div className="why-waya-logo">
+          <img src="/Bilingual Logo.svg" alt="Waya" />
+        </div>
+        <h2 className="section-title">{w.title}</h2>
+        <p className="section-subtitle">{w.subtitle}</p>
+      </Reveal>
+      <div className="why-waya-grid">
+        {w.points.map((p, i) => (
+          <Reveal key={i} delay={i * 0.1}>
+            <motion.div
+              className="why-waya-card"
+              whileHover={{ y: -6, boxShadow: '0 20px 40px rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.35)' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+            >
+              <div className="why-waya-num">{i + 1}</div>
+              <h3 className="why-waya-card-title">{p.title}</h3>
+              <p className="why-waya-card-desc">{p.desc}</p>
+            </motion.div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/* ─── FAQ ─── */
+function FAQ({ t, lang }) {
+  const f = t.faq
+  const [openIdx, setOpenIdx] = useState(0)
+  return (
+    <section className="section faq-section" id="faq">
+      <Reveal>
+        <div className="section-badge">{f.badge}</div>
+        <h2 className="section-title">{f.title}</h2>
+      </Reveal>
+      <div className="faq-list">
+        {f.items.map((item, i) => {
+          const open = openIdx === i
+          return (
+            <Reveal key={i} delay={i * 0.05}>
+              <div className={`faq-item${open ? ' faq-item-open' : ''}`}>
+                <button
+                  type="button"
+                  className="faq-q"
+                  onClick={() => setOpenIdx(open ? -1 : i)}
+                  aria-expanded={open}
+                >
+                  <span>{item.q}</span>
+                  <svg className="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <AnimatePresence initial={false}>
+                  {open && (
+                    <motion.div
+                      className="faq-a"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <p>{item.a}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </Reveal>
+          )
+        })}
       </div>
     </section>
   )
@@ -4156,12 +4281,14 @@ export default function App() {
         <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
           <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
           <Hero t={t} />
+          <WhyWaya t={t} lang={lang} />
           <WhoWeServe t={t} />
           <WalletCards t={t} />
           <PosIntegrations t={t} />
           <SocialProof t={t} />
           <Calculator t={t} lang={lang} />
           <Pricing t={t} lang={lang} />
+          <FAQ t={t} lang={lang} />
           <CTA t={t} />
           <Footer t={t} lang={lang} />
         </div>
