@@ -2417,40 +2417,51 @@ function EmailIcon() {
 }
 
 /* ─── Footer ─── */
-function Footer({ t }) {
+function Footer({ t, lang = 'ar' }) {
+  const isAr = lang === 'ar'
+  const year = new Date().getFullYear()
   return (
     <footer className="footer">
       <div className="footer-content">
-        <div className="footer-logo">
-          <Logo size={90} />
+        <div className="footer-brand-col">
+          <Logo size={72} />
+          <p className="footer-tagline">
+            {isAr ? 'برنامج ولاء رقمي للمتاجر الصغيرة.' : 'A digital loyalty program for small businesses.'}
+          </p>
         </div>
 
-        <div className="footer-center">
-          <div className="footer-links">
-            <a href="/privacy">{t.footer.links.privacy}</a>
-            <a href="/terms">{t.footer.links.terms}</a>
-          </div>
-          <div className="footer-contact">
-            <a href="https://wa.me/966509076104" target="_blank" rel="noopener noreferrer" className="footer-contact-link">
-              <WhatsAppIconSmall />
-              <span>{t.footer.whatsapp}</span>
-            </a>
-            <a href="mailto:hello@trywaya.com" className="footer-contact-link">
-              <EmailIcon />
-              <span>{t.footer.email}</span>
-            </a>
-            <a href="https://x.com/trywaya" target="_blank" rel="noopener noreferrer" className="footer-contact-link" aria-label="X / Twitter @trywaya">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.75l-5.29-6.93L4.4 22H1.14l8.02-9.17L1 2h6.9l4.78 6.32L18.244 2Zm-2.37 18h1.86L7.28 4h-1.96l10.555 16Z"/></svg>
-              <span>@trywaya</span>
-            </a>
-            <a href="https://instagram.com/trywaya" target="_blank" rel="noopener noreferrer" className="footer-contact-link" aria-label="Instagram @trywaya">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-              <span>@trywaya</span>
-            </a>
-          </div>
+        <div className="footer-col">
+          <h4 className="footer-col-title">{isAr ? 'الشركة' : 'Company'}</h4>
+          <a href="/privacy">{t.footer.links.privacy}</a>
+          <a href="/terms">{t.footer.links.terms}</a>
         </div>
 
-        <p className="footer-copy">{t.footer.copy}</p>
+        <div className="footer-col">
+          <h4 className="footer-col-title">{isAr ? 'تواصل' : 'Contact'}</h4>
+          <a href="https://wa.me/966509076104" target="_blank" rel="noopener noreferrer" className="footer-col-link">
+            <WhatsAppIconSmall />
+            <span>{t.footer.whatsapp}</span>
+          </a>
+          <a href="mailto:hello@trywaya.com" className="footer-col-link">
+            <EmailIcon />
+            <span>hello@trywaya.com</span>
+          </a>
+        </div>
+
+        <div className="footer-col">
+          <h4 className="footer-col-title">{isAr ? 'تابعنا' : 'Follow'}</h4>
+          <a href="https://x.com/trywaya" target="_blank" rel="noopener noreferrer" className="footer-col-link" aria-label="X / Twitter @trywaya">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.75l-5.29-6.93L4.4 22H1.14l8.02-9.17L1 2h6.9l4.78 6.32L18.244 2Zm-2.37 18h1.86L7.28 4h-1.96l10.555 16Z"/></svg>
+            <span>@trywaya</span>
+          </a>
+          <a href="https://instagram.com/trywaya" target="_blank" rel="noopener noreferrer" className="footer-col-link" aria-label="Instagram @trywaya">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+            <span>@trywaya</span>
+          </a>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <p className="footer-copy">© {year} Waya · {isAr ? 'جميع الحقوق محفوظة' : 'All rights reserved'}</p>
       </div>
     </footer>
   )
@@ -2478,8 +2489,11 @@ function PrivacyPage({ lang, setLang, theme, setTheme, t }) {
     <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
       <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
       <section className="legal-page">
-        <h1 className="legal-title">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</h1>
-        <p className="legal-date">{isAr ? 'آخر تحديث: أبريل 2026' : 'Last updated: April 2026'}</p>
+        <div className="legal-hero">
+          <span className="legal-hero-badge">{isAr ? 'قانوني' : 'Legal'}</span>
+          <h1 className="legal-title">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</h1>
+          <p className="legal-date">{isAr ? 'آخر تحديث: أبريل 2026' : 'Last updated: April 2026'}</p>
+        </div>
 
         <h2>{isAr ? 'مقدمة' : 'Introduction'}</h2>
         <p>{isAr
@@ -2521,7 +2535,7 @@ function PrivacyPage({ lang, setLang, theme, setTheme, t }) {
           <a href="/">{isAr ? '← الرجوع للرئيسية' : '← Back to Home'}</a>
         </div>
       </section>
-      <Footer t={t} />
+      <Footer t={t} lang={lang} />
     </div>
   )
 }
@@ -2533,8 +2547,11 @@ function TermsPage({ lang, setLang, theme, setTheme, t }) {
     <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
       <Navbar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
       <section className="legal-page">
-        <h1 className="legal-title">{isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}</h1>
-        <p className="legal-date">{isAr ? 'آخر تحديث: أبريل 2026' : 'Last updated: April 2026'}</p>
+        <div className="legal-hero">
+          <span className="legal-hero-badge">{isAr ? 'قانوني' : 'Legal'}</span>
+          <h1 className="legal-title">{isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}</h1>
+          <p className="legal-date">{isAr ? 'آخر تحديث: أبريل 2026' : 'Last updated: April 2026'}</p>
+        </div>
 
         <h2>{isAr ? 'الخدمة' : 'The Service'}</h2>
         <p>{isAr
@@ -2582,7 +2599,7 @@ function TermsPage({ lang, setLang, theme, setTheme, t }) {
           <a href="/">{isAr ? '← الرجوع للرئيسية' : '← Back to Home'}</a>
         </div>
       </section>
-      <Footer t={t} />
+      <Footer t={t} lang={lang} />
     </div>
   )
 }
@@ -4092,7 +4109,7 @@ export default function App() {
           <Calculator t={t} lang={lang} />
           <Pricing t={t} lang={lang} />
           <CTA t={t} />
-          <Footer t={t} />
+          <Footer t={t} lang={lang} />
         </div>
       </AuthRedirect>
     </AuthProvider>

@@ -550,6 +550,16 @@ body {
   -webkit-text-fill-color: transparent;
   animation: gradientShift 6s ease-in-out infinite;
 }
+/* Mobile: the gradient-clip + nested inline-block wrappers from TextReveal
+   render as invisible text on some mobile browsers. Fall back to solid. */
+@media (max-width: 900px) {
+  .hero-gradient-text {
+    background: none;
+    -webkit-text-fill-color: var(--green-bright);
+    color: var(--green-bright);
+    animation: none;
+  }
+}
 
 @keyframes gradientShift {
   0%, 100% { background-position: 0% 50%; }
@@ -2710,89 +2720,133 @@ body {
 /* ─── Footer ─── */
 .footer {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 32px 64px;
+  padding: 48px 64px 24px;
+  margin-top: 80px;
 }
 
 .footer-content {
   max-width: var(--max-w);
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+  text-align: start;
 }
 
-.footer-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.footer-copy {
-  font-size: 14px;
-  color: var(--gray-dim);
-}
-
-.footer-links {
-  display: flex;
-  gap: 20px;
-}
-
-.footer-links a {
-  color: var(--gray-dim);
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.3s;
-}
-
-.footer-links a:hover {
-  color: var(--white);
-}
-
-.footer-center {
+.footer-brand-col {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 12px;
 }
 
-.footer-contact {
-  display: flex;
-  gap: 20px;
-  align-items: center;
+.footer-tagline {
+  font-size: 14px;
+  color: var(--gray-dim);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 260px;
 }
 
-.footer-contact-link {
+.footer-col {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-col-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--cream);
+  margin: 0 0 4px;
+}
+
+.footer-col a,
+.footer-col-link {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   color: var(--gray-dim);
   text-decoration: none;
-  font-size: 13px;
-  transition: color 0.3s;
+  font-size: 14px;
+  transition: color 0.2s ease;
 }
 
-.footer-contact-link:hover {
+.footer-col a:hover,
+.footer-col-link:hover {
   color: var(--green);
 }
 
+.footer-bottom {
+  max-width: var(--max-w);
+  margin: 32px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: center;
+}
+
+.footer-copy {
+  font-size: 13px;
+  color: var(--gray-dim);
+  margin: 0;
+}
+
+[data-theme="light"] .footer-bottom { border-top-color: rgba(0, 0, 0, 0.08); }
+[data-theme="light"] .footer-col-title { color: #111; }
+
 /* ─── Legal Pages ─── */
 .legal-page {
-  max-width: 800px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 140px 24px 80px;
+  padding: 120px 24px 80px;
+  text-align: start;
+}
+
+.legal-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 28px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+.legal-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--green-bright);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
 
 .legal-title {
-  font-size: 32px;
+  font-size: 40px;
   font-weight: 800;
   color: var(--cream);
-  margin-bottom: 8px;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 .legal-date {
   font-size: 14px;
   color: var(--gray-dim);
-  margin-bottom: 40px;
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .legal-page { padding: 96px 18px 64px; }
+  .legal-title { font-size: 28px; }
 }
 
 .legal-page h2 {
@@ -3013,9 +3067,10 @@ body {
   .hero-image { height: 280px; border-radius: 24px; }
   .hero-image-container { border-radius: 24px; }
   .floating-bubble { display: none; }
-  .footer-content { flex-direction: column; gap: 20px; text-align: center; }
-  .footer-contact { flex-direction: column; gap: 10px; }
-  .footer-links { flex-wrap: wrap; justify-content: center; gap: 12px; }
+  .footer { padding: 32px 20px 20px; }
+  .footer-content { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .footer-brand-col { grid-column: 1 / -1; align-items: flex-start; }
+  .footer-tagline { max-width: none; }
   .hero { padding: 90px 16px 28px; }
   .hero-inner { gap: 28px; }
 
