@@ -382,17 +382,23 @@ function StepBranding(props) {
           url={backgroundUrl} onClear={() => setBackgroundUrl('')} onPick={(f) => upload(f, 'bg', setBackgroundUrl)} T={T}
         />
 
-        <div className="lw-section-title">{T('Reward icon', 'أيقونة المكافأة')}</div>
-        <p className="lw-preview-sub">{T('Pick a preset or upload your own', 'اختر من المعدّة مسبقاً أو ارفع أيقونتك')}</p>
-        <PresetIconPicker selected={rewardIconUrl} onSelect={setRewardIconUrl} />
-        <Uploader
-          label={T('Or upload your own icon', 'أو ارفع أيقونتك الخاصة')}
-          hint={T('PNG with transparency, 90×90px recommended', 'PNG شفاف، الحجم الموصى به 90×90 بكسل')}
-          accept="image/png"
-          url={rewardIconUrl && rewardIconUrl.startsWith('data:') ? '' : rewardIconUrl}
-          onClear={() => setRewardIconUrl('')}
-          onPick={(f) => upload(f, 'icon', setRewardIconUrl)} T={T}
-        />
+        {/* Reward icon section hidden for now — preset grid + custom upload.
+            Re-enable by flipping this flag back to true. */}
+        {false && (
+          <>
+            <div className="lw-section-title">{T('Reward icon', 'أيقونة المكافأة')}</div>
+            <p className="lw-preview-sub">{T('Pick a preset or upload your own', 'اختر من المعدّة مسبقاً أو ارفع أيقونتك')}</p>
+            <PresetIconPicker selected={rewardIconUrl} onSelect={setRewardIconUrl} />
+            <Uploader
+              label={T('Or upload your own icon', 'أو ارفع أيقونتك الخاصة')}
+              hint={T('PNG with transparency, 90×90px recommended', 'PNG شفاف، الحجم الموصى به 90×90 بكسل')}
+              accept="image/png"
+              url={rewardIconUrl && rewardIconUrl.startsWith('data:') ? '' : rewardIconUrl}
+              onClear={() => setRewardIconUrl('')}
+              onPick={(f) => upload(f, 'icon', setRewardIconUrl)} T={T}
+            />
+          </>
+        )}
       </div>
 
       <div className="lw-branding-previews">
