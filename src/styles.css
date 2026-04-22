@@ -4010,13 +4010,46 @@ body {
 }
 .scan-lookup-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
 .scan-lookup-btn { min-width: 100px; }
-.scan-customer-card { padding: 22px 22px; display: flex; flex-direction: column; gap: 14px; }
-.scan-customer-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-.scan-customer-name { font-size: 1.15rem; font-weight: 800; color: #111; margin: 0; }
-.scan-customer-phone { font-size: 0.85rem; color: #6b7280; margin: 2px 0 0; letter-spacing: 0.3px; direction: ltr; }
-.scan-stamp-counter { text-align: right; }
-.scan-stamp-big { font-size: 1.6rem; font-weight: 800; color: var(--green); line-height: 1; }
-.scan-stamp-small { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+.scan-customer-card { padding: 22px 22px; display: flex; flex-direction: column; gap: 16px; }
+.scan-customer-top { display: flex; flex-direction: column; gap: 6px; }
+.scan-customer-name { font-size: 1.25rem; font-weight: 800; color: #111; margin: 0; }
+.scan-customer-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.scan-customer-phone { font-size: 0.9rem; color: #6b7280; letter-spacing: 0.3px; direction: ltr; }
+.scan-program-chip { font-size: 0.75rem; font-weight: 600; color: var(--green); background: rgba(16,185,129,0.1); padding: 3px 10px; border-radius: 999px; }
+
+.scan-balance-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 16px;
+  background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.02));
+  border: 1px solid rgba(16,185,129,0.18);
+  border-radius: 14px;
+}
+.scan-balance-number {
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: var(--green);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.scan-balance-label { font-size: 0.9rem; color: #4b5563; font-weight: 600; }
+
+.scan-rewards-ready {
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(250,204,21,0.15);
+  color: #92400e;
+  text-align: center;
+  font-weight: 600;
+}
+.scan-last-visit { font-size: 0.8rem; color: #6b7280; text-align: center; }
+
+[data-theme="dark"] .scan-customer-name { color: #fff; }
+[data-theme="dark"] .scan-balance-label { color: #9ca3af; }
+[data-theme="dark"] .scan-last-visit { color: #9ca3af; }
 .scan-progress { height: 10px; background: #eef0f3; border-radius: 999px; overflow: hidden; }
 .scan-progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), #059669); transition: width 0.35s ease; }
 .scan-actions { display: flex; gap: 10px; }

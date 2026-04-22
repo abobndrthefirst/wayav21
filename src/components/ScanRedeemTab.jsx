@@ -78,14 +78,26 @@ export default function ScanRedeemTab({ shop, lang, d }) {
   }
 
   const isStamp = pass?.loyalty_programs?.loyalty_type !== 'points'
-  const stampsRequired = pass?.loyalty_programs?.stamps_required || 10
-  const pointsForReward = pass?.loyalty_programs?.reward_threshold || 100
+  const rawStampsRequired = pass?.loyalty_programs?.stamps_required
+  const rawPointsThreshold = pass?.loyalty_programs?.reward_threshold
+  const stampsRequired = rawStampsRequired && rawStampsRequired > 0 ? rawStampsRequired : null
+  const pointsForReward = rawPointsThreshold && rawPointsThreshold > 0 ? rawPointsThreshold : null
   const currentStamps = pass?.stamps || 0
   const currentPoints = pass?.points || 0
   const rewardsBalance = pass?.rewards_balance || 0
   const progress = isStamp
-    ? Math.min(100, (currentStamps / stampsRequired) * 100)
-    : Math.min(100, (currentPoints / pointsForReward) * 100)
+    ? (stampsRequired ? Math.min(100, (currentStamps / stampsRequired) * 100) : 0)
+    : (pointsForReward ? Math.min(100, (currentPoints / pointsForReward) * 100) : 0)
+  const programName = pass?.loyalty_programs?.name
+  const lastVisit = pass?.last_visit_at
+    ? new Date(pass.last_visit_at).toLocaleString(isAr ? 'ar-SA' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })
+    : null
+
+  const refreshPass = async () => {
+    const lookup = pass?.customer_phone || phone
+    const refreshed = await loadPass(lookup)
+    if (refreshed) setPass(refreshed)
+  }
 
   const handleAdd = async () => {
     if (!pass || actionLoading) return
@@ -97,8 +109,7 @@ export default function ScanRedeemTab({ shop, lang, d }) {
     const j = await callPointsUpdate(body)
     if (j?.success) {
       showMsg('success', d.scanSuccessAdd)
-      const refreshed = await loadPass(phone)
-      if (refreshed) setPass(refreshed)
+      await refreshPass()
     } else {
       showMsg('error', j?.error || d.scanError)
     }
@@ -116,8 +127,7 @@ export default function ScanRedeemTab({ shop, lang, d }) {
     const j = await callPointsUpdate({ pass_id: pass.id, action: 'redeem_reward' })
     if (j?.success) {
       showMsg('success', d.scanSuccessRedeem)
-      const refreshed = await loadPass(phone)
-      if (refreshed) setPass(refreshed)
+      await refreshPass()
     } else {
       showMsg('error', j?.error || d.scanError)
     }
@@ -173,28 +183,52 @@ export default function ScanRedeemTab({ shop, lang, d }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
         >
-          <div className="scan-customer-head">
-            <div>
-              <h3 className="scan-customer-name">{pass.customer_name || (isAr ? 'عميل' : 'Customer')}</h3>
-              <p className="scan-customer-phone">{pass.customer_phone}</p>
-            </div>
-            <div className="scan-stamp-counter">
-              <div className="scan-stamp-big">
-                {isStamp ? `${currentStamps} / ${stampsRequired}` : `${currentPoints} / ${pointsForReward}`}
-              </div>
-              <div className="scan-stamp-small">
-                {isStamp ? d.scanStamps : (isAr ? 'نقاط' : 'points')}
-              </div>
+          <div className="scan-customer-top">
+            <h3 className="scan-customer-name">{pass.customer_name || (isAr ? 'عميل' : 'Customer')}</h3>
+            <div className="scan-customer-meta">
+              <span className="scan-customer-phone">{pass.customer_phone}</span>
+              {programName && <span className="scan-program-chip">{programName}</span>}
             </div>
           </div>
 
-          <div className="scan-progress">
-            <div className="scan-progress-fill" style={{ width: `${progress}%` }} />
+          <div className="scan-balance-block">
+            <motion.div
+              key={isStamp ? currentStamps : currentPoints}
+              className="scan-balance-number"
+              initial={{ scale: 0.85, opacity: 0.4 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {isStamp ? currentStamps : currentPoints}
+            </motion.div>
+            <div className="scan-balance-label">
+              {isStamp
+                ? (stampsRequired
+                    ? (isAr ? `من ${stampsRequired} ختم` : `of ${stampsRequired} stamps`)
+                    : (isAr ? 'ختم' : (currentStamps === 1 ? 'stamp' : 'stamps')))
+                : (pointsForReward
+                    ? (isAr ? `من ${pointsForReward} نقطة` : `of ${pointsForReward} points`)
+                    : (isAr ? 'نقطة' : 'points'))}
+            </div>
           </div>
+
+          {((isStamp && stampsRequired) || (!isStamp && pointsForReward)) && (
+            <div className="scan-progress">
+              <div className="scan-progress-fill" style={{ width: `${progress}%` }} />
+            </div>
+          )}
 
           {rewardsBalance > 0 && (
-            <div className="scan-msg success" style={{ margin: 0 }}>
-              {isAr ? `مكافأة جاهزة للاستبدال (${rewardsBalance})` : `Reward${rewardsBalance > 1 ? 's' : ''} ready to redeem (${rewardsBalance})`}
+            <div className="scan-rewards-ready">
+              🎁 {isAr
+                ? `${rewardsBalance} مكافأة جاهزة للاستبدال`
+                : `${rewardsBalance} reward${rewardsBalance > 1 ? 's' : ''} ready to redeem`}
+            </div>
+          )}
+
+          {lastVisit && (
+            <div className="scan-last-visit">
+              {isAr ? 'آخر زيارة' : 'Last visit'}: {lastVisit}
             </div>
           )}
 
@@ -204,7 +238,7 @@ export default function ScanRedeemTab({ shop, lang, d }) {
               onClick={handleAdd}
               disabled={actionLoading}
             >
-              {actionLoading ? '…' : d.scanAddStamp}
+              {actionLoading ? '…' : (isStamp ? (isAr ? '+ ختم' : '+ Stamp') : (isAr ? '+ نقطة' : '+ Point'))}
             </button>
             <button
               className="lw-btn"
