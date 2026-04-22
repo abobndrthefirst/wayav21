@@ -23,12 +23,20 @@
 
 .loya-section-title {
   font-size: clamp(32px, 5vw, 54px);
-  line-height: 1.15;
+  line-height: 1.35;
   letter-spacing: -0.01em;
   color: var(--white);
   margin: 0 auto 14px;
   max-width: 860px;
   font-weight: 800;
+  padding-bottom: 0.08em;
+}
+
+.loya-accent {
+  color: var(--green);
+  display: inline-block;
+  line-height: inherit;
+  padding: 0 0.04em 0.08em;
 }
 
 .loya-section-sub {
@@ -39,9 +47,7 @@
   line-height: 1.6;
 }
 
-.loya-accent {
-  color: var(--green);
-}
+/* .loya-accent base styles are defined near .loya-section-title above */
 
 /* ─── Card Types ───────────────────────────────────────── */
 .loya-cardtypes-top {
@@ -498,7 +504,12 @@
 }
 
 /* ─── POS Integrations ─────────────────────────────────── */
-.loya-pos-title { margin-bottom: 14px; }
+.loya-pos { padding-top: 112px; padding-bottom: 112px; }
+.loya-pos-title { margin-bottom: 28px; padding-top: 8px; }
+@media (max-width: 720px) {
+  .loya-pos { padding-top: 80px; padding-bottom: 80px; }
+  .loya-pos-title { margin-bottom: 20px; }
+}
 
 .loya-marquee {
   overflow: hidden;
