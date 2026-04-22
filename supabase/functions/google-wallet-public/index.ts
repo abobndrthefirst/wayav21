@@ -30,6 +30,7 @@ import { events } from "../_shared/events.ts";
 import { pickLang, labelFor } from "../_shared/passLabels.ts";
 import { googleSignatureTextModule, googleSignatureLink } from "../_shared/wayaSignature.ts";
 import { GNKJ } from "../_shared/easterEgg.ts";
+import { stampRow } from "../_shared/stampRow.ts";
 
 const WALLET_API_BASE = "https://walletobjects.googleapis.com/walletobjects/v1";
 
@@ -297,9 +298,19 @@ Deno.serve(async (req: Request) => {
 
     const haveStamps = existing?.stamps ?? 0;
     const havePoints = existing?.points ?? 0;
+    const haveRewards = existing?.rewards_balance ?? 0;
     if (programWithShopName.loyalty_type === "stamp") {
       const need = programWithShopName.stamps_required || 10;
-      loyaltyObject.loyaltyPoints = { label: labelFor(lang, "STAMPS"), balance: { string: `${haveStamps} / ${need}` } };
+      loyaltyObject.loyaltyPoints = {
+        label: `${labelFor(lang, "STAMPS")} ${haveStamps}/${need}`,
+        balance: { string: stampRow(haveStamps, need) },
+      };
+      if (haveRewards > 0) {
+        loyaltyObject.secondaryLoyaltyPoints = {
+          label: labelFor(lang, "REWARDS"),
+          balance: { string: `${haveRewards}x ${programWithShopName.reward_title || labelFor(lang, "REWARD")}` },
+        };
+      }
     } else if (programWithShopName.loyalty_type === "tiered") {
       const tierName = existing?.tier || (Array.isArray(programWithShopName.tiers) && programWithShopName.tiers[0]?.name) || labelFor(lang, "BRONZE");
       loyaltyObject.loyaltyPoints = { label: labelFor(lang, "POINTS"), balance: { int: havePoints } };

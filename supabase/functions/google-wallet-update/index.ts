@@ -5,6 +5,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { corsHeadersFor, preflightResponse } from "../_shared/cors.ts";
 import { getGoogleAccessToken } from "../_shared/tokenCache.ts";
+import { pickLang, labelFor } from "../_shared/passLabels.ts";
+import { stampRow } from "../_shared/stampRow.ts";
 
 Deno.serve(async (req: Request) => {
   const cors = corsHeadersFor(req, "POST, OPTIONS");
@@ -67,28 +69,31 @@ Deno.serve(async (req: Request) => {
     const points = pass.points || 0;
     const stamps = pass.stamps || 0;
     const rewards = pass.rewards_balance || 0;
+    const lang = pickLang(program?.pass_language, null);
     let loyaltyPoints: any;
     if (program?.loyalty_type === "stamp") {
       const need = program.stamps_required || 10;
-      const max = Math.min(need, 12);
-      const filled = Math.min(stamps, max);
-      const row = "\u2605".repeat(filled) + "\u2606".repeat(max - filled);
-      loyaltyPoints = { label: `Stamps ${stamps}/${need}`, balance: { string: row } };
+      loyaltyPoints = {
+        label: `${labelFor(lang, "STAMPS")} ${stamps}/${need}`,
+        balance: { string: stampRow(stamps, need) },
+      };
     } else if (program?.loyalty_type === "tiered") {
-      loyaltyPoints = { label: "Points", balance: { int: points } };
+      loyaltyPoints = { label: labelFor(lang, "POINTS"), balance: { int: points } };
     } else if (program?.loyalty_type === "coupon") {
-      loyaltyPoints = { label: "Offer", balance: { string: program.coupon_discount || "Discount" } };
+      loyaltyPoints = { label: labelFor(lang, "OFFER"), balance: { string: program.coupon_discount || "Discount" } };
     } else {
-      loyaltyPoints = { label: "Points", balance: { int: points } };
+      const need = program?.reward_threshold || 10;
+      loyaltyPoints = { label: `${labelFor(lang, "POINTS")} (${points}/${need})`, balance: { int: points } };
     }
 
     const patchBody: any = { loyaltyPoints };
     if (program?.loyalty_type === "tiered" && pass.tier) {
-      patchBody.secondaryLoyaltyPoints = { label: "Tier", balance: { string: pass.tier } };
+      patchBody.secondaryLoyaltyPoints = { label: labelFor(lang, "TIER"), balance: { string: pass.tier } };
     } else if (rewards > 0) {
-      patchBody.secondaryLoyaltyPoints = { label: "Rewards", balance: { string: `${rewards}x ${program?.reward_title || "Reward"}` } };
-    } else {
-      patchBody.secondaryLoyaltyPoints = { label: "Rewards", balance: { string: "0" } };
+      patchBody.secondaryLoyaltyPoints = {
+        label: labelFor(lang, "REWARDS"),
+        balance: { string: `${rewards}x ${program?.reward_title || labelFor(lang, "REWARD")}` },
+      };
     }
 
     const accessToken = await getGoogleAccessToken();
