@@ -3404,6 +3404,8 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [loadingShop, setLoadingShop] = useState(true)
   const [showCustomers, setShowCustomers] = useState(false)
+  const [programs, setPrograms] = useState([])
+  const [programsLoaded, setProgramsLoaded] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -3414,6 +3416,22 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         setLoadingShop(false)
       })
   }, [user])
+
+  useEffect(() => {
+    if (!shop?.id) return
+    let cancelled = false
+    supabase
+      .from('loyalty_programs')
+      .select('id, name, loyalty_type, stamps_required, card_color, created_at')
+      .eq('shop_id', shop.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (cancelled) return
+        setPrograms(data || [])
+        setProgramsLoaded(true)
+      })
+    return () => { cancelled = true }
+  }, [shop?.id, activeTab])
 
   const stats = useShopStats({ shopId: shop?.id })
 
@@ -3583,15 +3601,51 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               )}
             </AnimatePresence>
 
-            <motion.section className="dash-card dash-cta-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-              <div className="dash-cta-content">
-                <h2 className="dash-cta-title">{d.createFirstCardTitle}</h2>
-                <p className="dash-cta-sub">{d.createFirstCardSub}</p>
-                <button className="lw-btn primary dash-cta-btn" onClick={() => setActiveTab('designer')}>
-                  {d.createFirstCardCta}
-                </button>
-              </div>
-            </motion.section>
+            {programsLoaded && programs.length === 0 && (
+              <motion.section className="dash-card dash-cta-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
+                <div className="dash-cta-content">
+                  <h2 className="dash-cta-title">{d.createFirstCardTitle}</h2>
+                  <p className="dash-cta-sub">{d.createFirstCardSub}</p>
+                  <button className="lw-btn primary dash-cta-btn" onClick={() => setActiveTab('designer')}>
+                    {d.createFirstCardCta}
+                  </button>
+                </div>
+              </motion.section>
+            )}
+
+            {programsLoaded && programs.length > 0 && (
+              <motion.section className="dash-card dash-cards-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
+                <div className="dash-cards-head">
+                  <h2>{lang === 'ar' ? 'بطاقاتي' : 'My cards'}</h2>
+                  <button className="lw-btn dash-cards-new" onClick={() => setActiveTab('designer')}>
+                    {lang === 'ar' ? '+ بطاقة جديدة' : '+ New card'}
+                  </button>
+                </div>
+                <div className="dash-cards-list">
+                  {programs.map((p) => {
+                    const isStamp = p.loyalty_type !== 'points'
+                    return (
+                      <button
+                        key={p.id}
+                        className="dash-card-row"
+                        onClick={() => setActiveTab('designer')}
+                      >
+                        <span className="dash-card-swatch" style={{ background: p.card_color || 'var(--green)' }} />
+                        <span className="dash-card-info">
+                          <span className="dash-card-name">{p.name || (lang === 'ar' ? 'بطاقة ولاء' : 'Loyalty card')}</span>
+                          <span className="dash-card-meta">
+                            {isStamp
+                              ? `${lang === 'ar' ? 'أختام' : 'Stamps'} · ${p.stamps_required || 10}`
+                              : (lang === 'ar' ? 'نقاط' : 'Points')}
+                          </span>
+                        </span>
+                        <svg className="dash-card-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points={lang === 'ar' ? '15 18 9 12 15 6' : '9 18 15 12 9 6'}/></svg>
+                      </button>
+                    )
+                  })}
+                </div>
+              </motion.section>
+            )}
 
           </>
         )}
