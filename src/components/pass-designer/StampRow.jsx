@@ -1,3 +1,8 @@
+// Stamp icons are hidden for now — we render the slot index as a number
+// inside each circle instead of the reward icon. Flip the `showIcons`
+// flag below to re-enable icon rendering.
+const showIcons = false
+
 export default function StampRow({ total, earned, icon, cardColor, textColor }) {
   const max = Math.min(total || 10, 12)
   return (
@@ -9,9 +14,9 @@ export default function StampRow({ total, earned, icon, cardColor, textColor }) 
           : { background: 'rgba(255,255,255,0.14)', borderColor: textColor, color: textColor }
         return (
           <span key={i} className={`pd-stamp ${filled ? 'filled' : ''}`} style={style}>
-            {icon
+            {showIcons && icon
               ? <img src={icon} alt="" style={{ opacity: filled ? 1 : 0.55 }} />
-              : (filled ? <span>★</span> : <span style={{ opacity: .45 }}>★</span>)}
+              : <span style={{ fontSize: '0.75em', fontWeight: 700, opacity: filled ? 1 : 0.55 }}>{i + 1}</span>}
           </span>
         )
       })}

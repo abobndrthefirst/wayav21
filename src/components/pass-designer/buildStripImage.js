@@ -27,6 +27,10 @@ function darken({ r, g, b }, amt = 0.15) {
   }
 }
 
+// Stamp icons are hidden for now — we draw the slot number (1..N) inside
+// each circle instead of the reward icon. Flip to true to re-enable icons.
+const SHOW_ICONS = false
+
 export async function buildStripImage({ iconUrl, cardColor, count }) {
   if (typeof document === 'undefined') return null
 
@@ -93,8 +97,8 @@ export async function buildStripImage({ iconUrl, cardColor, count }) {
           ctx.lineWidth = 2
           ctx.stroke()
 
-          // Icon centered inside, ~60% of diameter so there's breathing room.
-          if (iconImg) {
+          if (SHOW_ICONS && iconImg) {
+            // Icon centered inside, ~58% of diameter so there's breathing room.
             const iconSize = diameter * 0.58
             ctx.drawImage(
               iconImg,
@@ -103,6 +107,17 @@ export async function buildStripImage({ iconUrl, cardColor, count }) {
               iconSize,
               iconSize,
             )
+          } else {
+            // Number inside the slot instead of an icon.
+            const label = String(i + 1)
+            const fontSize = Math.floor(diameter * 0.42)
+            ctx.save()
+            ctx.fillStyle = '#FFFFFF'
+            ctx.font = `700 ${fontSize}px -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillText(label, cx, cy + fontSize * 0.05)
+            ctx.restore()
           }
         }
         canvas.toBlob((blob) => resolve(blob), 'image/png')
@@ -111,7 +126,7 @@ export async function buildStripImage({ iconUrl, cardColor, count }) {
       }
     }
 
-    if (!iconUrl) {
+    if (!SHOW_ICONS || !iconUrl) {
       drawSlots(null)
       return
     }
