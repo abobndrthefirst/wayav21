@@ -137,24 +137,29 @@ function hexToRgb(hex: string): string {
 }
 
 // Waya is a stamps-only product. Layout mirrors aleef's reference pass:
-//   - headerFields: compact STAMPS x/y up in the corner
+//   - headerFields: compact STAMPS x/y + REWARDS N in the corner — both
+//     visible as numbers, always, so the merchant/customer can tell at a
+//     glance where they are.
 //   - primaryFields: EMPTY. storeCard renders primary values as hero-size
-//     white text overlapping the strip image. Duplicating the count there
-//     was blowing up over the stamp circles. Strip is the hero — let it breathe.
+//     white text overlapping the strip image. Strip is the hero — let it breathe.
 //   - secondaryFields: SHOP name below the strip
-//   - auxiliaryFields: REWARD title/rewards-balance below the strip
+//   - auxiliaryFields: REWARD title below the strip (what the reward is)
 function buildPassFields(program: any, customer: any, lang: "en" | "ar") {
   const rewards = customer.rewards_balance || 0;
-  const rewardsField = rewards > 0
-    ? { key: "rewards", label: labelFor(lang, "REWARDS"), value: `${rewards}x ${program.reward_title || labelFor(lang, "REWARD")}` }
-    : { key: "rewards", label: labelFor(lang, "REWARD"), value: program.reward_title || labelFor(lang, "REWARD") };
   const need = program.stamps_required || 10;
   const have = customer.stamps || 0;
   return {
-    headerFields: [{ key: "count", label: labelFor(lang, "STAMPS"), value: `${have}/${need}` }],
+    headerFields: [
+      { key: "count", label: labelFor(lang, "STAMPS"), value: `${have}/${need}` },
+      { key: "rewards_count", label: labelFor(lang, "REWARDS"), value: String(rewards) },
+    ],
     primaryFields: [],
     secondaryFields: [{ key: "shop", label: labelFor(lang, "SHOP"), value: program.name || program.shop_name }],
-    auxiliaryFields: [rewardsField],
+    auxiliaryFields: [{
+      key: "reward",
+      label: labelFor(lang, "REWARD"),
+      value: program.reward_title || labelFor(lang, "REWARD"),
+    }],
   };
 }
 

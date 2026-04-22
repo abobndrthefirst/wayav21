@@ -310,13 +310,14 @@ Deno.serve(async (req: Request) => {
         label: `${labelFor(lang, "STAMPS")} ${haveStamps}/${need}`,
         balance: { string: stampRow(haveStamps, need) },
       },
-    };
-    if (haveRewards > 0) {
-      loyaltyObject.secondaryLoyaltyPoints = {
+      // Always set — PATCH merges, so if we conditionally omit this on
+      // redemption the old "1x Free Coffee" label hangs around forever.
+      // Sending the current count (including 0) overwrites cleanly.
+      secondaryLoyaltyPoints: {
         label: labelFor(lang, "REWARDS"),
-        balance: { string: `${haveRewards}x ${programWithShopName.reward_title || labelFor(lang, "REWARD")}` },
-      };
-    }
+        balance: { string: String(haveRewards) },
+      },
+    };
 
     if (programWithShopName.expires_at) {
       const expiryDate = new Date(programWithShopName.expires_at);

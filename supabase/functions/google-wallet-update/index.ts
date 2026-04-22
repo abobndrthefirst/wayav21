@@ -76,6 +76,12 @@ Deno.serve(async (req: Request) => {
         label: `${labelFor(lang, "STAMPS")} ${stamps}/${need}`,
         balance: { string: stampRow(stamps, need) },
       },
+      // Always set — PATCH merges, so the old "1x Reward" text would
+      // linger forever after a redemption if we conditionally omitted this.
+      secondaryLoyaltyPoints: {
+        label: labelFor(lang, "REWARDS"),
+        balance: { string: String(rewards) },
+      },
       textModulesData: [{
         body: stampProgressMessage(
           stamps,
@@ -87,12 +93,6 @@ Deno.serve(async (req: Request) => {
         id: "progress",
       }],
     };
-    if (rewards > 0) {
-      patchBody.secondaryLoyaltyPoints = {
-        label: labelFor(lang, "REWARDS"),
-        balance: { string: `${rewards}x ${program?.reward_title || labelFor(lang, "REWARD")}` },
-      };
-    }
 
     const accessToken = await getGoogleAccessToken();
     const objId = encodeURIComponent(pass.google_object_id);
