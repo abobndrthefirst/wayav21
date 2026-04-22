@@ -3662,6 +3662,12 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               <GlobeIcon /><span className="sidebar-toggle-label">{lang === 'ar' ? 'EN' : 'عربي'}</span>
             </button>
           </div>
+          {user?.email && ADMIN_EMAILS.includes(user.email) && (
+            <button className="sidebar-item sidebar-admin-link" onClick={() => navigate('/admin/metrics')}>
+              <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 3h7v9H3z"/><path d="M14 3h7v5h-7z"/><path d="M14 12h7v9h-7z"/><path d="M3 16h7v5H3z"/></svg></span>
+              <span className="sidebar-item-label">{lang === 'ar' ? 'لوحة المقاييس' : 'Admin Metrics'}</span>
+            </button>
+          )}
           <button className="sidebar-item sidebar-billing-link" onClick={() => navigate('/billing')}>
             <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h6"/></svg></span>
             <span className="sidebar-item-label">{lang === 'ar' ? 'الاشتراك' : 'Subscription'}</span>
