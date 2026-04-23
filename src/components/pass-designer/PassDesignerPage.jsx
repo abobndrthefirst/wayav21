@@ -103,6 +103,13 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
   }
 
   const handleSave = async () => {
+    // Cards are write-once by product decision. After first save, they're
+    // locked; the merchant creates a new card to make changes.
+    if (savedProgram?.id) {
+      showToast(T('Saved cards cannot be edited. Create a new card to make changes.',
+                  'لا يمكن تعديل البطاقات بعد حفظها. أنشئ بطاقة جديدة لإجراء التغييرات.'))
+      return
+    }
     if (!design.name.trim()) { showToast(T('Card name is required', 'اسم البطاقة مطلوب')); return }
     setSaving(true); clearError()
 
@@ -336,6 +343,30 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
         )}
       </AnimatePresence>
 
+      {savedProgram?.id && (
+        <div
+          className="pd-banner"
+          style={{
+            background: '#fef3c7',
+            borderColor: '#f59e0b',
+            color: '#78350f',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20, flexShrink: 0 }}>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <span>
+            <strong>{T('This card is locked.', 'هذه البطاقة مقفلة.')}</strong>{' '}
+            {T('Saved cards cannot be edited. To make changes, create a new card.',
+               'البطاقات المحفوظة غير قابلة للتعديل. للتعديل، أنشئ بطاقة جديدة.')}
+          </span>
+        </div>
+      )}
+
       <div className="pd-grid">
         <div className="pd-editor">
           <h3 className="pd-section-title" style={{ borderTop: 'none', paddingTop: 0 }}>
@@ -434,10 +465,12 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
             </button>
           </>
         )}
-        <button type="button" className={`pd-action-btn save ${isDirty ? 'dirty' : ''}`} onClick={handleSave} disabled={saving}>
-          {saving ? '...' : isNew && !savedProgram ? T('Create Card', 'إنشاء البطاقة') : T('Save Design', 'حفظ التصميم')}
-          {isDirty && !saving && <span className="pd-save-dot" />}
-        </button>
+        {!savedProgram?.id && (
+          <button type="button" className={`pd-action-btn save ${isDirty ? 'dirty' : ''}`} onClick={handleSave} disabled={saving}>
+            {saving ? '...' : T('Create Card', 'إنشاء البطاقة')}
+            {isDirty && !saving && <span className="pd-save-dot" />}
+          </button>
+        )}
       </div>
 
       <AnimatePresence>
