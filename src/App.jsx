@@ -28,6 +28,7 @@ const PassDesignerPage = lazy(() => import('./components/pass-designer/PassDesig
 const BillingPage = lazy(() => import('./components/BillingPage'))
 const BillingReturnPage = lazy(() => import('./components/BillingReturnPage'))
 const BillingCancelPage = lazy(() => import('./components/BillingCancelPage'))
+const GuidePage = lazy(() => import('./pages/GuidePage'))
 
 const LazyFallback = () => (
   <div style={{ padding: 48, textAlign: 'center', color: '#888' }}>Loading…</div>
@@ -3583,6 +3584,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     { id: 'designer', label: d.navDesigner, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
     { id: 'notifications', label: lang === 'ar' ? 'الإشعارات' : 'Notifications', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
     { id: 'settings', label: d.navSettings, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
+    { id: 'guide', href: '/guide', label: lang === 'ar' ? 'دليل الموظفين' : 'Staff Guide', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M8 7h8M8 11h6"/></svg> },
   ]
 
   const statIcons = [
@@ -3636,7 +3638,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         </div>
         <div className="sidebar-menu">
           {menuItems.map((item, i) => (
-            <motion.button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { setActiveTab(item.id); setMobileNavOpen(false) }} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] }} whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
+            <motion.button key={item.id} className={`sidebar-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => { if (item.href) { window.open(item.href, '_blank', 'noopener'); setMobileNavOpen(false); return } setActiveTab(item.id); setMobileNavOpen(false) }} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] }} whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
               <span className="sidebar-item-icon">{item.icon}</span>
               <span className="sidebar-item-label">{item.label}</span>
               {chev}
@@ -4462,6 +4464,7 @@ export default function App() {
     if (p === '/dashboard') return 'dashboard'
     if (p === '/data') return 'data'
     if (p === '/settings') return 'settings'
+    if (p === '/guide') return 'guide'
     if (p === '/billing') return 'billing'
     if (p === '/billing/return') return 'billing-return'
     if (p === '/billing/cancel') return 'billing-cancel'
@@ -4518,6 +4521,7 @@ export default function App() {
   if (page === 'billing-cancel') return <AuthProvider><Suspense fallback={<LazyFallback />}><BillingCancelPage lang={lang} /></Suspense></AuthProvider>
   if (page === 'admin-events') return <AuthProvider><AdminEventsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} /></AuthProvider>
   if (page === 'admin-metrics') return <AuthProvider><AdminMetricsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'guide') return <Suspense fallback={<LazyFallback />}><GuidePage /></Suspense>
 
   return (
     <AuthProvider>
