@@ -1,0 +1,18 @@
+# Supabase project config — consumed by the CLI on `functions deploy`.
+# Keep this file in sync with per-function policies.
+
+project_id = "unnheqshkxpbflozechm"
+
+# delete-account: the project's Auth keys are ES256, which the edge runtime's
+# built-in JWT verifier doesn't support yet. We manually verify the caller
+# inside the function via auth.getUser(), so disabling the runtime pre-check
+# is safe and the only way this function works today.
+[functions.delete-account]
+verify_jwt = false
+
+# Same ES256 workaround — both functions call auth.getUser() manually inside.
+[functions.create-subaccount]
+verify_jwt = false
+
+[functions.delete-subaccount]
+verify_jwt = false
