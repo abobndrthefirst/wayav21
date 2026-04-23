@@ -31,6 +31,7 @@ const CONTENT = {
     footerTip: 'Tip: if a customer is new, their card is created the moment you enter their phone number for the first time.',
     printBtn: 'Save as PDF',
     langLabel: 'Language',
+    noSecondary: 'None',
   },
   ar: {
     title: 'كيف تستخدم وايا',
@@ -45,6 +46,7 @@ const CONTENT = {
     footerTip: 'ملاحظة: لو العميل جديد، بطاقته تُنشأ تلقائياً أول ما تدخل رقم جواله.',
     printBtn: 'حفظ كـ PDF',
     langLabel: 'اللغة',
+    noSecondary: 'بدون',
   },
   ur: {
     title: 'وایا کیسے استعمال کریں',
@@ -59,6 +61,7 @@ const CONTENT = {
     footerTip: 'نوٹ: اگر گاہک نیا ہے، جیسے ہی آپ ان کا فون نمبر پہلی بار درج کرتے ہیں ان کا کارڈ بن جاتا ہے۔',
     printBtn: 'PDF کے طور پر محفوظ کریں',
     langLabel: 'زبان',
+    noSecondary: 'کوئی نہیں',
   },
   hi: {
     title: 'वाया कैसे इस्तेमाल करें',
@@ -73,6 +76,7 @@ const CONTENT = {
     footerTip: 'टिप: अगर ग्राहक नया है, उनका कार्ड तब बनता है जब आप पहली बार उनका फ़ोन नंबर डालते हैं।',
     printBtn: 'PDF के रूप में सेव करें',
     langLabel: 'भाषा',
+    noSecondary: 'कोई नहीं',
   },
   bn: {
     title: 'ওয়ায়া কীভাবে ব্যবহার করবেন',
@@ -87,20 +91,41 @@ const CONTENT = {
     footerTip: 'টিপ: গ্রাহক নতুন হলে, প্রথমবার ফোন নম্বর দেওয়ার মুহূর্তেই তাদের কার্ড তৈরি হয়।',
     printBtn: 'PDF হিসেবে সংরক্ষণ করুন',
     langLabel: 'ভাষা',
+    noSecondary: 'কিছু না',
   },
+}
+
+// Render a single block of translated step content in its own direction + font.
+// Used twice per step when two languages are selected.
+function StepBlock({ code, header, body, muted }) {
+  const meta = LANGUAGES.find((l) => l.code === code)
+  return (
+    <div dir={meta.dir} style={{ fontFamily: meta.font, flex: 1, minWidth: 0 }}>
+      <h2 style={{ margin: '2px 0 4px', fontSize: muted ? 15 : 18, color: muted ? '#374151' : '#111' }}>
+        {header}
+      </h2>
+      <p style={{ margin: 0, color: muted ? '#555' : '#333', fontSize: muted ? 13 : 14 }}>
+        {body}
+      </p>
+    </div>
+  )
 }
 
 export default function GuidePage() {
   const [code, setCode] = useState('en')
-  const meta = LANGUAGES.find((l) => l.code === code)
+  const [code2, setCode2] = useState('none')     // secondary language — 'none' = single
+  const primary = LANGUAGES.find((l) => l.code === code)
   const c = CONTENT[code]
+  const c2 = code2 !== 'none' && code2 !== code ? CONTENT[code2] : null
+  const secondaryCode = c2 ? code2 : null
 
+  // Controls stay in primary-language direction (matches UI the user selected first).
   return (
     <div
-      dir={meta.dir}
+      dir={primary.dir}
       style={{
-        fontFamily: meta.font,
-        maxWidth: 780,
+        fontFamily: primary.font,
+        maxWidth: 820,
         margin: '0 auto',
         padding: '24px',
         color: '#111',
@@ -123,6 +148,16 @@ export default function GuidePage() {
             {LANGUAGES.map((l) => (<option key={l.code} value={l.code}>{l.label}</option>))}
           </select>
         </label>
+        <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 14 }}>
+          <span style={{ color: '#555' }}>+</span>
+          <select value={code2} onChange={(e) => setCode2(e.target.value)}
+            style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}>
+            <option value="none">{c.noSecondary}</option>
+            {LANGUAGES.filter((l) => l.code !== code).map((l) => (
+              <option key={l.code} value={l.code}>{l.label}</option>
+            ))}
+          </select>
+        </label>
         <button
           type="button"
           onClick={() => window.print()}
@@ -139,33 +174,59 @@ export default function GuidePage() {
       <div className="guide-printable">
         <header style={{ textAlign: 'center', paddingBottom: 16, borderBottom: '2px solid #10B981' }}>
           <img src={wayaLogo} alt="Waya" style={{ height: 56, display: 'inline-block' }} />
-          <h1 style={{ margin: '12px 0 4px', fontSize: 28 }}>{c.title}</h1>
-          <p style={{ margin: 0, color: '#555' }}>{c.subtitle}</p>
+          <h1 style={{ margin: '12px 0 4px', fontSize: 28 }}>
+            {c.title}{c2 ? ` · ${c2.title}` : ''}
+          </h1>
+          <p style={{ margin: 0, color: '#555' }}>
+            {c.subtitle}{c2 ? ` — ${c2.subtitle}` : ''}
+          </p>
         </header>
 
-        <ol style={{ listStyle: 'none', padding: 0, marginTop: 28, counterReset: 'step' }}>
-          {c.steps.map((s, i) => (
-            <li key={i} style={{ display: 'flex', gap: 16, marginBottom: 22, alignItems: 'flex-start' }}>
-              <div style={{
-                flex: '0 0 auto', width: 36, height: 36, borderRadius: '50%',
-                background: '#10B981', color: 'white',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 700, fontSize: 16,
-              }}>{i + 1}</div>
-              <div style={{ flex: 1 }}>
-                <h2 style={{ margin: '2px 0 4px', fontSize: 18 }}>{s.h}</h2>
-                <p style={{ margin: 0, color: '#333' }}>{s.b}</p>
-              </div>
-            </li>
-          ))}
+        <ol style={{ listStyle: 'none', padding: 0, marginTop: 28 }}>
+          {c.steps.map((s, i) => {
+            const s2 = c2?.steps[i]
+            return (
+              <li key={i} style={{
+                display: 'flex', gap: 16, marginBottom: 22, alignItems: 'flex-start',
+                pageBreakInside: 'avoid',
+              }}>
+                <div style={{
+                  flex: '0 0 auto', width: 36, height: 36, borderRadius: '50%',
+                  background: '#10B981', color: 'white',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 700, fontSize: 16,
+                }}>{i + 1}</div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+                  <StepBlock code={code} header={s.h} body={s.b} />
+                  {s2 && (
+                    <div style={{ paddingTop: 6, borderTop: '1px dashed #d1d5db' }}>
+                      <StepBlock code={secondaryCode} header={s2.h} body={s2.b} muted />
+                    </div>
+                  )}
+                </div>
+              </li>
+            )
+          })}
         </ol>
 
-        <p style={{
+        <div style={{
           marginTop: 28, padding: 14, background: '#f0fdf4', borderInlineStart: '4px solid #10B981',
-          borderRadius: 6, fontSize: 14, color: '#064e3b',
+          borderRadius: 6,
         }}>
-          {c.footerTip}
-        </p>
+          <p dir={primary.dir} style={{ margin: 0, fontFamily: primary.font, fontSize: 14, color: '#064e3b' }}>
+            {c.footerTip}
+          </p>
+          {c2 && (
+            <p dir={LANGUAGES.find((l) => l.code === secondaryCode).dir}
+              style={{
+                marginTop: 8, marginBottom: 0,
+                fontFamily: LANGUAGES.find((l) => l.code === secondaryCode).font,
+                fontSize: 13, color: '#065f46',
+              }}>
+              {c2.footerTip}
+            </p>
+          )}
+        </div>
 
         <footer style={{ marginTop: 32, paddingTop: 12, borderTop: '1px solid #e5e7eb',
           fontSize: 12, color: '#6b7280', textAlign: 'center' }}>
