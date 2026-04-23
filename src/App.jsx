@@ -3015,6 +3015,18 @@ function SetupPage({ t, lang, setLang, theme, setTheme }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Sub-accounts should never see the setup form — bounce them to /dashboard.
+  // Also catches owners who somehow land here despite already having a shop.
+  useEffect(() => {
+    if (!user) return
+    ;(async () => {
+      const { data: ownedShop } = await supabase.from('shops').select('id').eq('user_id', user.id).maybeSingle()
+      if (ownedShop) { navigate('/dashboard'); return }
+      const { data: member } = await supabase.from('shop_members').select('id').eq('user_id', user.id).maybeSingle()
+      if (member) { navigate('/dashboard'); return }
+    })()
+  }, [user])
+
   const handleLogo = (e) => {
     const file = e.target.files[0]
     if (!file) return
