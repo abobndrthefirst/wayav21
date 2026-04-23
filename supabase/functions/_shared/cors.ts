@@ -15,10 +15,23 @@ function allowedOrigins(): string[] {
   return [...DEFAULT_ALLOWED, ...extra];
 }
 
+function isNonProdOriginOk(origin: string): boolean {
+  // On non-prod envs (staging, preview, dev), also accept any *.vercel.app and localhost
+  // so preview URLs with unpredictable hashes and local dev work without per-deploy config.
+  const env = (Deno.env.get("WAYA_ENV") || "production").toLowerCase();
+  if (env === "production") return false;
+  try {
+    const u = new URL(origin);
+    if (u.hostname.endsWith(".vercel.app")) return true;
+    if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return true;
+  } catch { /* ignore */ }
+  return false;
+}
+
 export function corsHeadersFor(req: Request, methods = "POST, OPTIONS"): Record<string, string> {
   const origin = req.headers.get("origin") || "";
   const allowed = allowedOrigins();
-  const isAllowed = allowed.includes(origin);
+  const isAllowed = allowed.includes(origin) || isNonProdOriginOk(origin);
   // If origin is not allowlisted, do NOT echo an origin — browser will block.
   // Server-to-server callers (no origin header) still work because we fall back to the first allowed.
   const allowOrigin = isAllowed ? origin : (origin ? "null" : allowed[0]);

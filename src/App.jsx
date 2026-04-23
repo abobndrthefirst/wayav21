@@ -3852,10 +3852,145 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
                 <p><strong>{t.settingsPage.joined}:</strong> {new Date(user?.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
             </motion.div>
+            <TeamCard shop={shop} lang={lang} />
           </>
         )}
       </div>
     </div>
+  )
+}
+
+/* ─── Team / sub-account card (Settings > Team) ─── */
+function TeamCard({ shop, lang }) {
+  const isAr = lang === 'ar'
+  const T = (en, ar) => (isAr ? ar : en)
+  const [member, setMember] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [role, setRole] = useState('cashier')
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState(null)
+
+  const load = async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('shop_members')
+      .select('id, name, role, user_id, created_at')
+      .eq('shop_id', shop.id)
+      .maybeSingle()
+    setMember(data || null)
+    setLoading(false)
+  }
+
+  useEffect(() => { if (shop?.id) load() }, [shop?.id])
+
+  const submit = async (e) => {
+    e.preventDefault()
+    setBusy(true); setMsg(null)
+    const { data, error } = await supabase.functions.invoke('create-subaccount', {
+      body: { name: name.trim(), email: email.trim(), password, role },
+    })
+    setBusy(false)
+    if (error || !data?.success) {
+      setMsg({ kind: 'err', text: data?.error || error?.message || 'Failed' })
+      return
+    }
+    setName(''); setEmail(''); setPassword(''); setRole('cashier')
+    setShowForm(false)
+    setMsg({ kind: 'ok', text: T('Sub-account created.', 'تم إنشاء الحساب الفرعي.') })
+    load()
+  }
+
+  const remove = async () => {
+    if (!confirm(T('Remove this sub-account? The user will lose access.', 'إزالة هذا الحساب الفرعي؟'))) return
+    setBusy(true); setMsg(null)
+    const { data, error } = await supabase.functions.invoke('delete-subaccount', { body: {} })
+    setBusy(false)
+    if (error || !data?.success) {
+      setMsg({ kind: 'err', text: data?.error || error?.message || 'Failed' })
+      return
+    }
+    setMsg({ kind: 'ok', text: T('Sub-account removed.', 'تمت إزالة الحساب.') })
+    load()
+  }
+
+  const roleLabel = (r) => r === 'branch_manager' ? T('Branch manager', 'مدير فرع') : T('Cashier', 'كاشير')
+
+  return (
+    <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+      <h2>{T('Team', 'الفريق')}</h2>
+      <p style={{ marginTop: -4, color: 'var(--muted, #6b7280)', fontSize: 13 }}>
+        {T('Add one staff member who can log in to this shop. Roles are informational for now.',
+           'أضف موظفاً واحداً لتسجيل الدخول إلى متجرك. الأدوار معلوماتية حالياً.')}
+      </p>
+
+      {loading && <p>{T('Loading…', 'جارٍ التحميل…')}</p>}
+
+      {!loading && member && (
+        <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 12, marginTop: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div>
+              <div style={{ fontWeight: 600 }}>{member.name}</div>
+              <div style={{ color: '#6b7280', fontSize: 13 }}>{roleLabel(member.role)}</div>
+            </div>
+            <button type="button" onClick={remove} disabled={busy}
+              style={{ padding: '6px 12px', border: '1px solid #dc2626', background: 'transparent', color: '#dc2626', borderRadius: 6, cursor: 'pointer' }}>
+              {T('Remove', 'إزالة')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!loading && !member && !showForm && (
+        <button type="button" onClick={() => setShowForm(true)}
+          style={{ marginTop: 12, padding: '8px 16px', border: '1px solid #10B981', background: '#10B981', color: 'white', borderRadius: 6, cursor: 'pointer' }}>
+          {T('+ Add sub-account', '+ إضافة حساب فرعي')}
+        </button>
+      )}
+
+      {!loading && !member && showForm && (
+        <form onSubmit={submit} style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 500 }}>{T('Name', 'الاسم')}</span>
+            <input required value={name} onChange={(e) => setName(e.target.value)} />
+          </label>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 500 }}>{T('Email', 'البريد الإلكتروني')}</span>
+            <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </label>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 500 }}>{T('Password (min 8)', 'كلمة المرور (8 أحرف على الأقل)')}</span>
+            <input required type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+          </label>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 500 }}>{T('Role', 'الدور')}</span>
+            <select value={role} onChange={(e) => setRole(e.target.value)}>
+              <option value="cashier">{T('Cashier', 'كاشير')}</option>
+              <option value="branch_manager">{T('Branch manager', 'مدير فرع')}</option>
+            </select>
+          </label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="submit" disabled={busy}
+              style={{ padding: '8px 16px', border: 'none', background: '#10B981', color: 'white', borderRadius: 6, cursor: busy ? 'wait' : 'pointer' }}>
+              {busy ? T('Creating…', 'جارٍ الإنشاء…') : T('Create', 'إنشاء')}
+            </button>
+            <button type="button" onClick={() => { setShowForm(false); setMsg(null) }}
+              style={{ padding: '8px 16px', border: '1px solid #d1d5db', background: 'transparent', borderRadius: 6, cursor: 'pointer' }}>
+              {T('Cancel', 'إلغاء')}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {msg && (
+        <p style={{ marginTop: 10, color: msg.kind === 'err' ? '#dc2626' : '#059669', fontSize: 13 }}>
+          {msg.text}
+        </p>
+      )}
+    </motion.div>
   )
 }
 
