@@ -43,7 +43,20 @@ Deno.serve(async (req: Request) => {
       .select("*, shop:shops(user_id), program:loyalty_programs(*)")
       .eq("id", pass_id).single();
     if (!pass) throw new Error("Pass not found");
-    if (pass.shop?.user_id !== user.id) throw new Error("Not your customer");
+
+    // Caller is authorized if they own the shop OR they're a registered sub-account member.
+    const isOwner = pass.shop?.user_id === user.id;
+    let isMember = false;
+    if (!isOwner) {
+      const { data: memberRow } = await supabase
+        .from("shop_members")
+        .select("id")
+        .eq("shop_id", pass.shop_id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      isMember = !!memberRow;
+    }
+    if (!isOwner && !isMember) throw new Error("Not your customer");
 
     // Idempotency check: if activity_log already has this (shop_id, client_request_id)
     // pair, short-circuit and return the existing state. Requires UNIQUE index.

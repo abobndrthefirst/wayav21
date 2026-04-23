@@ -16,3 +16,16 @@ verify_jwt = false
 
 [functions.delete-subaccount]
 verify_jwt = false
+
+# points-update uses _shared/auth.ts (JWKS-based ES256 verify) — runtime
+# verifier is HS256-only and would reject valid tokens.
+[functions.points-update]
+verify_jwt = false
+
+# Other functions that call verifyUser() from _shared/auth.ts need the
+# same treatment for consistency.
+[functions.mint-enrollment-token]
+verify_jwt = false
+
+[functions.send-notification]
+verify_jwt = false
