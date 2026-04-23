@@ -3594,6 +3594,12 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
 
   const stats = useShopStats({ shopId: shop?.id })
 
+  // Guard: if a member somehow ends up on a restricted tab, snap them back to Scan.
+  // MUST stay above early returns — Rules of Hooks.
+  useEffect(() => {
+    if (memberRole && activeTab !== 'scan' && activeTab !== 'guide') setActiveTab('scan')
+  }, [memberRole, activeTab])
+
   if (loadingShop) return <div className="auth-page"><div className="dash-loading"><Logo size={72} /></div></div>
   if (!shop) return null
 
@@ -3613,11 +3619,6 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const menuItems = memberRole
     ? allMenuItems.filter((i) => i.id === 'scan' || i.id === 'guide')
     : allMenuItems
-
-  // Guard: if a member somehow ends up on a restricted tab, snap them back to Scan.
-  useEffect(() => {
-    if (memberRole && activeTab !== 'scan' && activeTab !== 'guide') setActiveTab('scan')
-  }, [memberRole, activeTab])
 
   const statIcons = [
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
