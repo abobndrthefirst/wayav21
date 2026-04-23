@@ -2873,8 +2873,12 @@ function SignupPage({ t, lang, setLang, theme, setTheme }) {
 
   useEffect(() => {
     if (!user) return
-    supabase.from('shops').select('id').eq('user_id', user.id).single()
-      .then(({ data }) => navigate(data ? '/dashboard' : '/setup'))
+    ;(async () => {
+      const { data: ownedShop } = await supabase.from('shops').select('id').eq('user_id', user.id).maybeSingle()
+      if (ownedShop) { navigate('/dashboard'); return }
+      const { data: member } = await supabase.from('shop_members').select('id').eq('user_id', user.id).maybeSingle()
+      navigate(member ? '/dashboard' : '/setup')
+    })()
   }, [user])
 
   if (user) {
@@ -3537,6 +3541,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const { user, signOut, loading: authLoading } = useAuth()
   const d = t.dashboard
   const [shop, setShop] = useState(null)
+  const [memberRole, setMemberRole] = useState(null)  // null = owner; 'cashier' | 'branch_manager' = sub-account
   const [activeTab, setActiveTab] = useState('home')
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [loadingShop, setLoadingShop] = useState(true)
@@ -3546,12 +3551,29 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
 
   useEffect(() => {
     if (!user) return
-    supabase.from('shops').select('*').eq('user_id', user.id).single()
-      .then(({ data }) => {
-        if (!data) { navigate('/setup'); return }
-        setShop(data)
+    ;(async () => {
+      // Try owner first
+      const { data: ownedShop } = await supabase.from('shops').select('*').eq('user_id', user.id).maybeSingle()
+      if (ownedShop) {
+        setShop(ownedShop)
+        setMemberRole(null)
         setLoadingShop(false)
-      })
+        return
+      }
+      // Try sub-account member — load the shop they belong to
+      const { data: member } = await supabase
+        .from('shop_members')
+        .select('role, shop_id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (!member) { navigate('/setup'); return }
+      const { data: memberShop } = await supabase.from('shops').select('*').eq('id', member.shop_id).maybeSingle()
+      if (!memberShop) { navigate('/setup'); return }
+      setShop(memberShop)
+      setMemberRole(member.role)
+      setActiveTab('scan')   // sub-accounts land on Scan & Redeem directly
+      setLoadingShop(false)
+    })()
   }, [user])
 
   useEffect(() => {
@@ -3578,7 +3600,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const handleLogout = async () => { await signOut(); navigate('/') }
   const shopName = shop.name || 'متجرك'
 
-  const menuItems = [
+  const allMenuItems = [
     { id: 'home', label: d.navHome, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> },
     { id: 'scan', label: d.navScan, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M20 14h1M14 20h3M20 20h1"/></svg> },
     { id: 'designer', label: d.navDesigner, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
@@ -3586,6 +3608,16 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     { id: 'settings', label: d.navSettings, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
     { id: 'guide', href: '/guide', label: lang === 'ar' ? 'دليل الموظفين' : 'Staff Guide', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M8 7h8M8 11h6"/></svg> },
   ]
+
+  // Sub-accounts see only Scan & Redeem + the staff guide. Everything else is owner-only.
+  const menuItems = memberRole
+    ? allMenuItems.filter((i) => i.id === 'scan' || i.id === 'guide')
+    : allMenuItems
+
+  // Guard: if a member somehow ends up on a restricted tab, snap them back to Scan.
+  useEffect(() => {
+    if (memberRole && activeTab !== 'scan' && activeTab !== 'guide') setActiveTab('scan')
+  }, [memberRole, activeTab])
 
   const statIcons = [
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
@@ -4264,8 +4296,12 @@ function AuthRedirect({ children }) {
     if (!user) { setChecked(true); return }
     const path = window.location.pathname
     if (path === '/' || path === '/login' || path === '/signup') {
-      supabase.from('shops').select('id').eq('user_id', user.id).single()
-        .then(({ data }) => navigate(data ? '/dashboard' : '/setup'))
+      ;(async () => {
+        const { data: ownedShop } = await supabase.from('shops').select('id').eq('user_id', user.id).maybeSingle()
+        if (ownedShop) { navigate('/dashboard'); return }
+        const { data: member } = await supabase.from('shop_members').select('id').eq('user_id', user.id).maybeSingle()
+        navigate(member ? '/dashboard' : '/setup')
+      })()
     } else {
       setChecked(true)
     }
