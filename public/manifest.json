@@ -12,19 +12,19 @@
   "dir": "rtl",
   "icons": [
     {
-      "src": "/waya-logo.png",
+      "src": "/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/waya-logo.png",
+      "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
     },
     {
-      "src": "/waya-logo.png",
+      "src": "/icon-1024.png",
       "type": "image/png",
       "sizes": "1024x1024",
       "purpose": "any maskable"

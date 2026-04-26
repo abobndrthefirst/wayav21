@@ -1,8 +1,26 @@
-import { lazy, Suspense, useCallback, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@supabase/supabase-js'
 
 const QrScanner = lazy(() => import('./QrScanner'))
+
+// Detect mobile platform for install hints
+const detectPlatform = () => {
+  if (typeof navigator === 'undefined') return 'other'
+  const ua = navigator.userAgent || ''
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'ios'
+  if (/Android/i.test(ua)) return 'android'
+  return 'other'
+}
+
+// True when the page is already running as an installed PWA
+const isStandalone = () => {
+  if (typeof window === 'undefined') return false
+  return (
+    window.matchMedia?.('(display-mode: standalone)')?.matches ||
+    window.navigator?.standalone === true
+  )
+}
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -27,6 +45,11 @@ export default function ScanRedeemTab({ shop, lang, d }) {
   const [pass, setPass] = useState(null)
   const [msg, setMsg] = useState(null)
   const [scannerOpen, setScannerOpen] = useState(false)
+  const [installed, setInstalled] = useState(false)
+  const [installTab, setInstallTab] = useState(detectPlatform() === 'android' ? 'android' : 'ios')
+
+  // Hide the install card if the user already opened the app from home screen
+  useEffect(() => { setInstalled(isStandalone()) }, [])
 
   const showMsg = (kind, text) => {
     setMsg({ kind, text })
@@ -310,6 +333,143 @@ export default function ScanRedeemTab({ shop, lang, d }) {
             onClose={() => setScannerOpen(false)}
           />
         </Suspense>
+      )}
+
+      {!installed && (
+        <motion.section
+          className="dash-card install-card"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
+        >
+          <div className="install-header">
+            <div className="install-title-row">
+              <span className="install-icon" aria-hidden="true">📱</span>
+              <h3 className="install-title">
+                {isAr ? 'ثبّت التطبيق على شاشتك الرئيسية' : 'Install on your home screen'}
+              </h3>
+            </div>
+            <p className="install-sub">
+              {isAr
+                ? 'افتحه بنقرة واحدة كأنه تطبيق حقيقي — يشتغل بدون متصفح.'
+                : 'Open it with one tap like a real app — no browser bar.'}
+            </p>
+          </div>
+
+          <div className="install-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={installTab === 'ios'}
+              className={`install-tab ${installTab === 'ios' ? 'active' : ''}`}
+              onClick={() => setInstallTab('ios')}
+            >
+              {isAr ? '🍎 آيفون / آيباد' : '🍎 iPhone / iPad'}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={installTab === 'android'}
+              className={`install-tab ${installTab === 'android' ? 'active' : ''}`}
+              onClick={() => setInstallTab('android')}
+            >
+              {isAr ? '🤖 أندرويد' : '🤖 Android'}
+            </button>
+          </div>
+
+          {installTab === 'ios' ? (
+            <ol className="install-steps">
+              <li>
+                <span className="install-step-num">1</span>
+                <span className="install-step-text">
+                  {isAr ? 'افتح هذه الصفحة في متصفح ' : 'Open this page in '}
+                  <strong>Safari</strong>
+                  {isAr ? ' (مهم — لازم Safari وليس Chrome).' : ' (Safari only — Chrome won\'t work).'}
+                </span>
+              </li>
+              <li>
+                <span className="install-step-num">2</span>
+                <span className="install-step-text">
+                  {isAr ? 'اضغط زر ' : 'Tap the '}
+                  <strong>{isAr ? 'المشاركة' : 'Share'}</strong>
+                  {' '}
+                  <span className="install-glyph" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v13" /><path d="m7 8 5-5 5 5" /><rect x="4" y="14" width="16" height="7" rx="2" /></svg>
+                  </span>
+                  {isAr ? ' في أسفل الشاشة.' : ' button at the bottom of the screen.'}
+                </span>
+              </li>
+              <li>
+                <span className="install-step-num">3</span>
+                <span className="install-step-text">
+                  {isAr ? 'مرّر للأسفل واختر ' : 'Scroll down and tap '}
+                  <strong>{isAr ? 'إضافة إلى الشاشة الرئيسية' : 'Add to Home Screen'}</strong>.
+                </span>
+              </li>
+              <li>
+                <span className="install-step-num">4</span>
+                <span className="install-step-text">
+                  {isAr ? 'اضغط ' : 'Tap '}
+                  <strong>{isAr ? 'إضافة' : 'Add'}</strong>
+                  {isAr ? ' في الزاوية العلوية.' : ' in the top corner.'}
+                </span>
+              </li>
+              <li>
+                <span className="install-step-num">5</span>
+                <span className="install-step-text">
+                  {isAr
+                    ? 'افتح أيقونة وايا من شاشتك الرئيسية — جاهز!'
+                    : 'Open the Waya icon from your home screen — done!'}
+                </span>
+              </li>
+            </ol>
+          ) : (
+            <ol className="install-steps">
+              <li>
+                <span className="install-step-num">1</span>
+                <span className="install-step-text">
+                  {isAr ? 'افتح هذه الصفحة في ' : 'Open this page in '}
+                  <strong>Chrome</strong>
+                  {isAr ? ' أو ' : ' or '}
+                  <strong>Edge</strong>.
+                </span>
+              </li>
+              <li>
+                <span className="install-step-num">2</span>
+                <span className="install-step-text">
+                  {isAr ? 'اضغط زر القائمة ' : 'Tap the menu '}
+                  <strong>⋮</strong>
+                  {isAr ? ' (ثلاث نقاط) في الأعلى.' : ' (three dots) at the top.'}
+                </span>
+              </li>
+              <li>
+                <span className="install-step-num">3</span>
+                <span className="install-step-text">
+                  {isAr ? 'اختر ' : 'Tap '}
+                  <strong>{isAr ? 'تثبيت التطبيق' : 'Install app'}</strong>
+                  {isAr ? ' أو ' : ' or '}
+                  <strong>{isAr ? 'إضافة إلى الشاشة الرئيسية' : 'Add to Home Screen'}</strong>.
+                </span>
+              </li>
+              <li>
+                <span className="install-step-num">4</span>
+                <span className="install-step-text">
+                  {isAr ? 'اضغط ' : 'Tap '}
+                  <strong>{isAr ? 'تثبيت' : 'Install'}</strong>
+                  {isAr ? ' للتأكيد.' : ' to confirm.'}
+                </span>
+              </li>
+              <li>
+                <span className="install-step-num">5</span>
+                <span className="install-step-text">
+                  {isAr
+                    ? 'افتح أيقونة وايا من شاشتك الرئيسية — جاهز!'
+                    : 'Open the Waya icon from your home screen — done!'}
+                </span>
+              </li>
+            </ol>
+          )}
+        </motion.section>
       )}
     </div>
   )
