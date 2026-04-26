@@ -1116,7 +1116,20 @@ function TextReveal({ children, delay = 0, className = '' }) {
   return (
     <span className={className} style={{ display: 'inline' }}>
       {words.map((word, i) => (
-        <span key={i} style={{ display: 'inline-block', overflow: 'hidden' }}>
+        <span
+          key={i}
+          style={{
+            display: 'inline-block',
+            overflow: 'hidden',
+            // Arabic glyphs extend above/below the line-box; pad the clip-rect
+            // and offset with negative margin so layout isn't perturbed.
+            paddingTop: '0.25em',
+            paddingBottom: '0.15em',
+            marginTop: '-0.25em',
+            marginBottom: '-0.15em',
+            verticalAlign: 'baseline',
+          }}
+        >
           <motion.span
             style={{ display: 'inline-block' }}
             initial={{ y: '100%', opacity: 0 }}
