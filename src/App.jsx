@@ -193,10 +193,10 @@ const content = {
       save: 'حفظ التغييرات', saving: 'جاري الحفظ...', saved: 'تم الحفظ ✓',
     },
     hero: {
-      title1: 'أغلى عميل',
-      title2: 'هو اللي ما يرجع.',
-      subtitle: 'وايا يخلّيه يرجع.',
-      freeTrial: 'أول شهرين مجاناً للمشاريع الجديدة — بدون أي التزام — جربها بنفسك',
+      title1: 'العميل اللي يرجع',
+      title2: 'هو أفضل عميل.',
+      subtitle: 'وايا تساعد متجرك يحوّل الزيارة الأولى إلى علاقة مستمرة.',
+      freeTrial: 'أول شهرين  اشتراك مجاناً   — بدون أي التزام',
       inputPlaceholder: 'إيميلك أو رقم جوالك',
       storeNamePlaceholder: 'اسم متجرك',
       industryPlaceholder: 'نوع النشاط',
@@ -395,15 +395,15 @@ const content = {
       badge: 'وش وايا؟',
       problem: {
         label: 'المشكلة',
-        text: 'عميل يجي محلك، يعجبه، ويختفي. ما عندك طريقة ترجّعه.',
+        text: 'كثير من العملاء يجربون المتجر مرة، لكن ما فيه سبب واضح يخليهم يرجعون.',
       },
       waya: {
         label: 'وايا',
-        text: 'بطاقة ولاء رقمية تنحفظ في جوال العميل — بدون تطبيق.',
+        text: 'بطاقة ولاء رقمية تنحفظ في جوال العميل مباشرة، بدون تحميل تطبيق.',
       },
       how: {
-        label: 'كيف ترجّعه',
-        text: 'كل زيارة تكسبه نقاط. النقاط تتحوّل مكافأة. المكافأة ترجّعه.',
+        label: 'النتيجة',
+        text: 'كل زيارة تكسب العميل نقاط أو مكافآت، وتعطيه سبب يرجع مرة ثانية.',
       },
     },
     cardTypes: {
@@ -3551,6 +3551,7 @@ function CustomersModal({ shop, lang, onClose }) {
 
 function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const { user, signOut, loading: authLoading } = useAuth()
+  const { isAdmin: isPlatformAdmin } = useIsPlatformAdmin()
   const d = t.dashboard
   const [shop, setShop] = useState(null)
   const [memberRole, setMemberRole] = useState(null)  // null = owner; 'cashier' | 'branch_manager' = sub-account
@@ -3709,7 +3710,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               <GlobeIcon /><span className="sidebar-toggle-label">{lang === 'ar' ? 'EN' : 'عربي'}</span>
             </button>
           </div>
-          {user?.email && ADMIN_EMAILS.includes(user.email) && (
+          {isPlatformAdmin && (
             <button className="sidebar-item sidebar-admin-link" onClick={() => navigate('/admin/metrics')}>
               <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 3h7v9H3z"/><path d="M14 3h7v5h-7z"/><path d="M14 12h7v9h-7z"/><path d="M3 16h7v5H3z"/></svg></span>
               <span className="sidebar-item-label">{lang === 'ar' ? 'لوحة المقاييس' : 'Admin Metrics'}</span>
@@ -4347,18 +4348,40 @@ function ProgramsPageWrapper({ lang, setLang, theme, setTheme, t }) {
   )
 }
 
-/* ─── Admin-only events viewer (gated by email allowlist) ─── */
-const ADMIN_EMAILS = ['sultanhhaidar@gmail.com', 'hello@trywaya.com']
+/* ─── Admin gate: single source of truth is the public.platform_admins table ─── */
+function useIsPlatformAdmin() {
+  const { user, loading: authLoading } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(null)
+  useEffect(() => {
+    if (authLoading) return
+    if (!user) { setIsAdmin(false); return }
+    let cancelled = false
+    supabase.rpc('is_platform_admin').then(({ data, error }) => {
+      if (cancelled) return
+      setIsAdmin(!error && data === true)
+    })
+    return () => { cancelled = true }
+  }, [user, authLoading])
+  return { isAdmin, loading: authLoading || isAdmin === null }
+}
 
-/* ─── Admin Metrics Dashboard (auto-refresh every 15 min) ─── */
+/* ─── Admin Metrics Dashboard (auto-refresh every 15 min; customers every 30s) ─── */
 function AdminMetricsPage({ lang, setLang, theme, setTheme, t }) {
   const { user, loading } = useAuth()
+  const { isAdmin, loading: adminLoading } = useIsPlatformAdmin()
   const isAr = lang === 'ar'
   const [metrics, setMetrics] = useState(null)
   const [err, setErr] = useState(null)
   const [fetching, setFetching] = useState(false)
   const [lastRefresh, setLastRefresh] = useState(null)
   const REFRESH_MS = 15 * 60 * 1000
+
+  const [customers, setCustomers] = useState([])
+  const [customersFetching, setCustomersFetching] = useState(false)
+  const [customersLastRefresh, setCustomersLastRefresh] = useState(null)
+  const [customersErr, setCustomersErr] = useState(null)
+  const [shopFilter, setShopFilter] = useState('all')
+  const CUSTOMERS_REFRESH_MS = 30 * 1000
 
   const load = async () => {
     setFetching(true)
@@ -4370,15 +4393,32 @@ function AdminMetricsPage({ lang, setLang, theme, setTheme, t }) {
     setFetching(false)
   }
 
+  const loadCustomers = async () => {
+    setCustomersFetching(true)
+    const { data, error } = await supabase.rpc('platform_customers_list')
+    if (error) { setCustomersErr(error.message); setCustomersFetching(false); return }
+    setCustomers(data || [])
+    setCustomersLastRefresh(new Date())
+    setCustomersErr(null)
+    setCustomersFetching(false)
+  }
+
   useEffect(() => {
-    if (!user) return
+    if (!user || !isAdmin) return
     load()
     const id = setInterval(load, REFRESH_MS)
     return () => clearInterval(id)
-  }, [user])
+  }, [user, isAdmin])
 
-  if (loading) return <div className="auth-page"><div className="dash-loading"><Logo size={72} /></div></div>
-  if (!user || !ADMIN_EMAILS.includes(user.email)) {
+  useEffect(() => {
+    if (!user || !isAdmin) return
+    loadCustomers()
+    const id = setInterval(loadCustomers, CUSTOMERS_REFRESH_MS)
+    return () => clearInterval(id)
+  }, [user, isAdmin])
+
+  if (loading || adminLoading) return <div className="auth-page"><div className="dash-loading"><Logo size={72} /></div></div>
+  if (!user || !isAdmin) {
     return (
       <div className="auth-page" style={{ padding: 40, textAlign: 'center' }}>
         <h2>{isAr ? 'غير مصرّح' : 'Not authorized'}</h2>
@@ -4398,6 +4438,46 @@ function AdminMetricsPage({ lang, setLang, theme, setTheme, t }) {
       {sub != null && <div className="admin-metric-sub">{sub}</div>}
     </div>
   )
+
+  const shopOptions = (() => {
+    const map = new Map()
+    for (const row of customers) {
+      if (row.shop_id && !map.has(row.shop_id)) map.set(row.shop_id, row.business_name || '(unnamed)')
+    }
+    return Array.from(map.entries()).sort((a, b) => (a[1] || '').localeCompare(b[1] || ''))
+  })()
+
+  const filteredCustomers = shopFilter === 'all'
+    ? customers
+    : customers.filter(r => r.shop_id === shopFilter)
+
+  const fmtDt = (iso) => {
+    if (!iso) return '—'
+    const dt = new Date(iso)
+    return dt.toLocaleString(isAr ? 'ar-SA' : 'en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  }
+
+  const downloadCsv = () => {
+    const headers = ['business_name', 'owner_email', 'program_name', 'customer_name', 'customer_phone', 'stamps', 'points', 'rewards_balance', 'last_visit_at', 'created_at']
+    const esc = (v) => {
+      if (v == null) return ''
+      const s = String(v)
+      return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+    }
+    const rows = filteredCustomers.map(r => headers.map(h => esc(r[h])).join(','))
+    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    const suffix = shopFilter === 'all' ? 'all' : (shopOptions.find(([id]) => id === shopFilter)?.[1] || shopFilter).replace(/\s+/g, '_')
+    a.download = `waya-customers-${suffix}-${stamp}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div className={`app ${lang === 'en' ? 'ltr-mode' : ''}`}>
@@ -4435,6 +4515,81 @@ function AdminMetricsPage({ lang, setLang, theme, setTheme, t }) {
             {isAr ? 'آخر نشاط' : 'Last activity'}: {new Date(M.last_activity_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
           </div>
         )}
+
+        <div className="admin-customers-section">
+          <div className="admin-customers-head">
+            <div>
+              <h2>{isAr ? 'العملاء' : 'Customers'}</h2>
+              <p className="admin-metrics-sub">
+                {isAr
+                  ? `يحدّث كل 30 ثانية${customersLastRefresh ? ` · آخر تحديث ${customersLastRefresh.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : ''}`
+                  : `Live · refreshes every 30s${customersLastRefresh ? ` · last updated ${customersLastRefresh.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : ''}`}
+              </p>
+            </div>
+            <div className="admin-customers-controls">
+              <select
+                className="admin-customers-select"
+                value={shopFilter}
+                onChange={(e) => setShopFilter(e.target.value)}
+                aria-label={isAr ? 'اختر متجر' : 'Filter by business'}
+              >
+                <option value="all">{isAr ? `جميع المتاجر (${shopOptions.length})` : `All businesses (${shopOptions.length})`}</option>
+                {shopOptions.map(([id, name]) => (
+                  <option key={id} value={id}>{name}</option>
+                ))}
+              </select>
+              <button className="lw-btn lw-btn-secondary" onClick={loadCustomers} disabled={customersFetching}>
+                {customersFetching ? (isAr ? '…' : '…') : (isAr ? 'تحديث' : 'Refresh')}
+              </button>
+              <button className="lw-btn" onClick={downloadCsv} disabled={filteredCustomers.length === 0}>
+                {isAr ? 'تنزيل CSV' : 'Download CSV'}
+              </button>
+            </div>
+          </div>
+
+          {customersErr && <div className="admin-metric-error">{customersErr}</div>}
+
+          <div className="admin-customers-count">
+            {isAr
+              ? `${fmt(filteredCustomers.length)} عميل`
+              : `${fmt(filteredCustomers.length)} ${filteredCustomers.length === 1 ? 'customer' : 'customers'}`}
+          </div>
+
+          <div className="admin-customers-table-wrap">
+            <table className="admin-customers-table">
+              <thead>
+                <tr>
+                  <th>{isAr ? 'المتجر' : 'Business'}</th>
+                  <th>{isAr ? 'البرنامج' : 'Program'}</th>
+                  <th>{isAr ? 'الاسم' : 'Name'}</th>
+                  <th>{isAr ? 'الجوال' : 'Phone'}</th>
+                  <th style={{ textAlign: 'end' }}>{isAr ? 'الأختام' : 'Stamps'}</th>
+                  <th style={{ textAlign: 'end' }}>{isAr ? 'النقاط' : 'Points'}</th>
+                  <th>{isAr ? 'آخر زيارة' : 'Last visit'}</th>
+                  <th>{isAr ? 'تاريخ الانضمام' : 'Joined'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCustomers.length === 0 ? (
+                  <tr><td colSpan={8} className="admin-customers-empty">
+                    {isAr ? 'لا يوجد عملاء' : 'No customers to show'}
+                  </td></tr>
+                ) : filteredCustomers.map(r => (
+                  <tr key={r.customer_pass_id}>
+                    <td>{r.business_name || '—'}</td>
+                    <td>{r.program_name || '—'}</td>
+                    <td>{r.customer_name || '—'}</td>
+                    <td dir="ltr" style={{ textAlign: isAr ? 'end' : 'start' }}>{r.customer_phone || '—'}</td>
+                    <td style={{ textAlign: 'end' }}>{fmt(r.stamps)}</td>
+                    <td style={{ textAlign: 'end' }}>{fmt(r.points)}</td>
+                    <td>{fmtDt(r.last_visit_at)}</td>
+                    <td>{fmtDt(r.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
     </div>
   )
@@ -4442,26 +4597,24 @@ function AdminMetricsPage({ lang, setLang, theme, setTheme, t }) {
 
 function AdminEventsPage({ lang, setLang, theme, setTheme }) {
   const { user, loading } = useAuth()
+  const { isAdmin, loading: adminLoading } = useIsPlatformAdmin()
   const [shops, setShops] = useState([])
   const [selectedShopId, setSelectedShopId] = useState(null)
   const [err, setErr] = useState(null)
 
   useEffect(() => {
-    if (loading) return
+    if (loading || adminLoading) return
     if (!user) { navigate('/login'); return }
-    if (!ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
-      setErr('Not authorized')
-      return
-    }
+    if (!isAdmin) { setErr('Not authorized'); return }
     supabase.from('shops').select('id, name').order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) { setErr(error.message); return }
         setShops(data || [])
         if (data && data[0]) setSelectedShopId(data[0].id)
       })
-  }, [user, loading])
+  }, [user, loading, isAdmin, adminLoading])
 
-  if (loading) return <div style={{ padding: 60, textAlign: 'center' }}>Loading…</div>
+  if (loading || adminLoading) return <div style={{ padding: 60, textAlign: 'center' }}>Loading…</div>
   if (err) return <div style={{ padding: 60, textAlign: 'center', color: '#b91c1c' }}>{err}</div>
   if (!user) return null
 

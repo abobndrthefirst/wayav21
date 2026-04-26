@@ -244,13 +244,21 @@ export default function WalletEnrollPage({ lang = 'en' }) {
                 </a>
               )}
               {googleSaveUrl && (device === 'android' || device === 'desktop') && (
-                <a href={googleSaveUrl} target="_blank" rel="noopener" className="we-wallet-pill" aria-label="Add to Google Wallet">
-                  <img src={googleWalletIcon} className="we-wallet-icon" alt="" />
-                  <span className="we-wallet-text">
-                    <span className="we-wallet-small">{T('Add to', 'إضافة إلى')}</span>
-                    <span className="we-wallet-big">Google Wallet</span>
-                  </span>
-                </a>
+                <>
+                  <a href={googleSaveUrl} target="_blank" rel="noopener" className="we-wallet-pill" aria-label="Add to Google Wallet">
+                    <img src={googleWalletIcon} className="we-wallet-icon" alt="" />
+                    <span className="we-wallet-text">
+                      <span className="we-wallet-small">{T('Add to', 'إضافة إلى')}</span>
+                      <span className="we-wallet-big">Google Wallet</span>
+                    </span>
+                  </a>
+                  <p style={{ fontSize: 11, color: '#6b7280', textAlign: 'center', margin: '4px 0 0', lineHeight: 1.4 }}>
+                    {T(
+                      'If Google Wallet says "this card is not available", please contact the merchant — their Google authorization needs to be completed.',
+                      'إذا ظهرت رسالة "البطاقة غير متاحة"، يرجى التواصل مع المتجر لاستكمال ربط حساب جوجل.',
+                    )}
+                  </p>
+                </>
               )}
               {!googleSaveUrl && (device === 'android' || device === 'desktop') && (
                 <div style={{ padding: '10px 16px', background: '#fef2f2', borderRadius: 10, fontSize: 13, color: '#991b1b', textAlign: 'center' }}>
