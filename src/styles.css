@@ -648,6 +648,8 @@ body {
   line-height: 1.15;
   letter-spacing: -0.03em;
 }
+.hero-title .text-cream,
+.hero-title .text-green { display: block; }
 
 .text-cream { color: var(--cream); }
 .text-green { color: var(--green-bright); }
