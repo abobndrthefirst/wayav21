@@ -645,11 +645,17 @@ body {
 .hero-title {
   font-size: clamp(36px, 4.5vw, 56px);
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.35;
   letter-spacing: -0.03em;
 }
+/* Arabic glyphs extend above/below the typical ascender; give each color
+   line its own block + breathing room so diacritics don't clip the line above */
 .hero-title .text-cream,
-.hero-title .text-green { display: block; }
+.hero-title .text-green {
+  display: block;
+  padding: 0.12em 0;
+  line-height: 1.35;
+}
 
 .text-cream { color: var(--cream); }
 .text-green { color: var(--green-bright); }
