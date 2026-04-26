@@ -130,35 +130,35 @@
 .we-lang-toggle:active { transform: scale(0.96); }
 
 .we-header {
-  padding: 22px 20px 18px;
+  padding: 40px 24px 32px;
   text-align: center;
   color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 14px;
 }
 .we-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 84px;
+  height: 84px;
+  border-radius: 20px;
   object-fit: cover;
   display: block;
   background: rgba(255,255,255,.2);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.22);
 }
 .we-logo-fallback {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 36px;
   font-weight: 800;
   color: #fff;
   background: rgba(255,255,255,0.22);
 }
 .we-shop-name {
   margin: 0;
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.25;
@@ -259,7 +259,8 @@
 .we-wallet-big { font-size: 15px; font-weight: 700; letter-spacing: .1px; }
 .we-link { display: inline-block; margin-top: 14px; color: #10B981; text-decoration: none; font-weight: 600; font-size: 13px; }
 
-/* Phones: edge-to-edge card with everything on screen, no scroll */
+/* Phones: edge-to-edge card. Content stacks naturally — no flex-stretch
+   trick that left dead space between the form and the submit button. */
 @media (max-width: 480px) {
   .we-shell {
     padding: 0;
@@ -271,37 +272,36 @@
     max-width: 100%;
     box-shadow: none;
     min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
   }
   .we-header {
-    padding-top: max(20px, calc(env(safe-area-inset-top) + 12px));
-    padding-inline-start: max(18px, env(safe-area-inset-left));
-    padding-inline-end: max(18px, env(safe-area-inset-right));
-    border-radius: 0 0 22px 22px;
-    flex-shrink: 0;
+    padding-top: max(48px, calc(env(safe-area-inset-top) + 36px));
+    padding-bottom: 36px;
+    padding-inline-start: max(20px, env(safe-area-inset-left));
+    padding-inline-end: max(20px, env(safe-area-inset-right));
+    border-radius: 0 0 28px 28px;
   }
   .we-form {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
     padding:
-      14px
-      max(18px, env(safe-area-inset-right))
-      calc(14px + env(safe-area-inset-bottom))
-      max(18px, env(safe-area-inset-left));
+      18px
+      max(20px, env(safe-area-inset-right))
+      calc(20px + env(safe-area-inset-bottom))
+      max(20px, env(safe-area-inset-left));
   }
-  .we-form .we-submit { margin-top: auto; }
 }
 
-/* Very short screens (iPhone SE, landscape phones): collapse the header further */
+/* Very short screens (iPhone SE, landscape phones): keep the header
+   prominent but trim padding so everything still fits */
 @media (max-width: 480px) and (max-height: 700px) {
-  .we-header { padding: 14px 18px 12px; gap: 6px; }
-  .we-logo { width: 44px; height: 44px; border-radius: 12px; }
-  .we-logo-fallback { font-size: 20px; }
-  .we-shop-name { font-size: 16px; }
+  .we-header {
+    padding-top: max(28px, calc(env(safe-area-inset-top) + 18px));
+    padding-bottom: 22px;
+    gap: 10px;
+  }
+  .we-logo { width: 64px; height: 64px; border-radius: 16px; }
+  .we-logo-fallback { font-size: 28px; }
+  .we-shop-name { font-size: 20px; }
   .we-form h2 { font-size: 15px; }
-  .we-sub { display: none; } /* repetitive with the heading on tiny screens */
+  .we-sub { display: none; }
   .we-form label { margin-bottom: 8px; }
   .we-gender-opt { min-height: 48px; }
   .we-gender-emoji { font-size: 18px; }

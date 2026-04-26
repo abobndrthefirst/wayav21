@@ -205,11 +205,12 @@ export default function WalletEnrollPage({ lang: initialLang = 'ar' }) {
               <input
                 type="tel"
                 inputMode="numeric"
+                pattern="[0-9]*"
                 value={phone}
-                onChange={(e) => setPhone(handlePhoneChange(e.target.value))}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 required
                 placeholder="05XXXXXXXX"
-                maxLength={13}
+                maxLength={10}
                 dir="ltr"
                 aria-invalid={phoneInvalid ? 'true' : 'false'}
                 style={phoneInvalid ? { borderColor: '#e11d48', outlineColor: '#e11d48' } : undefined}
