@@ -222,6 +222,7 @@ export function ProgramQR({ program, onClose, lang }) {
     step1:     isAr ? 'امسح'                       : 'Scan',
     step2:     isAr ? 'سجّل'                        : 'Sign up',
     step3:     isAr ? 'استلم'                      : 'Earn',
+    // Confession
     confession:isAr ? 'اعتراف:'                    : 'CONFESSION:',
     cMyName:   isAr ? 'اسمي'                       : 'My name is',
     cVisit:    isAr ? `وأنا أزور <strong>${program.name}</strong> كثير`
@@ -229,8 +230,23 @@ export function ProgramQR({ program, onClose, lang }) {
     cNever:    isAr ? `وما خذيت ولا ${hookReward} ${rewardEmoji}`
                     : `But I've never claimed my ${hookReward} ${rewardEmoji}`,
     cFix:      isAr ? 'حان الوقت أصلح هذا 👇'      : 'Time to fix that 👇',
-    penNote:   isAr ? '* علّق قلم بجانب البوستر — اطلب من العميل يكتب اسمه *'
-                    : '* Hang a pen next to this poster — let customers write their names *',
+    // Wanted
+    wanted:    isAr ? 'مطلوب'                      : 'WANTED',
+    wReason:   isAr ? 'بتهمة عدم استلام المكافأة' : 'FOR NOT CLAIMING THEIR REWARD',
+    wFace:     isAr ? '[ ضع صورتك هنا ]'           : '[ YOUR FACE HERE ]',
+    wBounty:   isAr ? 'المكافأة'                   : 'BOUNTY',
+    wLastSeen: isAr ? 'آخر ظهور:'                  : 'LAST SEEN AT',
+    wTurnIn:   isAr ? 'سلّم نفسك ←'                : '← TURN YOURSELF IN',
+    // Tear-off tabs
+    tabHint:   isAr ? 'مزّق قسيمة وخذها معك' : 'Tear a tab and take it home',
+    tabPrint:  isAr ? '✂ قص على الخطوط المنقطة' : '✂ cut along the dashed lines',
+    // Receipt of regret
+    rDate:     isAr ? 'التاريخ' : 'DATE',
+    rItem:     hookReward,
+    rSubtotal: isAr ? 'المجموع'                    : 'SUBTOTAL',
+    rRegret:   isAr ? 'مرات كان ممكن تكون مجانية:' : 'TIMES THIS COULD HAVE BEEN FREE:',
+    rStop:     isAr ? 'أوقف هذا'                   : 'STOP THIS',
+    rThanks:   isAr ? 'شكراً لزيارتك'              : 'THANK YOU FOR YOUR VISIT',
   }
 
   // 1. Bold — single-line trap. Store name → reward → QR → arrow.
@@ -320,7 +336,6 @@ export function ProgramQR({ program, onClose, lang }) {
     .blank{display:inline-block;border-bottom:1mm dashed #333;height:8mm;width:90mm;vertical-align:bottom;margin:0 2mm;}
     .qr-wrap{text-align:center;margin-top:8mm;}
     .qr-wrap img{width:60mm;height:60mm;border:2mm solid #fff;box-shadow:0 0 0 .8mm ${color},0 4mm 10mm rgba(0,0,0,.18);}
-    .pen-note{font-size:10pt;color:#666;text-align:center;margin-top:5mm;font-style:italic;}
     @media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; body { background: #f4ecd8 !important; } }
     </style></head><body>
     <div class="stamp">${program.name}</div>
@@ -330,7 +345,6 @@ export function ProgramQR({ program, onClose, lang }) {
     <p class="line">${txt.cNever}</p>
     <p class="line" style="margin-top:6mm">${txt.cFix}</p>
     <div class="qr-wrap"><img src="${buildQrSrc('confession', 'plain')}" alt="QR"/></div>
-    <p class="pen-note">${txt.penNote}</p>
     </body></html>`
 
   // 5. Receipt sticker — A7 (74×105mm). Stick on receipts, cup sleeves,
@@ -378,6 +392,130 @@ export function ProgramQR({ program, onClose, lang }) {
     <p class="cta">${txt.scanJoin}</p>
     </body></html>`
 
+  // 7. WANTED poster — Old West bounty aesthetic. Customer is the wanted
+  //    criminal. Funny → photographed → shared. The empty face frame
+  //    invites doodling, taping a polaroid, or just laughing — all of
+  //    which → attention → scan.
+  const designWanted = () => `<!doctype html><html dir="${dirAttr}" lang="${langAttr}"><head><meta charset="utf-8"><title>${program.name}</title>
+    <style>${baseFonts}
+    @page { size: A4 portrait; margin: 0; }
+    html,body{height:100%;}
+    body{margin:0;font-family:'Cairo',serif;background:#e8d8b0;color:#2a1a0a;width:210mm;height:297mm;padding:18mm;box-sizing:border-box;overflow:hidden;text-align:center;background-image:radial-gradient(circle at 20% 30%, rgba(120,80,30,.08) 0, transparent 50mm),radial-gradient(circle at 80% 70%, rgba(120,80,30,.1) 0, transparent 60mm);}
+    .border{border:2mm solid #2a1a0a;border-radius:2mm;padding:10mm 8mm;height:calc(297mm - 36mm - 4mm);box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;}
+    h1{font-size:64pt;margin:0 0 2mm;font-weight:900;letter-spacing:6px;line-height:1;}
+    .reason{font-size:13pt;font-weight:800;letter-spacing:2px;margin:0 0 4mm;text-transform:uppercase;border-top:.6mm solid #2a1a0a;border-bottom:.6mm solid #2a1a0a;padding:2mm 0;}
+    .face{width:80mm;height:80mm;margin:0 auto;border:1.5mm dashed #2a1a0a;display:flex;align-items:center;justify-content:center;font-size:11pt;font-weight:700;color:#5a4020;letter-spacing:2px;background:rgba(255,255,255,.15);}
+    .bounty{margin:6mm 0 2mm;font-size:14pt;font-weight:800;letter-spacing:2px;}
+    .bounty-amt{font-size:24pt;font-weight:900;color:${color};margin:0;line-height:1.1;word-wrap:break-word;}
+    .seen{font-size:10pt;letter-spacing:1.5px;margin:4mm 0 0;font-weight:700;text-transform:uppercase;opacity:.85;}
+    .seen-name{font-size:14pt;font-weight:900;margin-top:1mm;}
+    .qr-row{display:flex;align-items:center;justify-content:center;gap:8mm;margin-top:6mm;}
+    .qr-row img{width:42mm;height:42mm;background:#fff;padding:2mm;border:.6mm solid #2a1a0a;}
+    .turn-in{font-size:18pt;font-weight:900;letter-spacing:1px;}
+    @media print { body { background: #e8d8b0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <div class="border">
+      <div>
+        <h1>${txt.wanted}</h1>
+        <p class="reason">${txt.wReason}</p>
+        <div class="face">${txt.wFace}</div>
+        <p class="bounty">${txt.wBounty}</p>
+        <p class="bounty-amt">${hookReward} ${rewardEmoji}</p>
+      </div>
+      <div>
+        <p class="seen">${txt.wLastSeen}</p>
+        <p class="seen-name">${program.name}</p>
+        <div class="qr-row">
+          <img src="${buildQrSrc('wanted', 'plain')}" alt="QR"/>
+          <div class="turn-in">${txt.wTurnIn}</div>
+        </div>
+      </div>
+    </div>
+    </body></html>`
+
+  // 8. Tear-off tabs flyer — community-board style. 3 generous tabs at the
+  //    bottom that customers physically tear off and pocket. Each torn tab
+  //    is visible social proof on the wall ("look how many people grabbed
+  //    one"). Each pocketed tab is a 24h reminder to scan when home.
+  const designTearOff = () => `<!doctype html><html dir="${dirAttr}" lang="${langAttr}"><head><meta charset="utf-8"><title>${program.name}</title>
+    <style>${baseFonts}
+    @page { size: A4 portrait; margin: 0; }
+    html,body{height:100%;}
+    body{margin:0;font-family:Cairo,Inter,sans-serif;background:#fff;color:#111;width:210mm;height:297mm;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;}
+    .top{flex:1;background:${color};color:${text};padding:20mm 14mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-bottom:2mm dashed #888;}
+    .store{font-size:14pt;font-weight:700;opacity:.85;margin:0 0 4mm;letter-spacing:1px;text-transform:uppercase;}
+    .top h1{font-size:42pt;margin:0 0 8mm;font-weight:900;letter-spacing:-.5px;line-height:1.1;word-wrap:break-word;}
+    .top .qr{background:#fff;padding:5mm;border-radius:5mm;}
+    .top .qr img{display:block;width:55mm;height:55mm;}
+    .top .hint{margin-top:6mm;font-size:11pt;font-weight:700;opacity:.92;}
+    .strips{display:flex;height:75mm;}
+    .strip{flex:1;border-${isAr ? 'left' : 'right'}:1mm dashed #888;padding:6mm 4mm;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3mm;}
+    .strip:last-child{border:none;}
+    .strip .mini-store{font-size:8pt;font-weight:700;opacity:.6;text-transform:uppercase;letter-spacing:.5px;margin:0;}
+    .strip .mini-reward{font-size:11pt;font-weight:800;color:${color};margin:0;line-height:1.2;word-wrap:break-word;}
+    .strip .mini-qr{background:#fff;padding:1mm;border:.4mm solid #ddd;}
+    .strip .mini-qr img{display:block;width:32mm;height:32mm;}
+    .strip .mini-cta{font-size:9pt;font-weight:700;color:#444;margin:0;}
+    @media print { body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <div class="top">
+      <p class="store">${program.name}</p>
+      <h1>${hookReward} ${rewardEmoji}</h1>
+      <div class="qr"><img src="${buildQrSrc('tearoff', 'plain')}" alt="QR"/></div>
+      <p class="hint">${txt.tabHint}</p>
+    </div>
+    <div class="strips">
+      ${[0,1,2].map(() => `<div class="strip">
+        <p class="mini-store">${program.name}</p>
+        <p class="mini-reward">${rewardEmoji} ${hookReward}</p>
+        <div class="mini-qr"><img src="${buildQrSrc('tearoff-tab', 'plain')}" alt="QR"/></div>
+        <p class="mini-cta">${txt.scanArrow}</p>
+      </div>`).join('')}
+    </div>
+    </body></html>`
+
+  // 9. Receipt of regret — long thermal-receipt aesthetic listing the same
+  //    item over and over with "could have been free" math at the bottom.
+  //    Cringe humor that does the math FOR the customer. Highest impact when
+  //    the merchant tapes it next to the actual cash register.
+  const designReceiptRegret = () => `<!doctype html><html dir="${dirAttr}" lang="${langAttr}"><head><meta charset="utf-8"><title>${program.name}</title>
+    <style>${baseFonts}
+    @page { size: A4 portrait; margin: 0; }
+    html,body{height:100%;}
+    body{margin:0;font-family:Cairo,Inter,sans-serif;background:#ddd;color:#111;width:210mm;height:297mm;padding:18mm 0;box-sizing:border-box;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+    .receipt{width:96mm;background:#fafaf6;padding:8mm 6mm;font-family:'Courier New','Courier',monospace;font-size:10pt;line-height:1.5;color:#222;box-shadow:0 4mm 18mm rgba(0,0,0,.18);position:relative;}
+    .receipt::before, .receipt::after{content:"";position:absolute;left:0;right:0;height:4mm;background:linear-gradient(135deg, transparent 33%, #fafaf6 33% 66%, transparent 66%) 0 0/8mm 4mm repeat-x;}
+    .receipt::before{top:-4mm;transform:rotate(180deg);}
+    .receipt::after{bottom:-4mm;}
+    .r-store{text-align:center;font-size:13pt;font-weight:900;margin:0 0 1mm;letter-spacing:.5px;}
+    .r-meta{text-align:center;font-size:8pt;opacity:.75;margin:0 0 4mm;}
+    .r-line{display:flex;justify-content:space-between;border-bottom:.3mm dashed #999;padding:1.2mm 0;font-size:9pt;}
+    .r-line .item{flex:1;}
+    .r-line .price{font-weight:700;}
+    .r-sep{border-top:.6mm solid #222;margin:3mm 0;}
+    .r-total{display:flex;justify-content:space-between;font-weight:900;font-size:11pt;}
+    .r-regret{margin:4mm 0 2mm;text-align:center;font-size:9pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+    .r-regret-num{text-align:center;font-size:32pt;font-weight:900;color:${color};margin:0;line-height:1;}
+    .r-stop{margin:5mm 0 3mm;text-align:center;font-size:18pt;font-weight:900;letter-spacing:1px;color:${color};}
+    .r-qr{text-align:center;margin:3mm 0;}
+    .r-qr img{width:42mm;height:42mm;background:#fff;padding:2mm;border:.4mm solid #222;}
+    .r-thanks{text-align:center;font-size:8pt;margin-top:4mm;letter-spacing:1px;opacity:.7;}
+    @media print { body { background: #ddd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <div class="receipt">
+      <p class="r-store">${program.name}</p>
+      <p class="r-meta">${txt.rDate} ${new Date().toLocaleDateString(isAr ? 'ar-SA' : 'en-GB')}</p>
+      ${[1,2,3,4,5,6,7].map((n) => `<div class="r-line"><span class="item">${n}× ${txt.rItem}</span><span class="price">— SAR</span></div>`).join('')}
+      <div class="r-sep"></div>
+      <div class="r-total"><span>${txt.rSubtotal}</span><span>×7</span></div>
+      <p class="r-regret">${txt.rRegret}</p>
+      <p class="r-regret-num">7 ${rewardEmoji}</p>
+      <p class="r-stop">${txt.rStop} →</p>
+      <div class="r-qr"><img src="${buildQrSrc('receipt-regret', 'plain')}" alt="QR"/></div>
+      <p class="r-thanks">${txt.rThanks}</p>
+    </div>
+    </body></html>`
+
   // Posters are split into safe defaults + bold/experimental.
   // The bold ones convert higher in our analytics but feel risky to merchants
   // who haven't seen the data yet — so we group them visibly under "Bold".
@@ -385,7 +523,10 @@ export function ProgramQR({ program, onClose, lang }) {
     { key: 'bold',       group: 'classic', label: T('Direct',       'مباشر'),         build: designBold,       sub: T('Reward → QR → arrow. No fluff.', 'المكافأة → الرمز → سهم. بدون حشو.') },
     { key: 'minimal',    group: 'classic', label: T('Minimal',      'بسيط'),          build: designMinimal,    sub: T('White, professional, 3 short steps.', 'أبيض، احترافي، ٣ خطوات قصيرة.') },
     { key: 'tent',       group: 'classic', label: T('Table tent',   'عرض طاولة'),     build: designTableTent,  sub: T('Folds in half — sits on every table.', 'يطوى — يوضع على كل طاولة.') },
-    { key: 'confession', group: 'bold',    label: T('Confession',   'اعتراف'),        build: designConfession, sub: T('Pen on a string. Customers write names. Wall fills up.', 'قلم معلّق. العملاء يكتبون أسماءهم. الجدار يمتلئ.') },
+    { key: 'confession', group: 'bold',    label: T('Confession',   'اعتراف'),        build: designConfession, sub: T('Yellowed receipt. Big "CONFESSION:" + blank line for the customer to write their name on.', 'فاتورة مصفرّة. "اعتراف:" كبير + سطر فاضي يكتب فيه العميل اسمه.') },
+    { key: 'wanted',     group: 'bold',    label: T('WANTED',       'مطلوب'),         build: designWanted,     sub: T('Old-West bounty. Customer is the wanted criminal. Photo-worthy → shared.', 'إعلان مطلوب على الطريقة الغربية. العميل هو المجرم. يستحق التصوير → ينتشر.') },
+    { key: 'tearoff',    group: 'bold',    label: T('Tear-off tabs', 'قسائم قابلة للتمزيق'), build: designTearOff, sub: T('3 tabs at bottom. Customer tears one and pockets it — 24h reminder to scan.', '٣ قسائم بالأسفل. يأخذ العميل واحدة معه — تذكير ٢٤ ساعة بالمسح.') },
+    { key: 'regret',     group: 'bold',    label: T('Receipt of regret', 'فاتورة الندم'), build: designReceiptRegret, sub: T('Fake receipt listing the same item 7×. Does the could-have-been-free math for them.', 'فاتورة وهمية تكرر نفس الصنف ٧ مرات. تحسبها لهم بدالهم.') },
     { key: 'receipt',    group: 'bold',    label: T('Receipt sticker', 'ملصق فاتورة'), build: designReceipt,    sub: T('A7 size. Stick on receipts, cup sleeves, napkin holders.', 'مقاس A7. الصق على الفواتير، أكواب القهوة، حامل المناديل.') },
     { key: 'story',      group: 'bold',    label: T('Story-ready',  'جاهز للستوري'),  build: designStory,      sub: T('9:16 vertical. Screenshot → Snap / Instagram story.', '٩:١٦ عمودي. صوّر → ستوري سناب / انستقرام.') },
   ]
