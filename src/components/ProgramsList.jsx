@@ -202,45 +202,72 @@ export function ProgramQR({ program, onClose, lang }) {
   // "join the loyalty program" — that copy was the #1 conversion killer.
   // Each template embeds its own ?src=<templateId> in the QR so we can rank
   // performance via the poster_scans table.
+  //
+  // Sizing: A4 portrait = 210×297mm. All A4 templates use mm units + bounded
+  // font sizes + overflow:hidden so layouts never push to a second page even
+  // when program.name or reward_title is long.
+  //
+  // No raw landing-URL footers — the QR itself encodes the link, printing it
+  // again was just visual noise that ate page real estate.
+  //
+  // i18n: Strings respect the same `isAr` flag the dashboard uses. <html dir>
+  // and lang attributes flip so PDF readers + screen readers behave correctly.
   // ─────────────────────────────────────────────────────────────────────────
 
-  // 1. Bold — single-line trap. Store name → reward → QR → arrow. No steps.
-  const designBold = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
+  const dirAttr  = isAr ? 'rtl' : 'ltr'
+  const langAttr = isAr ? 'ar'  : 'en'
+  const txt = {
+    scanArrow: isAr ? 'امسح ←'                    : '← Scan',
+    scanJoin:  isAr ? 'امسح وانضم — ٥ ثواني'      : 'Scan to join — 5 seconds',
+    step1:     isAr ? 'امسح'                       : 'Scan',
+    step2:     isAr ? 'سجّل'                        : 'Sign up',
+    step3:     isAr ? 'استلم'                      : 'Earn',
+    confession:isAr ? 'اعتراف:'                    : 'CONFESSION:',
+    cMyName:   isAr ? 'اسمي'                       : 'My name is',
+    cVisit:    isAr ? `وأنا أزور <strong>${program.name}</strong> كثير`
+                    : `And I visit <strong>${program.name}</strong> a lot`,
+    cNever:    isAr ? `وما خذيت ولا ${hookReward} ${rewardEmoji}`
+                    : `But I've never claimed my ${hookReward} ${rewardEmoji}`,
+    cFix:      isAr ? 'حان الوقت أصلح هذا 👇'      : 'Time to fix that 👇',
+    penNote:   isAr ? '* علّق قلم بجانب البوستر — اطلب من العميل يكتب اسمه *'
+                    : '* Hang a pen next to this poster — let customers write their names *',
+  }
+
+  // 1. Bold — single-line trap. Store name → reward → QR → arrow.
+  const designBold = () => `<!doctype html><html dir="${dirAttr}" lang="${langAttr}"><head><meta charset="utf-8"><title>${program.name}</title>
     <style>${baseFonts}
     @page { size: A4 portrait; margin: 0; }
-    body{margin:0;font-family:Cairo,Inter,system-ui,sans-serif;background:${color};color:${text};min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px;}
-    .wrap{max-width:600px;width:100%;text-align:center;}
-    .store{font-size:18px;font-weight:700;opacity:.85;margin:0 0 16px;letter-spacing:1px;text-transform:uppercase;}
-    h1{font-size:64px;margin:0 0 32px;font-weight:900;line-height:1.1;letter-spacing:-1px;}
-    .qr-card{background:#fff;padding:24px;border-radius:28px;display:inline-block;box-shadow:0 20px 60px rgba(0,0,0,.18);}
-    .qr-card img{display:block;width:340px;height:340px;}
-    .cta{margin-top:32px;font-size:36px;font-weight:900;letter-spacing:1px;}
-    .footer{margin-top:24px;font-size:11px;opacity:.6;font-family:monospace;}
+    html,body{height:100%;}
+    body{margin:0;font-family:Cairo,Inter,system-ui,sans-serif;background:${color};color:${text};width:210mm;height:297mm;display:flex;align-items:center;justify-content:center;padding:18mm;box-sizing:border-box;overflow:hidden;}
+    .wrap{max-width:160mm;width:100%;text-align:center;}
+    .store{font-size:12pt;font-weight:700;opacity:.85;margin:0 0 6mm;letter-spacing:1px;text-transform:uppercase;}
+    h1{font-size:36pt;margin:0 0 10mm;font-weight:900;line-height:1.1;letter-spacing:-.5px;word-wrap:break-word;}
+    .qr-card{background:#fff;padding:6mm;border-radius:8mm;display:inline-block;box-shadow:0 6mm 18mm rgba(0,0,0,.18);}
+    .qr-card img{display:block;width:80mm;height:80mm;}
+    .cta{margin-top:10mm;font-size:24pt;font-weight:900;letter-spacing:1px;}
     @media print { body { background: ${color} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     </style></head><body>
     <div class="wrap">
       <p class="store">${program.name}</p>
       <h1>${hookReward} ${rewardEmoji}</h1>
       <div class="qr-card"><img src="${buildQrSrc('bold')}" alt="QR"/></div>
-      <div class="cta">امسح ←</div>
-      <div class="footer">${url}</div>
+      <div class="cta">${txt.scanArrow}</div>
     </div></body></html>`
 
-  // 2. Minimal — clean white, colored borders, 3 numbered steps (kept short).
-  //    For merchants who want the polished, instructional look.
-  const designMinimal = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
+  // 2. Minimal — clean white, colored borders, 3 numbered steps.
+  const designMinimal = () => `<!doctype html><html dir="${dirAttr}" lang="${langAttr}"><head><meta charset="utf-8"><title>${program.name}</title>
     <style>${baseFonts}
     @page { size: A4 portrait; margin: 0; }
-    body{margin:0;font-family:Cairo,Inter,system-ui,sans-serif;background:#fff;color:#111;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px;}
-    .wrap{max-width:520px;width:100%;text-align:center;border-top:8px solid ${color};border-bottom:8px solid ${color};padding:48px 24px;}
-    h1{font-size:42px;margin:0 0 6px;font-weight:900;color:${color};letter-spacing:-.5px;}
-    h2{font-size:24px;margin:0 0 32px;font-weight:700;color:#333;}
-    .qr{display:block;margin:0 auto;width:320px;height:320px;border:4px solid ${color};border-radius:16px;padding:8px;background:#fff;}
-    .reward{margin:28px 0 24px;font-size:24px;font-weight:800;color:${color};}
-    .steps{display:flex;justify-content:center;gap:32px;margin-top:24px;font-size:16px;color:#444;font-weight:600;}
-    .steps span{display:flex;align-items:center;gap:8px;}
-    .steps b{background:${color};color:#fff;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;}
-    .footer{margin-top:32px;font-size:11px;color:#999;font-family:monospace;}
+    html,body{height:100%;}
+    body{margin:0;font-family:Cairo,Inter,system-ui,sans-serif;background:#fff;color:#111;width:210mm;height:297mm;display:flex;align-items:center;justify-content:center;padding:18mm;box-sizing:border-box;overflow:hidden;}
+    .wrap{max-width:150mm;width:100%;text-align:center;border-top:3mm solid ${color};border-bottom:3mm solid ${color};padding:14mm 8mm;}
+    h1{font-size:26pt;margin:0 0 2mm;font-weight:900;color:${color};letter-spacing:-.5px;word-wrap:break-word;}
+    h2{font-size:16pt;margin:0 0 10mm;font-weight:700;color:#333;word-wrap:break-word;}
+    .qr{display:block;margin:0 auto;width:80mm;height:80mm;border:1.5mm solid ${color};border-radius:5mm;padding:2mm;background:#fff;box-sizing:border-box;}
+    .reward{margin:8mm 0 6mm;font-size:18pt;font-weight:800;color:${color};word-wrap:break-word;}
+    .steps{display:flex;justify-content:center;gap:8mm;margin-top:6mm;font-size:12pt;color:#444;font-weight:600;}
+    .steps span{display:flex;align-items:center;gap:2mm;}
+    .steps b{background:${color};color:#fff;width:8mm;height:8mm;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11pt;font-weight:900;}
     @media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     </style></head><body>
     <div class="wrap">
@@ -249,26 +276,26 @@ export function ProgramQR({ program, onClose, lang }) {
       <img class="qr" src="${buildQrSrc('minimal', 'plain')}" alt="QR"/>
       <div class="reward">${rewardEmoji} ${hookReward}</div>
       <div class="steps">
-        <span><b>1</b>امسح</span>
-        <span><b>2</b>سجّل</span>
-        <span><b>3</b>استلم</span>
+        <span><b>1</b>${txt.step1}</span>
+        <span><b>2</b>${txt.step2}</span>
+        <span><b>3</b>${txt.step3}</span>
       </div>
-      <div class="footer">${url}</div>
     </div></body></html>`
 
   // 3. Table tent — two-up identical sides for folding (A4 landscape).
-  const designTableTent = () => `<!doctype html><html><head><meta charset="utf-8"><title>${program.name}</title>
+  const designTableTent = () => `<!doctype html><html dir="${dirAttr}" lang="${langAttr}"><head><meta charset="utf-8"><title>${program.name}</title>
     <style>${baseFonts}
     @page { size: A4 landscape; margin: 0; }
-    body{margin:0;font-family:Cairo,Inter,system-ui,sans-serif;background:#fff;}
-    .sheet{display:flex;width:100vw;height:100vh;}
-    .side{flex:1;background:linear-gradient(135deg, ${color} 0%, ${color}dd 100%);color:${text};padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+    html,body{height:100%;}
+    body{margin:0;font-family:Cairo,Inter,system-ui,sans-serif;background:#fff;width:297mm;height:210mm;overflow:hidden;}
+    .sheet{display:flex;width:297mm;height:210mm;}
+    .side{flex:1;background:linear-gradient(135deg, ${color} 0%, ${color}dd 100%);color:${text};padding:14mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;overflow:hidden;}
     .side.flipped{transform:rotate(180deg);}
-    .side h1{font-size:34px;margin:0 0 4px;font-weight:900;}
-    .side h2{font-size:22px;margin:0 0 18px;font-weight:800;direction:rtl;}
-    .qr-box{background:#fff;padding:14px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.2);}
-    .qr-box img{display:block;width:200px;height:200px;}
-    .cta{margin-top:14px;font-size:20px;font-weight:900;letter-spacing:.5px;}
+    .side h1{font-size:22pt;margin:0 0 2mm;font-weight:900;word-wrap:break-word;max-width:120mm;}
+    .side h2{font-size:15pt;margin:0 0 6mm;font-weight:800;word-wrap:break-word;max-width:120mm;}
+    .qr-box{background:#fff;padding:4mm;border-radius:5mm;box-shadow:0 3mm 9mm rgba(0,0,0,.2);}
+    .qr-box img{display:block;width:55mm;height:55mm;}
+    .cta{margin-top:5mm;font-size:14pt;font-weight:900;letter-spacing:.5px;}
     @media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; body, .side { background: ${color} !important; } }
     </style></head><body>
     <div class="sheet">
@@ -276,76 +303,70 @@ export function ProgramQR({ program, onClose, lang }) {
         <h1>${program.name}</h1>
         <h2>${hookReward} ${rewardEmoji}</h2>
         <div class="qr-box"><img src="${buildQrSrc('tent')}" alt="QR"/></div>
-        <div class="cta">امسح ←</div>
+        <div class="cta">${txt.scanArrow}</div>
       </div>`).join('')}
     </div></body></html>`
 
-  // 4. Confession — the bold/weird template. Looks like a yellowed receipt.
-  //    Customer writes their name on the blank line with a pen tied to the
-  //    wall. The wall fills with names → becomes its own social proof.
-  //    Cringe: 7/10. Virality: 9/10. Conversion: massive.
-  const designConfession = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
+  // 4. Confession — yellowed-receipt aesthetic, blank line for the customer's
+  //    name (pen tied to the wall). Wall fills with names → social proof.
+  const designConfession = () => `<!doctype html><html dir="${dirAttr}" lang="${langAttr}"><head><meta charset="utf-8"><title>${program.name}</title>
     <style>${baseFonts}
     @page { size: A4 portrait; margin: 0; }
-    body{margin:0;font-family:Cairo,sans-serif;background:#f4ecd8;color:#1a1a1a;min-height:100vh;padding:60px 48px 80px;background-image:repeating-linear-gradient(0deg,transparent 0 39px,rgba(0,0,0,.04) 39px 40px);position:relative;box-sizing:border-box;}
-    .stamp{position:absolute;top:36px;left:36px;border:3px solid ${color};color:${color};padding:8px 18px;transform:rotate(-12deg);font-weight:900;font-size:16px;letter-spacing:1px;text-transform:uppercase;}
-    h1{font-size:64px;margin:60px 0 24px;font-weight:900;letter-spacing:-1px;}
-    .line{font-size:26px;line-height:2;margin:0 0 12px;}
-    .blank{display:inline-block;border-bottom:3px dashed #333;height:32px;width:340px;vertical-align:bottom;margin:0 8px;}
-    .qr-wrap{text-align:center;margin-top:32px;}
-    .qr-wrap img{width:280px;height:280px;border:8px solid #fff;box-shadow:0 0 0 3px ${color},0 14px 40px rgba(0,0,0,.18);}
-    .pen-note{font-size:14px;color:#666;text-align:center;margin-top:18px;font-style:italic;}
-    .footer{position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:11px;color:#888;font-family:monospace;}
+    html,body{height:100%;}
+    body{margin:0;font-family:Cairo,sans-serif;background:#f4ecd8;color:#1a1a1a;width:210mm;height:297mm;padding:24mm 18mm;background-image:repeating-linear-gradient(0deg,transparent 0 9.5mm,rgba(0,0,0,.04) 9.5mm 10mm);position:relative;box-sizing:border-box;overflow:hidden;}
+    .stamp{position:absolute;top:12mm;${isAr ? 'right' : 'left'}:12mm;border:1mm solid ${color};color:${color};padding:2mm 5mm;transform:rotate(${isAr ? '12' : '-12'}deg);font-weight:900;font-size:11pt;letter-spacing:1px;text-transform:uppercase;background:#f4ecd8;}
+    h1{font-size:36pt;margin:14mm 0 6mm;font-weight:900;letter-spacing:-.5px;}
+    .line{font-size:16pt;line-height:1.9;margin:0 0 3mm;word-wrap:break-word;}
+    .blank{display:inline-block;border-bottom:1mm dashed #333;height:8mm;width:90mm;vertical-align:bottom;margin:0 2mm;}
+    .qr-wrap{text-align:center;margin-top:8mm;}
+    .qr-wrap img{width:60mm;height:60mm;border:2mm solid #fff;box-shadow:0 0 0 .8mm ${color},0 4mm 10mm rgba(0,0,0,.18);}
+    .pen-note{font-size:10pt;color:#666;text-align:center;margin-top:5mm;font-style:italic;}
     @media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; body { background: #f4ecd8 !important; } }
     </style></head><body>
     <div class="stamp">${program.name}</div>
-    <h1>اعتراف:</h1>
-    <p class="line">اسمي <span class="blank"></span></p>
-    <p class="line">وأنا أزور <strong>${program.name}</strong> كثير</p>
-    <p class="line">وما خذيت ولا ${hookReward} ${rewardEmoji}</p>
-    <p class="line" style="margin-top:24px">حان الوقت أصلح هذا 👇</p>
-    <div class="qr-wrap">
-      <img src="${buildQrSrc('confession', 'plain')}" alt="QR"/>
-    </div>
-    <p class="pen-note">* علّق قلم بجانب البوستر — اطلب من العميل يكتب اسمه *</p>
-    <div class="footer">${url}</div>
+    <h1>${txt.confession}</h1>
+    <p class="line">${txt.cMyName} <span class="blank"></span></p>
+    <p class="line">${txt.cVisit}</p>
+    <p class="line">${txt.cNever}</p>
+    <p class="line" style="margin-top:6mm">${txt.cFix}</p>
+    <div class="qr-wrap"><img src="${buildQrSrc('confession', 'plain')}" alt="QR"/></div>
+    <p class="pen-note">${txt.penNote}</p>
     </body></html>`
 
-  // 5. Receipt sticker — A7 (74×105mm). Fits on receipts, cup sleeves, napkin
-  //    holders, table corners. Customer is already holding the surface = touch
-  //    = attention. Highest conversion-per-square-cm of any surface.
-  const designReceipt = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
+  // 5. Receipt sticker — A7 (74×105mm). Stick on receipts, cup sleeves,
+  //    napkin holders, table corners.
+  const designReceipt = () => `<!doctype html><html dir="${dirAttr}" lang="${langAttr}"><head><meta charset="utf-8"><title>${program.name}</title>
     <style>${baseFonts}
     @page { size: 74mm 105mm; margin: 0; }
-    body{margin:0;font-family:Cairo,sans-serif;background:${color};color:${text};width:74mm;height:105mm;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8mm;box-sizing:border-box;text-align:center;}
-    h1{font-size:14pt;margin:0 0 4pt;font-weight:900;letter-spacing:-.3px;}
-    .hook{font-size:12pt;font-weight:800;margin:0 0 8pt;line-height:1.3;}
-    .qr{background:#fff;padding:6pt;border-radius:8pt;display:inline-block;}
+    html,body{height:100%;}
+    body{margin:0;font-family:Cairo,sans-serif;background:${color};color:${text};width:74mm;height:105mm;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6mm;box-sizing:border-box;text-align:center;overflow:hidden;}
+    h1{font-size:13pt;margin:0 0 2mm;font-weight:900;letter-spacing:-.3px;word-wrap:break-word;max-width:100%;}
+    .hook{font-size:11pt;font-weight:800;margin:0 0 4mm;line-height:1.3;word-wrap:break-word;}
+    .qr{background:#fff;padding:2mm;border-radius:3mm;display:inline-block;}
     .qr img{display:block;width:42mm;height:42mm;}
-    .cta{margin-top:8pt;font-size:14pt;font-weight:900;letter-spacing:.5px;}
+    .cta{margin-top:4mm;font-size:13pt;font-weight:900;letter-spacing:.5px;}
     @media print { body { background: ${color} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     </style></head><body>
     <h1>${program.name}</h1>
     <p class="hook">${rewardEmoji} ${hookReward}</p>
     <div class="qr"><img src="${buildQrSrc('receipt', 'plain')}" alt="QR"/></div>
-    <p class="cta">امسح ←</p>
+    <p class="cta">${txt.scanArrow}</p>
     </body></html>`
 
-  // 6. Story — 9:16 vertical card sized for screenshots → Snap / Instagram /
-  //    WhatsApp story. Owner saves as PDF, screenshots one page, posts.
-  //    Free distribution from the merchant's existing followers.
-  const designStory = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
+  // 6. Story — 9:16 vertical card sized for Snap / Instagram / WhatsApp
+  //    story screenshots. Owner saves as PDF, screenshots one page, posts.
+  const designStory = () => `<!doctype html><html dir="${dirAttr}" lang="${langAttr}"><head><meta charset="utf-8"><title>${program.name}</title>
     <style>${baseFonts}
     @page { size: 108mm 192mm; margin: 0; }
-    body{margin:0;font-family:Cairo,sans-serif;background:linear-gradient(160deg, ${color} 0%, ${color}cc 100%);color:${text};width:108mm;height:192mm;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14mm 10mm;box-sizing:border-box;text-align:center;}
-    .top{display:flex;flex-direction:column;align-items:center;gap:6mm;}
-    .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:4pt 10pt;border-radius:999px;font-size:9pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+    html,body{height:100%;}
+    body{margin:0;font-family:Cairo,sans-serif;background:linear-gradient(160deg, ${color} 0%, ${color}cc 100%);color:${text};width:108mm;height:192mm;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14mm 10mm;box-sizing:border-box;text-align:center;overflow:hidden;}
+    .top{display:flex;flex-direction:column;align-items:center;gap:5mm;}
+    .badge{background:rgba(255,255,255,.18);border:.3mm solid rgba(255,255,255,.35);padding:1.5mm 4mm;border-radius:999px;font-size:9pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;max-width:80mm;word-wrap:break-word;}
     h1{font-size:22pt;margin:0;font-weight:900;line-height:1.1;letter-spacing:-.5px;}
-    .reward{font-size:32pt;font-weight:900;line-height:1.1;margin:0;}
-    .qr{background:#fff;padding:8pt;border-radius:14pt;}
+    .reward{font-size:26pt;font-weight:900;line-height:1.1;margin:0;word-wrap:break-word;max-width:90mm;}
+    .qr{background:#fff;padding:3mm;border-radius:5mm;}
     .qr img{display:block;width:50mm;height:50mm;}
-    .cta{font-size:13pt;font-weight:800;opacity:.95;}
-    .foot{font-size:8pt;opacity:.7;font-family:monospace;}
+    .cta{font-size:12pt;font-weight:800;opacity:.95;}
     @media print { body { background: ${color} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     </style></head><body>
     <div class="top">
@@ -354,10 +375,7 @@ export function ProgramQR({ program, onClose, lang }) {
       <p class="reward">${hookReward}</p>
     </div>
     <div class="qr"><img src="${buildQrSrc('story', 'plain')}" alt="QR"/></div>
-    <div class="top">
-      <p class="cta">امسح وانضم — ٥ ثواني</p>
-      <p class="foot">${url}</p>
-    </div>
+    <p class="cta">${txt.scanJoin}</p>
     </body></html>`
 
   // Posters are split into safe defaults + bold/experimental.
