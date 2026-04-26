@@ -30,6 +30,10 @@ export default function WalletEnrollPage({ lang: initialLang = 'ar' }) {
   const programId = window.location.pathname.split('/w/')[1]?.split('/')[0]
   // Enrollment token from ?t=... — required by wallet-public endpoints
   const enrollmentToken = new URLSearchParams(window.location.search).get('t') || ''
+  // Poster template that produced this scan. Logged once per page load to
+  // poster_scans so the merchant dashboard can rank template performance.
+  // Anything starting with "preview" is excluded server-side via app filter.
+  const scanSrc = new URLSearchParams(window.location.search).get('src') || ''
 
   const [program, setProgram] = useState(null)
   const [shop, setShop] = useState(null)
@@ -53,6 +57,25 @@ export default function WalletEnrollPage({ lang: initialLang = 'ar' }) {
     else if (/Android/.test(ua)) setDevice('android')
     else setDevice('desktop')
   }, [])
+
+  // Log poster scan source — fire-and-forget. Skips when:
+  //   - no programId (broken URL)
+  //   - no src param (old QR codes generated before tracking shipped)
+  //   - src is the dashboard preview (would inflate counts)
+  // RLS on poster_scans allows anon inserts; failures are swallowed silently
+  // because we never want analytics to block the customer's enrollment flow.
+  useEffect(() => {
+    if (!programId || !scanSrc || scanSrc === 'preview') return
+    const noop = () => undefined
+    supabase
+      .from('poster_scans')
+      .insert({
+        program_id: programId,
+        template_id: scanSrc.slice(0, 32),
+        user_agent: (navigator.userAgent || '').slice(0, 500),
+      })
+      .then(noop, noop)
+  }, [programId, scanSrc])
 
   // Load program + shop
   useEffect(() => {

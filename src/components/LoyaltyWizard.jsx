@@ -21,6 +21,9 @@ export default function LoyaltyWizard({ shop, program, onDone, onCancel, lang = 
 
   // Form
   const [name, setName] = useState(program?.name || shop?.name || '')
+  // business_type drives the reward emoji on printed posters (☕/🍽️/💅/etc.)
+  // and may drive copy variants in the future. Optional — falls back to 🎁.
+  const [businessType, setBusinessType] = useState(program?.business_type || '')
   const [loyaltyType, setLoyaltyType] = useState(program?.loyalty_type || 'stamp')
   const [stampsRequired, setStampsRequired] = useState(program?.stamps_required || 10)
   const [pointsPerVisit, setPointsPerVisit] = useState(program?.points_per_visit || 1)
@@ -76,6 +79,7 @@ export default function LoyaltyWizard({ shop, program, onDone, onCancel, lang = 
     const payload = {
       shop_id: shop.id,
       name: name.trim(),
+      business_type: businessType || null,
       loyalty_type: loyaltyType,
       stamps_required: loyaltyType === 'stamp' ? stampsRequired : null,
       points_per_visit: loyaltyType === 'points' || loyaltyType === 'tiered' ? pointsPerVisit : null,
@@ -127,6 +131,7 @@ export default function LoyaltyWizard({ shop, program, onDone, onCancel, lang = 
         {step === 0 && (
           <StepDetails
             shop={shop} name={name} setName={setName}
+            businessType={businessType} setBusinessType={setBusinessType}
             loyaltyType={loyaltyType} setLoyaltyType={setLoyaltyType}
             stampsRequired={stampsRequired} setStampsRequired={setStampsRequired}
             pointsPerVisit={pointsPerVisit} setPointsPerVisit={setPointsPerVisit}
@@ -200,7 +205,7 @@ function Stepper({ steps, active, onJump }) {
 
 function StepDetails(props) {
   const {
-    shop, name, setName, loyaltyType, setLoyaltyType,
+    shop, name, setName, businessType, setBusinessType, loyaltyType, setLoyaltyType,
     stampsRequired, setStampsRequired,
     pointsPerVisit, setPointsPerVisit,
     rewardThreshold, setRewardThreshold,
@@ -242,6 +247,28 @@ function StepDetails(props) {
           autoFocus
         />
         <small>{T('Shown to customers on their wallet pass.', 'يظهر للعملاء على بطاقة المحفظة.')}</small>
+      </label>
+
+      <label className="lw-field">
+        <span>{T('Business category', 'نوع النشاط')}</span>
+        <select
+          className="lw-input"
+          value={businessType}
+          onChange={(e) => setBusinessType(e.target.value)}
+        >
+          <option value="">{T('— pick one —', '— اختر —')}</option>
+          <option value="coffee">☕ {T('Coffee shop', 'كوفي شوب')}</option>
+          <option value="restaurant">🍽️ {T('Restaurant', 'مطعم')}</option>
+          <option value="bakery">🥐 {T('Bakery', 'مخبز')}</option>
+          <option value="sweets">🍰 {T('Sweets / Desserts', 'حلويات')}</option>
+          <option value="salon">💅 {T('Salon / Spa', 'صالون / سبا')}</option>
+          <option value="barber">✂️ {T('Barber', 'حلاق')}</option>
+          <option value="gym">💪 {T('Gym / Fitness', 'نادي رياضي')}</option>
+          <option value="clinic">🩺 {T('Clinic', 'عيادة')}</option>
+          <option value="retail">🛍️ {T('Retail / Shop', 'محل تجزئة')}</option>
+          <option value="other">🎁 {T('Other', 'غير ذلك')}</option>
+        </select>
+        <small>{T('Picks the right reward emoji on your printed posters (☕ / 🍽️ / 💅 / etc.).', 'يحدد الإيموجي المناسب للمكافأة على ملصقاتك المطبوعة (☕ / 🍽️ / 💅 / إلخ).')}</small>
       </label>
 
       <div className="lw-section-title">{T('Loyalty type', 'نوع الولاء')}</div>
