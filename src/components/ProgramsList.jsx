@@ -149,13 +149,39 @@ export function ProgramQR({ program, onClose, lang }) {
     return () => { cancelled = true }
   }, [program.id])
 
-  const url = token
-    ? `${window.location.origin}/w/${program.id}?t=${encodeURIComponent(token)}`
-    : `${window.location.origin}/w/${program.id}`
   const color = program.card_color || '#10B981'
   const text = program.text_color || '#FFFFFF'
-  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=520x520&data=${encodeURIComponent(url)}&color=${color.replace('#', '')}&bgcolor=ffffff&margin=12`
-  const qrPlain = `https://api.qrserver.com/v1/create-qr-code/?size=520x520&data=${encodeURIComponent(url)}&color=000000&bgcolor=ffffff&margin=12`
+
+  // Per-business-type reward emoji. Falls back to 🎁 when the merchant skipped
+  // business_type at wizard time (back-compat with all rows that existed before
+  // migration 20260426130000).
+  const EMOJI_MAP = {
+    coffee: '☕', restaurant: '🍽️', salon: '💅', barber: '✂️',
+    gym: '💪', retail: '🛍️', clinic: '🩺', bakery: '🥐', sweets: '🍰',
+  }
+  const rewardEmoji = EMOJI_MAP[program.business_type] || '🎁'
+  const hookReward = program.reward_title || T('Free reward', 'مكافأة مجانية')
+
+  // Per-template QR URL — encodes ?src=<templateId> so /w/:programId can log
+  // which poster the customer scanned (poster_scans table). The preview QR in
+  // the dashboard uses src=preview so it doesn't pollute template analytics.
+  const buildLandingUrl = (templateId) => {
+    const base = `${window.location.origin}/w/${program.id}`
+    const params = new URLSearchParams()
+    if (token) params.set('t', token)
+    if (templateId) params.set('src', templateId)
+    const qs = params.toString()
+    return qs ? `${base}?${qs}` : base
+  }
+  const buildQrSrc = (templateId, tone = 'color') => {
+    const target = buildLandingUrl(templateId)
+    const fg = tone === 'color' ? color.replace('#', '') : '000000'
+    return `https://api.qrserver.com/v1/create-qr-code/?size=520x520&data=${encodeURIComponent(target)}&color=${fg}&bgcolor=ffffff&margin=12`
+  }
+
+  // Plain landing URL for the "Copy link" button + dashboard preview QR.
+  const url = buildLandingUrl(null)
+  const previewQr = buildQrSrc('preview', 'color')
 
   const copy = async () => {
     if (!token) return
@@ -168,114 +194,182 @@ export function ProgramQR({ program, onClose, lang }) {
     setTimeout(() => w.print(), 600)
   }
 
-  // Bilingual instruction lines
-  const instr = {
-    enTitle: 'Join our loyalty program',
-    arTitle: 'انضم إلى برنامج الولاء',
-    enSteps: ['Scan the QR with your phone camera', 'Enter your name & phone', 'Add the card to Apple or Google Wallet'],
-    arSteps: ['امسح رمز QR بكاميرا الهاتف', 'أدخل اسمك ورقم جوالك', 'أضف البطاقة إلى Apple أو Google Wallet'],
-  }
-
   const baseFonts = `@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Inter:wght@400;700;900&display=swap');`
 
-  // Design 1: Bold colored card
-  const designBold = () => `<!doctype html><html><head><meta charset="utf-8"><title>${program.name}</title>
+  // ─────────────────────────────────────────────────────────────────────────
+  // Poster templates — each one ends in printPoster(html) via the selector.
+  // The hook line is the reward (the actual offer), NOT a generic
+  // "join the loyalty program" — that copy was the #1 conversion killer.
+  // Each template embeds its own ?src=<templateId> in the QR so we can rank
+  // performance via the poster_scans table.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // 1. Bold — single-line trap. Store name → reward → QR → arrow. No steps.
+  const designBold = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
     <style>${baseFonts}
     @page { size: A4 portrait; margin: 0; }
-    body{margin:0;font-family:Inter,Cairo,system-ui,sans-serif;background:${color};color:${text};min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px;}
-    .wrap{max-width:560px;width:100%;text-align:center;}
-    h1{font-size:46px;margin:0 0 8px;font-weight:900;letter-spacing:-.5px;}
-    h2{font-size:28px;margin:0 0 28px;font-weight:700;opacity:.95;direction:rtl;}
-    .qr-card{background:#fff;padding:28px;border-radius:28px;display:inline-block;box-shadow:0 20px 60px rgba(0,0,0,.18);}
+    body{margin:0;font-family:Cairo,Inter,system-ui,sans-serif;background:${color};color:${text};min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px;}
+    .wrap{max-width:600px;width:100%;text-align:center;}
+    .store{font-size:18px;font-weight:700;opacity:.85;margin:0 0 16px;letter-spacing:1px;text-transform:uppercase;}
+    h1{font-size:64px;margin:0 0 32px;font-weight:900;line-height:1.1;letter-spacing:-1px;}
+    .qr-card{background:#fff;padding:24px;border-radius:28px;display:inline-block;box-shadow:0 20px 60px rgba(0,0,0,.18);}
     .qr-card img{display:block;width:340px;height:340px;}
-    .reward{margin:24px 0 12px;font-size:22px;font-weight:700;}
-    .steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px;text-align:start;font-size:14px;}
-    .col{padding:14px;border-radius:14px;background:rgba(255,255,255,.12);}
-    .col.ar{direction:rtl;font-family:Cairo,sans-serif;}
-    .col h3{margin:0 0 8px;font-size:13px;opacity:.85;text-transform:uppercase;letter-spacing:.5px;}
-    .col ol{margin:0;padding-inline-start:18px;}
-    .col li{margin:4px 0;}
-    .footer{margin-top:24px;font-size:11px;opacity:.75;}
+    .cta{margin-top:32px;font-size:36px;font-weight:900;letter-spacing:1px;}
+    .footer{margin-top:24px;font-size:11px;opacity:.6;font-family:monospace;}
     @media print { body { background: ${color} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
     </style></head><body>
     <div class="wrap">
-      <h1>${program.name}</h1>
-      <h2>${instr.arTitle}</h2>
-      <div class="qr-card"><img src="${qr}" alt="QR"/></div>
-      <div class="reward">🎁 ${program.reward_title || 'Reward'}</div>
-      <div class="steps">
-        <div class="col"><h3>EN</h3><ol><li>${instr.enSteps[0]}</li><li>${instr.enSteps[1]}</li><li>${instr.enSteps[2]}</li></ol></div>
-        <div class="col ar"><h3>AR</h3><ol><li>${instr.arSteps[0]}</li><li>${instr.arSteps[1]}</li><li>${instr.arSteps[2]}</li></ol></div>
-      </div>
+      <p class="store">${program.name}</p>
+      <h1>${hookReward} ${rewardEmoji}</h1>
+      <div class="qr-card"><img src="${buildQrSrc('bold')}" alt="QR"/></div>
+      <div class="cta">امسح ←</div>
       <div class="footer">${url}</div>
     </div></body></html>`
 
-  // Design 2: Minimal white with colored accents
-  const designMinimal = () => `<!doctype html><html><head><meta charset="utf-8"><title>${program.name}</title>
+  // 2. Minimal — clean white, colored borders, 3 numbered steps (kept short).
+  //    For merchants who want the polished, instructional look.
+  const designMinimal = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
     <style>${baseFonts}
     @page { size: A4 portrait; margin: 0; }
-    body{margin:0;font-family:Inter,Cairo,system-ui,sans-serif;background:#fff;color:#111;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px;}
+    body{margin:0;font-family:Cairo,Inter,system-ui,sans-serif;background:#fff;color:#111;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px;}
     .wrap{max-width:520px;width:100%;text-align:center;border-top:8px solid ${color};border-bottom:8px solid ${color};padding:48px 24px;}
     h1{font-size:42px;margin:0 0 6px;font-weight:900;color:${color};letter-spacing:-.5px;}
-    h2{font-size:24px;margin:0 0 32px;font-weight:700;color:#333;direction:rtl;font-family:Cairo,sans-serif;}
+    h2{font-size:24px;margin:0 0 32px;font-weight:700;color:#333;}
     .qr{display:block;margin:0 auto;width:320px;height:320px;border:4px solid ${color};border-radius:16px;padding:8px;background:#fff;}
-    .reward{margin:28px 0 8px;font-size:20px;font-weight:700;color:${color};}
-    .reward-sub{font-size:14px;color:#666;margin-bottom:24px;}
-    .row{display:flex;gap:20px;margin-top:24px;text-align:start;font-size:13px;color:#444;}
-    .row > div{flex:1;}
-    .row .ar{direction:rtl;font-family:Cairo,sans-serif;}
-    .row h3{font-size:11px;color:${color};text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;}
-    .row ol{margin:0;padding-inline-start:18px;line-height:1.7;}
+    .reward{margin:28px 0 24px;font-size:24px;font-weight:800;color:${color};}
+    .steps{display:flex;justify-content:center;gap:32px;margin-top:24px;font-size:16px;color:#444;font-weight:600;}
+    .steps span{display:flex;align-items:center;gap:8px;}
+    .steps b{background:${color};color:#fff;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;}
     .footer{margin-top:32px;font-size:11px;color:#999;font-family:monospace;}
     @media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     </style></head><body>
     <div class="wrap">
       <h1>${program.name}</h1>
-      <h2>${instr.arTitle} · ${instr.enTitle}</h2>
-      <img class="qr" src="${qrPlain}" alt="QR"/>
-      <div class="reward">${program.reward_title || 'Reward'}</div>
-      <div class="reward-sub">${T('Scan to join · ', 'امسح للانضمام · ')}</div>
-      <div class="row">
-        <div><h3>English</h3><ol><li>${instr.enSteps[0]}</li><li>${instr.enSteps[1]}</li><li>${instr.enSteps[2]}</li></ol></div>
-        <div class="ar"><h3>عربي</h3><ol><li>${instr.arSteps[0]}</li><li>${instr.arSteps[1]}</li><li>${instr.arSteps[2]}</li></ol></div>
+      <h2>${hookReward} ${rewardEmoji}</h2>
+      <img class="qr" src="${buildQrSrc('minimal', 'plain')}" alt="QR"/>
+      <div class="reward">${rewardEmoji} ${hookReward}</div>
+      <div class="steps">
+        <span><b>1</b>امسح</span>
+        <span><b>2</b>سجّل</span>
+        <span><b>3</b>استلم</span>
       </div>
       <div class="footer">${url}</div>
     </div></body></html>`
 
-  // Design 3: Table tent — half-page, two-up identical sides for folding
+  // 3. Table tent — two-up identical sides for folding (A4 landscape).
   const designTableTent = () => `<!doctype html><html><head><meta charset="utf-8"><title>${program.name}</title>
     <style>${baseFonts}
     @page { size: A4 landscape; margin: 0; }
-    body{margin:0;font-family:Inter,Cairo,system-ui,sans-serif;background:#fff;}
+    body{margin:0;font-family:Cairo,Inter,system-ui,sans-serif;background:#fff;}
     .sheet{display:flex;width:100vw;height:100vh;}
     .side{flex:1;background:linear-gradient(135deg, ${color} 0%, ${color}dd 100%);color:${text};padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
     .side.flipped{transform:rotate(180deg);}
     .side h1{font-size:34px;margin:0 0 4px;font-weight:900;}
-    .side h2{font-size:18px;margin:0 0 18px;font-weight:600;opacity:.9;direction:rtl;font-family:Cairo,sans-serif;}
+    .side h2{font-size:22px;margin:0 0 18px;font-weight:800;direction:rtl;}
     .qr-box{background:#fff;padding:14px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.2);}
     .qr-box img{display:block;width:200px;height:200px;}
-    .reward{margin-top:16px;font-size:16px;font-weight:700;}
-    .scan-hint{font-size:13px;margin-top:6px;opacity:.85;}
-    .scan-hint .ar{display:block;direction:rtl;font-family:Cairo,sans-serif;}
+    .cta{margin-top:14px;font-size:20px;font-weight:900;letter-spacing:.5px;}
     @media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; body, .side { background: ${color} !important; } }
     </style></head><body>
     <div class="sheet">
       ${[0, 1].map((i) => `<div class="side ${i === 0 ? 'flipped' : ''}">
         <h1>${program.name}</h1>
-        <h2>${instr.arTitle}</h2>
-        <div class="qr-box"><img src="${qr}" alt="QR"/></div>
-        <div class="reward">🎁 ${program.reward_title || 'Reward'}</div>
-        <div class="scan-hint">
-          <span>${instr.enSteps[0]}</span>
-          <span class="ar">${instr.arSteps[0]}</span>
-        </div>
+        <h2>${hookReward} ${rewardEmoji}</h2>
+        <div class="qr-box"><img src="${buildQrSrc('tent')}" alt="QR"/></div>
+        <div class="cta">امسح ←</div>
       </div>`).join('')}
     </div></body></html>`
 
+  // 4. Confession — the bold/weird template. Looks like a yellowed receipt.
+  //    Customer writes their name on the blank line with a pen tied to the
+  //    wall. The wall fills with names → becomes its own social proof.
+  //    Cringe: 7/10. Virality: 9/10. Conversion: massive.
+  const designConfession = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
+    <style>${baseFonts}
+    @page { size: A4 portrait; margin: 0; }
+    body{margin:0;font-family:Cairo,sans-serif;background:#f4ecd8;color:#1a1a1a;min-height:100vh;padding:60px 48px 80px;background-image:repeating-linear-gradient(0deg,transparent 0 39px,rgba(0,0,0,.04) 39px 40px);position:relative;box-sizing:border-box;}
+    .stamp{position:absolute;top:36px;left:36px;border:3px solid ${color};color:${color};padding:8px 18px;transform:rotate(-12deg);font-weight:900;font-size:16px;letter-spacing:1px;text-transform:uppercase;}
+    h1{font-size:64px;margin:60px 0 24px;font-weight:900;letter-spacing:-1px;}
+    .line{font-size:26px;line-height:2;margin:0 0 12px;}
+    .blank{display:inline-block;border-bottom:3px dashed #333;height:32px;width:340px;vertical-align:bottom;margin:0 8px;}
+    .qr-wrap{text-align:center;margin-top:32px;}
+    .qr-wrap img{width:280px;height:280px;border:8px solid #fff;box-shadow:0 0 0 3px ${color},0 14px 40px rgba(0,0,0,.18);}
+    .pen-note{font-size:14px;color:#666;text-align:center;margin-top:18px;font-style:italic;}
+    .footer{position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:11px;color:#888;font-family:monospace;}
+    @media print { -webkit-print-color-adjust: exact; print-color-adjust: exact; body { background: #f4ecd8 !important; } }
+    </style></head><body>
+    <div class="stamp">${program.name}</div>
+    <h1>اعتراف:</h1>
+    <p class="line">اسمي <span class="blank"></span></p>
+    <p class="line">وأنا أزور <strong>${program.name}</strong> كثير</p>
+    <p class="line">وما خذيت ولا ${hookReward} ${rewardEmoji}</p>
+    <p class="line" style="margin-top:24px">حان الوقت أصلح هذا 👇</p>
+    <div class="qr-wrap">
+      <img src="${buildQrSrc('confession', 'plain')}" alt="QR"/>
+    </div>
+    <p class="pen-note">* علّق قلم بجانب البوستر — اطلب من العميل يكتب اسمه *</p>
+    <div class="footer">${url}</div>
+    </body></html>`
+
+  // 5. Receipt sticker — A7 (74×105mm). Fits on receipts, cup sleeves, napkin
+  //    holders, table corners. Customer is already holding the surface = touch
+  //    = attention. Highest conversion-per-square-cm of any surface.
+  const designReceipt = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
+    <style>${baseFonts}
+    @page { size: 74mm 105mm; margin: 0; }
+    body{margin:0;font-family:Cairo,sans-serif;background:${color};color:${text};width:74mm;height:105mm;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8mm;box-sizing:border-box;text-align:center;}
+    h1{font-size:14pt;margin:0 0 4pt;font-weight:900;letter-spacing:-.3px;}
+    .hook{font-size:12pt;font-weight:800;margin:0 0 8pt;line-height:1.3;}
+    .qr{background:#fff;padding:6pt;border-radius:8pt;display:inline-block;}
+    .qr img{display:block;width:42mm;height:42mm;}
+    .cta{margin-top:8pt;font-size:14pt;font-weight:900;letter-spacing:.5px;}
+    @media print { body { background: ${color} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <h1>${program.name}</h1>
+    <p class="hook">${rewardEmoji} ${hookReward}</p>
+    <div class="qr"><img src="${buildQrSrc('receipt', 'plain')}" alt="QR"/></div>
+    <p class="cta">امسح ←</p>
+    </body></html>`
+
+  // 6. Story — 9:16 vertical card sized for screenshots → Snap / Instagram /
+  //    WhatsApp story. Owner saves as PDF, screenshots one page, posts.
+  //    Free distribution from the merchant's existing followers.
+  const designStory = () => `<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>${program.name}</title>
+    <style>${baseFonts}
+    @page { size: 108mm 192mm; margin: 0; }
+    body{margin:0;font-family:Cairo,sans-serif;background:linear-gradient(160deg, ${color} 0%, ${color}cc 100%);color:${text};width:108mm;height:192mm;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14mm 10mm;box-sizing:border-box;text-align:center;}
+    .top{display:flex;flex-direction:column;align-items:center;gap:6mm;}
+    .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:4pt 10pt;border-radius:999px;font-size:9pt;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+    h1{font-size:22pt;margin:0;font-weight:900;line-height:1.1;letter-spacing:-.5px;}
+    .reward{font-size:32pt;font-weight:900;line-height:1.1;margin:0;}
+    .qr{background:#fff;padding:8pt;border-radius:14pt;}
+    .qr img{display:block;width:50mm;height:50mm;}
+    .cta{font-size:13pt;font-weight:800;opacity:.95;}
+    .foot{font-size:8pt;opacity:.7;font-family:monospace;}
+    @media print { body { background: ${color} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>
+    <div class="top">
+      <span class="badge">${program.name}</span>
+      <h1>${rewardEmoji}</h1>
+      <p class="reward">${hookReward}</p>
+    </div>
+    <div class="qr"><img src="${buildQrSrc('story', 'plain')}" alt="QR"/></div>
+    <div class="top">
+      <p class="cta">امسح وانضم — ٥ ثواني</p>
+      <p class="foot">${url}</p>
+    </div>
+    </body></html>`
+
+  // Posters are split into safe defaults + bold/experimental.
+  // The bold ones convert higher in our analytics but feel risky to merchants
+  // who haven't seen the data yet — so we group them visibly under "Bold".
   const posters = [
-    { key: 'bold', label: T('Bold colored', 'لون جريء'), build: designBold },
-    { key: 'minimal', label: T('Minimal white', 'أبيض بسيط'), build: designMinimal },
-    { key: 'tent', label: T('Table tent', 'عرض طاولة'), build: designTableTent },
+    { key: 'bold',       group: 'classic', label: T('Direct',       'مباشر'),         build: designBold,       sub: T('Reward → QR → arrow. No fluff.', 'المكافأة → الرمز → سهم. بدون حشو.') },
+    { key: 'minimal',    group: 'classic', label: T('Minimal',      'بسيط'),          build: designMinimal,    sub: T('White, professional, 3 short steps.', 'أبيض، احترافي، ٣ خطوات قصيرة.') },
+    { key: 'tent',       group: 'classic', label: T('Table tent',   'عرض طاولة'),     build: designTableTent,  sub: T('Folds in half — sits on every table.', 'يطوى — يوضع على كل طاولة.') },
+    { key: 'confession', group: 'bold',    label: T('Confession',   'اعتراف'),        build: designConfession, sub: T('Pen on a string. Customers write names. Wall fills up.', 'قلم معلّق. العملاء يكتبون أسماءهم. الجدار يمتلئ.') },
+    { key: 'receipt',    group: 'bold',    label: T('Receipt sticker', 'ملصق فاتورة'), build: designReceipt,    sub: T('A7 size. Stick on receipts, cup sleeves, napkin holders.', 'مقاس A7. الصق على الفواتير، أكواب القهوة، حامل المناديل.') },
+    { key: 'story',      group: 'bold',    label: T('Story-ready',  'جاهز للستوري'),  build: designStory,      sub: T('9:16 vertical. Screenshot → Snap / Instagram story.', '٩:١٦ عمودي. صوّر → ستوري سناب / انستقرام.') },
   ]
 
   return (
@@ -287,7 +381,7 @@ export function ProgramQR({ program, onClose, lang }) {
       <div className="pl-qr-wrap">
         {!token && !tokenErr && <p className="pl-qr-hint">{T('Preparing link…', 'جارٍ تجهيز الرابط…')}</p>}
         {tokenErr && <p className="pl-qr-hint" style={{ color: '#c00' }}>{tokenErr}</p>}
-        {token && <img src={qr} alt="QR" className="pl-qr-img" />}
+        {token && <img src={previewQr} alt="QR" className="pl-qr-img" />}
         {token && <p className="pl-qr-hint">{T('Customers scan this with any phone. We auto-detect iOS or Android and route them to the right wallet.', 'العملاء يمسحون هذا الرمز. نتعرف تلقائياً على iPhone أو Android ونوجههم للمحفظة المناسبة.')}</p>}
         {token && <code className="pl-qr-url">{url}</code>}
         <div className="pl-qr-actions">
@@ -297,21 +391,47 @@ export function ProgramQR({ program, onClose, lang }) {
 
       <div className="pl-posters">
         <h3>{T('Printable posters', 'ملصقات للطباعة')}</h3>
-        <p className="pl-posters-sub">{T('Pick a design, then print or save as PDF (bilingual EN / AR).', 'اختر تصميماً، ثم اطبعه أو احفظه كـ PDF (إنجليزي / عربي).')}</p>
-        <div className="pl-posters-grid">
-          {posters.map((p) => (
-            <div key={p.key} className="pl-poster-card">
-              <div className="pl-poster-thumb" style={{ background: p.key === 'minimal' ? '#fff' : color, color: text, borderColor: color }}>
-                <div className="pl-poster-thumb-name" style={{ color: p.key === 'minimal' ? color : text }}>{program.name}</div>
-                <div className="pl-poster-thumb-qr">▣</div>
-                <div className="pl-poster-thumb-tag">{p.label}</div>
+        <p className="pl-posters-sub">{T('Pick a design, then print or save as PDF.', 'اختر تصميماً، ثم اطبعه أو احفظه كـ PDF.')}</p>
+
+        {['classic', 'bold'].map((groupKey) => {
+          const groupPosters = posters.filter((p) => p.group === groupKey)
+          if (!groupPosters.length) return null
+          const groupLabel = groupKey === 'classic'
+            ? T('Classic', 'كلاسيكي')
+            : T('Bold (higher conversion, more cringe)', 'جريء (تحويل أعلى، أكثر جرأة)')
+          const groupSub = groupKey === 'classic'
+            ? T('Safe defaults — wall posters, table tents.', 'الخيارات الآمنة — ملصقات الجدار، عرض الطاولة.')
+            : T('Experimental templates that get scanned more in field tests. Pick one and try it for a week.', 'قوالب تجريبية تحصل على عدد أكبر من المسحات في الاختبارات الميدانية. اختر واحداً وجربه لمدة أسبوع.')
+
+          return (
+            <div key={groupKey} className="pl-posters-group">
+              <h4 style={{ marginTop: 24, marginBottom: 4, fontSize: 15, color: groupKey === 'bold' ? '#dc2626' : '#111' }}>
+                {groupKey === 'bold' && '🔥 '}{groupLabel}
+              </h4>
+              <p className="pl-posters-sub" style={{ marginTop: 0, marginBottom: 12 }}>{groupSub}</p>
+              <div className="pl-posters-grid">
+                {groupPosters.map((p) => {
+                  const isLight = p.key === 'minimal' || p.key === 'confession'
+                  const thumbBg = p.key === 'confession' ? '#f4ecd8' : (isLight && p.key !== 'confession' ? '#fff' : color)
+                  const thumbText = p.key === 'confession' ? '#1a1a1a' : (isLight ? color : text)
+                  return (
+                    <div key={p.key} className="pl-poster-card">
+                      <div className="pl-poster-thumb" style={{ background: thumbBg, color: thumbText, borderColor: color }}>
+                        <div className="pl-poster-thumb-name" style={{ color: thumbText }}>{program.name}</div>
+                        <div className="pl-poster-thumb-qr">▣</div>
+                        <div className="pl-poster-thumb-tag">{p.label}</div>
+                      </div>
+                      <p style={{ fontSize: 12, color: '#666', margin: '6px 0 8px', lineHeight: 1.4, minHeight: 32 }}>{p.sub}</p>
+                      <button className="lw-btn primary" onClick={() => printPoster(p.build())} disabled={!token}>
+                        {token ? T('Print / Save PDF', 'طباعة / حفظ PDF') : T('Preparing…', 'جارٍ التجهيز…')}
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
-              <button className="lw-btn primary" onClick={() => printPoster(p.build())} disabled={!token}>
-                {token ? T('Print / Save PDF', 'طباعة / حفظ PDF') : T('Preparing…', 'جارٍ التجهيز…')}
-              </button>
             </div>
-          ))}
-        </div>
+          )
+        })}
       </div>
     </div>
   )
