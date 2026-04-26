@@ -29,22 +29,39 @@ export class ValidationError extends Error {
   }
 }
 
+export type CustomerGender = "male" | "female" | "prefer_not";
+const ALLOWED_GENDERS: readonly CustomerGender[] = ["male", "female", "prefer_not"] as const;
+
 export interface EnrollmentInput {
   program_id: string;
   customer_name: string;
   customer_phone: string;
+  customer_gender: CustomerGender | null;
 }
 
 export function parseEnrollmentInput(body: any): EnrollmentInput {
   if (!body || typeof body !== "object") throw new ValidationError("Missing body");
-  const { program_id, customer_name, customer_phone } = body;
+  const { program_id, customer_name, customer_phone, customer_gender } = body;
   if (!isUuid(program_id)) throw new ValidationError("Invalid program_id (must be UUID)", "program_id");
   if (!isValidName(customer_name)) throw new ValidationError("Invalid customer_name (1-80 chars)", "customer_name");
   const phone = normalizeKsaPhone(customer_phone);
   if (!phone) throw new ValidationError("Invalid customer_phone (KSA mobile required)", "customer_phone");
+  // Gender is optional. Reject unknown values rather than silently dropping
+  // them — a malformed payload should surface, not get persisted as NULL.
+  let gender: CustomerGender | null = null;
+  if (customer_gender !== undefined && customer_gender !== null && customer_gender !== "") {
+    if (!ALLOWED_GENDERS.includes(customer_gender)) {
+      throw new ValidationError(
+        `Invalid customer_gender (must be one of: ${ALLOWED_GENDERS.join(", ")})`,
+        "customer_gender",
+      );
+    }
+    gender = customer_gender;
+  }
   return {
     program_id,
     customer_name: customer_name.trim().slice(0, 80),
     customer_phone: phone,
+    customer_gender: gender,
   };
 }

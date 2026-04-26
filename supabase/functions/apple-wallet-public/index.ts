@@ -243,6 +243,7 @@ Deno.serve(async (req: Request) => {
             shop_id: shop.id,
             customer_name: input.customer_name,
             customer_phone: input.customer_phone,
+            customer_gender: input.customer_gender,
             apple_serial: serial,
             apple_auth_token: hashedAuthToken,
           })

@@ -215,6 +215,7 @@ Deno.serve(async (req: Request) => {
       await supabase.from("customer_passes").insert({
         program_id: input.program_id, shop_id: shop.id,
         customer_name: input.customer_name, customer_phone: input.customer_phone,
+        customer_gender: input.customer_gender,
         google_object_id: objectId,
       });
     }
