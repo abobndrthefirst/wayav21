@@ -20,7 +20,10 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
  * 3. Customer enters name + phone
  * 4. Generate the wallet pass for the detected platform (or both on desktop)
  */
-export default function WalletEnrollPage({ lang = 'en' }) {
+export default function WalletEnrollPage({ lang: initialLang = 'ar' }) {
+  // Internal lang state so the customer can switch on this page even though
+  // the QR-deeplinked URL doesn't carry a locale.
+  const [lang, setLang] = useState(initialLang)
   const isAr = lang === 'ar'
   const T = (en, ar) => (isAr ? ar : en)
 
@@ -35,6 +38,7 @@ export default function WalletEnrollPage({ lang = 'en' }) {
 
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [gender, setGender] = useState('') // '' | 'male' | 'female' | 'prefer_not'
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
@@ -95,6 +99,7 @@ export default function WalletEnrollPage({ lang = 'en' }) {
       program_id: program.id,
       customer_name: name.trim(),
       customer_phone: phone.trim(),
+      customer_gender: gender || null,
       t: enrollmentToken,
     })
     const headers = {
@@ -162,21 +167,28 @@ export default function WalletEnrollPage({ lang = 'en' }) {
     return <div className="we-shell"><div className="we-card"><p>{error || T('Card not found', 'البطاقة غير موجودة')}</p></div></div>
   }
 
-  const cardStyle = {
-    background: program.background_url
-      ? `linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url(${program.background_url}) center/cover`
-      : program.card_color || '#10B981',
-    color: program.text_color || '#FFFFFF',
-  }
+  const headerBg = program.card_color || '#10B981'
+  const initial = (shop.name || '?').trim().charAt(0).toUpperCase()
 
   return (
     <div className="we-shell" dir={isAr ? 'rtl' : 'ltr'}>
       <div className="we-card">
-        <div className="we-preview" style={cardStyle}>
-          {program.logo_url && <img src={program.logo_url} alt="" className="we-logo" />}
-          <h1>{shop.name}</h1>
-          <p className="we-program-name">{program.name}</p>
-          <p className="we-reward">🎁 {program.reward_title}</p>
+        <button
+          type="button"
+          className="we-lang-toggle"
+          onClick={() => setLang(isAr ? 'en' : 'ar')}
+          aria-label={isAr ? 'Switch to English' : 'التبديل إلى العربية'}
+        >
+          {isAr ? 'EN' : 'عربي'}
+        </button>
+
+        <div className="we-header" style={{ background: headerBg }}>
+          {program.logo_url ? (
+            <img src={program.logo_url} alt="" className="we-logo" />
+          ) : (
+            <div className="we-logo we-logo-fallback" aria-hidden>{initial}</div>
+          )}
+          <h1 className="we-shop-name">{shop.name}</h1>
         </div>
 
         {!done ? (
@@ -215,6 +227,31 @@ export default function WalletEnrollPage({ lang = 'en' }) {
                   : T(KSA_PHONE_HINT_EN, KSA_PHONE_HINT_AR)}
               </small>
             </label>
+
+            <fieldset className="we-gender">
+              <legend>{T('Gender', 'الجنس')}</legend>
+              <div className="we-gender-options">
+                {[
+                  { val: 'male', en: 'Male', ar: 'ذكر' },
+                  { val: 'female', en: 'Female', ar: 'أنثى' },
+                  { val: 'prefer_not', en: 'Prefer not to say', ar: 'أفضّل عدم الإفصاح' },
+                ].map((opt) => (
+                  <label
+                    key={opt.val}
+                    className={`we-gender-opt${gender === opt.val ? ' is-selected' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="gender"
+                      value={opt.val}
+                      checked={gender === opt.val}
+                      onChange={() => setGender(opt.val)}
+                    />
+                    <span>{T(opt.en, opt.ar)}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
             {error && <div className="we-err">{error}</div>}
 
