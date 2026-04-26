@@ -3,19 +3,34 @@
   "short_name": "Waya",
   "description": "برنامج ولاء رقمي للمتاجر الصغيرة في السعودية",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "theme_color": "#10B981",
   "background_color": "#ffffff",
   "lang": "ar",
   "dir": "rtl",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
+      "src": "/waya-logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
-      "src": "/Arabic Letters Midjourney (1).svg",
+      "src": "/waya-logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/waya-logo.png",
+      "type": "image/png",
+      "sizes": "1024x1024",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
       "type": "image/svg+xml",
       "sizes": "any"
     }

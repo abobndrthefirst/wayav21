@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { lazy, Suspense, useCallback, useState } from 'react'
 import { motion } from 'framer-motion'
 import { createClient } from '@supabase/supabase-js'
+
+const QrScanner = lazy(() => import('./QrScanner'))
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -24,6 +26,7 @@ export default function ScanRedeemTab({ shop, lang, d }) {
   const [actionLoading, setActionLoading] = useState(false)
   const [pass, setPass] = useState(null)
   const [msg, setMsg] = useState(null)
+  const [scannerOpen, setScannerOpen] = useState(false)
 
   const showMsg = (kind, text) => {
     setMsg({ kind, text })
@@ -61,6 +64,39 @@ export default function ScanRedeemTab({ shop, lang, d }) {
     }
     setLookupLoading(false)
   }
+
+  // Look up a pass by the raw QR string (apple_serial or google_object_id),
+  // scoped to this shop. Mirrors waya_merchant scanner_screen.dart.
+  const loadPassByCode = useCallback(async (code) => {
+    const trimmed = (code || '').trim()
+    if (!trimmed) return null
+    const { data, error } = await supabase
+      .from('customer_passes')
+      .select('*, loyalty_programs(*), shops(user_id,id,name)')
+      .or(`apple_serial.eq.${trimmed},google_object_id.eq.${trimmed}`)
+      .eq('shop_id', shop.id)
+      .maybeSingle()
+    if (error) {
+      console.error('lookup by code', error)
+      return null
+    }
+    return data
+  }, [shop?.id])
+
+  const handleQrDetect = useCallback(async (code) => {
+    setScannerOpen(false)
+    setMsg(null)
+    setLookupLoading(true)
+    const data = await loadPassByCode(code)
+    if (!data) {
+      setPass(null)
+      showMsg('error', isAr ? 'لم يتم العثور على البطاقة لهذا المتجر' : 'No pass found for this shop')
+    } else {
+      setPass(data)
+      showMsg('success', isAr ? 'تم العثور على العميل' : 'Customer found')
+    }
+    setLookupLoading(false)
+  }, [loadPassByCode, isAr])
 
   const callPointsUpdate = async (body) => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -162,6 +198,21 @@ export default function ScanRedeemTab({ shop, lang, d }) {
           >
             {lookupLoading ? (isAr ? 'جاري البحث…' : 'Looking up…') : d.scanLookupBtn}
           </button>
+          <button
+            type="button"
+            className="lw-btn scan-lookup-btn scan-qr-btn"
+            onClick={() => setScannerOpen(true)}
+            disabled={lookupLoading}
+            aria-label={isAr ? 'مسح رمز QR' : 'Scan QR'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <path d="M14 14h3v3h-3z M20 14v3 M14 20h3 M17 17h4v4" />
+            </svg>
+            <span>{isAr ? 'مسح QR' : 'Scan QR'}</span>
+          </button>
         </form>
       </motion.section>
 
@@ -249,6 +300,16 @@ export default function ScanRedeemTab({ shop, lang, d }) {
             </button>
           </div>
         </motion.section>
+      )}
+
+      {scannerOpen && (
+        <Suspense fallback={null}>
+          <QrScanner
+            isAr={isAr}
+            onDetect={handleQrDetect}
+            onClose={() => setScannerOpen(false)}
+          />
+        </Suspense>
       )}
     </div>
   )

@@ -4111,6 +4111,136 @@ html.ltr-mode .scan-stamp-counter { text-align: left; }
   .scan-balance-number { font-size: 3.6rem; }
 }
 
+/* iPad / large tablet landscape: keep form centered, give more breathing room */
+@media (min-width: 901px) and (max-width: 1366px) {
+  .scan-redeem-wrap { max-width: 720px; }
+}
+
+/* ─── Scan QR button (in lookup row) ─── */
+.scan-qr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 110px;
+}
+.scan-qr-btn svg { flex-shrink: 0; }
+
+/* On phones the lookup row stacks via the existing 480px rule.
+   Make the QR button full-width too so it lines up with Lookup. */
+@media (max-width: 480px) {
+  .scan-qr-btn { width: 100%; min-width: 0; min-height: 48px; }
+}
+
+/* Wider phones in landscape and small tablets: keep buttons compact */
+@media (min-width: 481px) and (max-width: 900px) {
+  .scan-qr-btn { min-width: 96px; }
+}
+
+/* ─── Fullscreen QR scanner modal ─── */
+.qr-scan-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.qr-scan-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+.qr-scan-target {
+  position: relative;
+  width: min(60vmin, 320px);
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+}
+.qr-scan-target::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.42);
+  z-index: -1;
+}
+.qr-scan-corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: #84CC16;
+  border-style: solid;
+  border-width: 0;
+}
+.qr-scan-corner.tl { top: 0; left: 0; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 6px; }
+.qr-scan-corner.tr { top: 0; right: 0; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 6px; }
+.qr-scan-corner.bl { bottom: 0; left: 0; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 6px; }
+.qr-scan-corner.br { bottom: 0; right: 0; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 6px; }
+
+.qr-scan-topbar {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 12px);
+  inset-inline-end: calc(env(safe-area-inset-right) + 12px);
+  z-index: 2;
+}
+.qr-scan-close {
+  appearance: none;
+  border: none;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-scan-close:active { transform: scale(0.94); }
+.qr-scan-bottombar {
+  position: absolute;
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  left: 16px;
+  right: 16px;
+  text-align: center;
+  z-index: 2;
+}
+.qr-scan-hint {
+  display: inline-block;
+  margin: 0 auto;
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  max-width: 480px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.qr-scan-hint.err { background: rgba(220,38,38,0.88); }
+
+/* Phone landscape / short viewports: smaller target so chrome doesn't crowd it */
+@media (orientation: landscape) and (max-height: 500px) {
+  .qr-scan-target { width: min(50vmin, 240px); }
+  .qr-scan-bottombar { bottom: calc(env(safe-area-inset-bottom) + 12px); }
+}
+
+/* Tablet portrait & up: roomier scan target */
+@media (min-width: 768px) {
+  .qr-scan-target { width: min(45vmin, 360px); }
+  .qr-scan-hint { font-size: 1rem; }
+}
+
 /* ─── Light theme sidebar (already white by default) ─── */
 
 /* ─── Data Page ─── */
