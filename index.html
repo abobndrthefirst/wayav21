@@ -20,13 +20,12 @@
     <meta name="google" content="notranslate" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="domain-verification" content="c43e963f70fae6e44d79b32a72762eb6340d809a4d957c380fc37e10c47e9a55" />
-    <title>وايا | برنامج ولاء رقمي للمتاجر الصغيرة في السعودية - Waya Loyalty</title>
-    <meta name="description" content="وايا - برنامج ولاء رقمي جاهز للمتاجر الصغيرة والمتوسطة في السعودية. بطاقات Apple Wallet و Google Wallet. بدون تطبيق، بدون جهاز مخصص. ابدأ مجاناً اليوم. Waya - Digital loyalty for Saudi SMBs." />
-    <meta name="keywords" content="برنامج ولاء, loyalty program, Saudi Arabia, المتاجر الصغيرة, نقاط ولاء, مكافآت العملاء, customer retention, QR loyalty, وايا, Waya, برنامج مكافآت, ولاء رقمي, Apple Wallet, Google Wallet, بطاقة ولاء, loyalty card, كود QR, stamp card, بطاقة أختام, نظام نقاط" />
+    <title>وايا – برنامج ولاء رقمي للمتاجر السعودية | Waya</title>
+    <meta name="description" content="وايا: برنامج ولاء رقمي جاهز للمتاجر الصغيرة في السعودية. Apple Wallet و Google Wallet. بدون تطبيق ولا جهاز. جرّب مجاناً." />
+    <meta name="keywords" content="وايا, Waya, برنامج ولاء, loyalty program saudi arabia, نقاط ولاء, بطاقة ولاء رقمية, Apple Wallet, Google Wallet, بطاقة أختام, برنامج مكافآت" />
     <meta name="author" content="Waya - وايا" />
     <link rel="canonical" href="https://trywaya.com/" />
-    <link rel="alternate" hreflang="ar" href="https://trywaya.com/" />
-    <link rel="alternate" hreflang="en" href="https://trywaya.com/" />
+    <link rel="alternate" hreflang="ar-SA" href="https://trywaya.com/" />
     <link rel="alternate" hreflang="x-default" href="https://trywaya.com/" />
 
     <!-- Open Graph / Facebook -->
@@ -46,37 +45,37 @@
     <meta name="twitter:description" content="برنامج ولاء جاهز يشتغل من أول يوم. بدون جهاز مخصص، بدون تعقيد. جربها مجاناً." />
     <meta name="twitter:image" content="https://trywaya.com/og-image.png" />
 
-    <!-- Structured Data (JSON-LD) -->
+    <!-- Structured Data: SoftwareApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": "Waya - وايا",
-      "description": "برنامج ولاء رقمي جاهز للمتاجر الصغيرة والمتوسطة في السعودية. بدون جهاز مخصص، بدون تعقيد.",
-      "url": "https://trywaya.com",
+      "name": "Waya",
+      "alternateName": "وايا",
+      "description": "Digital loyalty program for small and medium businesses in Saudi Arabia. Apple Wallet and Google Wallet support, no app required.",
+      "url": "https://trywaya.com/",
       "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "75",
-        "priceCurrency": "SAR",
-        "priceValidUntil": "2027-12-31"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "477"
-      },
-      "provider": {
-        "@type": "Organization",
-        "name": "Waya",
-        "url": "https://trywaya.com",
-        "logo": "https://trywaya.com/Arabic Letters Midjourney (1).svg",
-        "areaServed": {
-          "@type": "Country",
-          "name": "Saudi Arabia"
+      "operatingSystem": "Web, iOS, Android",
+      "inLanguage": ["ar-SA", "en-US"],
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Monthly",
+          "price": "75",
+          "priceCurrency": "SAR",
+          "priceValidUntil": "2027-12-31",
+          "availability": "https://schema.org/InStock"
+        },
+        {
+          "@type": "Offer",
+          "name": "Annual",
+          "price": "55",
+          "priceCurrency": "SAR",
+          "priceValidUntil": "2027-12-31",
+          "availability": "https://schema.org/InStock"
         }
-      }
+      ],
+      "provider": { "@id": "https://trywaya.com/#organization" }
     }
     </script>
 
@@ -85,18 +84,44 @@
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "Waya - وايا",
-      "url": "https://trywaya.com",
-      "logo": "https://trywaya.com/Arabic Letters Midjourney (1).svg",
-      "description": "Digital loyalty programs for small businesses in Saudi Arabia",
-      "areaServed": "SA",
+      "@id": "https://trywaya.com/#organization",
+      "name": "Waya",
+      "alternateName": ["وايا", "Waya Loyalty", "TryWaya"],
+      "url": "https://trywaya.com/",
+      "logo": "https://trywaya.com/icon-512.png",
+      "image": "https://trywaya.com/og-image.png",
+      "description": "Digital loyalty programs for small businesses in Saudi Arabia.",
+      "foundingDate": "2025",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Saudi Arabia"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "SA"
+      },
       "contactPoint": {
         "@type": "ContactPoint",
         "telephone": "+966509076104",
         "contactType": "customer service",
-        "availableLanguage": ["Arabic", "English"]
+        "availableLanguage": ["Arabic", "English"],
+        "areaServed": "SA"
       },
       "sameAs": []
+    }
+    </script>
+
+    <!-- WebSite + SearchAction (helps brand SERP) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://trywaya.com/#website",
+      "url": "https://trywaya.com/",
+      "name": "Waya",
+      "alternateName": "وايا",
+      "inLanguage": "ar-SA",
+      "publisher": { "@id": "https://trywaya.com/#organization" }
     }
     </script>
 

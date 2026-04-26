@@ -1,7 +1,20 @@
 User-agent: *
 Allow: /
 Disallow: /dashboard
+Disallow: /dashboard/
 Disallow: /settings
+Disallow: /settings/
 Disallow: /data
+Disallow: /data/
+Disallow: /billing
+Disallow: /billing/
+Disallow: /onboarding
+Disallow: /onboarding/
+Disallow: /login
+Disallow: /signup
+Disallow: /api/
+Disallow: /scan?
+Disallow: /*?token=
+Disallow: /*?ref=
 
 Sitemap: https://trywaya.com/sitemap.xml
