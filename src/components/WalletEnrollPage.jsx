@@ -232,9 +232,9 @@ export default function WalletEnrollPage({ lang: initialLang = 'ar' }) {
               <legend>{T('Gender', 'الجنس')}</legend>
               <div className="we-gender-options">
                 {[
-                  { val: 'male', en: 'Male', ar: 'ذكر' },
-                  { val: 'female', en: 'Female', ar: 'أنثى' },
-                  { val: 'prefer_not', en: 'Prefer not to say', ar: 'أفضّل عدم الإفصاح' },
+                  { val: 'male', en: 'Male', ar: 'ذكر', emoji: '👨' },
+                  { val: 'female', en: 'Female', ar: 'أنثى', emoji: '👩' },
+                  { val: 'prefer_not', en: 'Skip', ar: 'تخطي', emoji: '🤍' },
                 ].map((opt) => (
                   <label
                     key={opt.val}
@@ -247,7 +247,8 @@ export default function WalletEnrollPage({ lang: initialLang = 'ar' }) {
                       checked={gender === opt.val}
                       onChange={() => setGender(opt.val)}
                     />
-                    <span>{T(opt.en, opt.ar)}</span>
+                    <span className="we-gender-emoji" aria-hidden>{opt.emoji}</span>
+                    <span className="we-gender-label">{T(opt.en, opt.ar)}</span>
                   </label>
                 ))}
               </div>

@@ -88,146 +88,184 @@
 .pl-qr-actions { display:flex; gap:10px; justify-content:center; }
 
 /* ─── Customer Wallet Enroll Page ─── */
+/* Goal: fit the entire enroll flow into one viewport on every phone — no scroll. */
 .we-shell {
   min-height: 100dvh;
   background: linear-gradient(135deg, #f8fafc, #e0f2fe);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding:
-    max(20px, env(safe-area-inset-top))
-    max(20px, env(safe-area-inset-right))
-    max(20px, env(safe-area-inset-bottom))
-    max(20px, env(safe-area-inset-left));
+  padding: 16px;
   box-sizing: border-box;
 }
 .we-card {
   background: #fff;
-  border-radius: 24px;
-  max-width: 440px;
+  border-radius: 22px;
+  max-width: 400px;
   width: 100%;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,.12);
+  box-shadow: 0 16px 50px rgba(0,0,0,.12);
   position: relative;
 }
 .we-lang-toggle {
   position: absolute;
-  top: 14px;
-  inset-inline-end: 14px;
+  top: 10px;
+  inset-inline-end: 10px;
   z-index: 2;
-  width: 56px;
-  height: 32px;
+  width: 50px;
+  height: 28px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.55);
-  background: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.2);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   color: #fff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   transition: background 0.15s ease, transform 0.15s ease;
 }
 .we-lang-toggle:hover { background: rgba(255,255,255,0.3); }
 .we-lang-toggle:active { transform: scale(0.96); }
 
 .we-header {
-  padding: 36px 24px 28px;
+  padding: 22px 20px 18px;
   text-align: center;
   color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
 }
 .we-logo {
-  width: 72px;
-  height: 72px;
-  border-radius: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
   object-fit: cover;
   display: block;
   background: rgba(255,255,255,.2);
-  box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
 }
 .we-logo-fallback {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 800;
   color: #fff;
   background: rgba(255,255,255,0.22);
 }
 .we-shop-name {
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.01em;
-  line-height: 1.3;
+  line-height: 1.25;
   color: inherit;
   word-break: break-word;
 }
 
-.we-form { padding: 22px 22px 24px; }
-.we-form h2 { margin: 0 0 4px; font-size: 18px; }
-.we-sub { margin: 0 0 18px; color:#666; font-size:14px; }
-.we-form label { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
-.we-form label > span { font-size:13px; color:#444; font-weight:600; }
-.we-form input { padding: 12px 14px; border:1px solid #d6dae0; border-radius:10px; font-size:16px; outline:none; min-height: 46px; box-sizing: border-box; width: 100%; }
+.we-form { padding: 16px 18px 18px; }
+.we-form h2 { margin: 0 0 2px; font-size: 16px; font-weight: 700; }
+.we-sub { margin: 0 0 12px; color: #666; font-size: 12px; line-height: 1.4; }
+.we-form label { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.we-form label > span { font-size: 12px; color: #444; font-weight: 600; }
+.we-form input {
+  padding: 10px 12px;
+  border: 1px solid #d6dae0;
+  border-radius: 10px;
+  font-size: 16px; /* keep 16 to avoid iOS auto-zoom on focus */
+  outline: none;
+  min-height: 42px;
+  box-sizing: border-box;
+  width: 100%;
+}
 .we-form input:focus { border-color: #10B981; }
+.we-form label small { font-size: 11px !important; }
 
-.we-gender { border: 0; padding: 0; margin: 0 0 16px; }
-.we-gender legend { font-size: 13px; color: #444; font-weight: 600; padding: 0; margin: 0 0 8px; }
-.we-gender-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.we-gender { border: 0; padding: 0; margin: 0 0 12px; }
+.we-gender legend { font-size: 12px; color: #444; font-weight: 600; padding: 0; margin: 0 0 6px; }
+.we-gender-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .we-gender-opt {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 12px 8px;
+  gap: 2px;
+  padding: 8px 6px;
   border: 1px solid #d6dae0;
   border-radius: 10px;
   background: #fff;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   color: #374151;
   cursor: pointer;
   text-align: center;
-  min-height: 46px;
+  min-height: 56px;
   line-height: 1.2;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 .we-gender-opt input { position: absolute; opacity: 0; pointer-events: none; }
+.we-gender-emoji { font-size: 22px; line-height: 1; }
+.we-gender-label { font-size: 11px; }
 .we-gender-opt.is-selected {
   border-color: #10B981;
-  background: rgba(16,185,129,0.08);
+  background: rgba(16,185,129,0.1);
   color: #047857;
 }
-.we-gender-opt:active { transform: scale(0.98); }
+.we-gender-opt:active { transform: scale(0.97); }
 
-.we-err { background:#fee; color:#b00; padding:10px 12px; border-radius:8px; font-size:14px; margin-bottom:12px; }
-.we-submit { width:100%; padding:14px; border:none; border-radius:12px; color:#fff; font-size:16px; font-weight:700; cursor:pointer; margin-top:6px; min-height: 50px; }
-.we-submit:disabled { opacity:.6; cursor:not-allowed; }
-.we-terms { margin-top:18px; font-size:13px; color:#555; }
-.we-terms summary { cursor:pointer; }
-.we-success { padding: 32px 24px; text-align:center; }
-.we-success h2 { margin:0 0 8px; color:#059669; }
-.we-success p { color:#555; margin: 0 0 20px; }
-.we-wallet-buttons { display:flex; flex-direction:column; gap:12px; align-items:center; }
-.we-wallet-pill { display:inline-flex; align-items:center; gap:12px; padding:12px 22px; border-radius:999px; text-decoration:none; min-width:240px; box-shadow:0 4px 14px rgba(0,0,0,.18); transition:transform .12s ease, box-shadow .12s ease; background:#000; color:#fff; }
-.we-wallet-pill:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,.25); }
-.we-wallet-pill:active { transform:translateY(0); }
-.we-wallet-icon { width:38px; height:38px; flex-shrink:0; object-fit:contain; border-radius:8px; background:#fff; padding:2px; }
-.we-wallet-text { display:flex; flex-direction:column; align-items:flex-start; line-height:1.1; }
-.we-wallet-small { font-size:11px; opacity:.85; font-weight:500; letter-spacing:.2px; }
-.we-wallet-big { font-size:17px; font-weight:700; letter-spacing:.1px; }
-.we-link { display:inline-block; margin-top:18px; color:#10B981; text-decoration:none; font-weight:600; font-size:14px; }
+.we-err { background: #fee; color: #b00; padding: 8px 10px; border-radius: 8px; font-size: 13px; margin-bottom: 10px; }
+.we-submit {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+  min-height: 46px;
+}
+.we-submit:disabled { opacity: .6; cursor: not-allowed; }
+.we-terms { margin-top: 12px; font-size: 12px; color: #555; }
+.we-terms summary { cursor: pointer; }
 
-/* Phones: edge-to-edge card, larger tap targets */
+.we-success { padding: 26px 20px; text-align: center; }
+.we-success h2 { margin: 0 0 6px; color: #059669; font-size: 18px; }
+.we-success p { color: #555; margin: 0 0 16px; font-size: 14px; }
+.we-wallet-buttons { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.we-wallet-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  min-width: 220px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.18);
+  transition: transform .12s ease, box-shadow .12s ease;
+  background: #000;
+  color: #fff;
+}
+.we-wallet-pill:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+.we-wallet-pill:active { transform: translateY(0); }
+.we-wallet-icon { width: 32px; height: 32px; flex-shrink: 0; object-fit: contain; border-radius: 7px; background: #fff; padding: 2px; }
+.we-wallet-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
+.we-wallet-small { font-size: 10px; opacity: .85; font-weight: 500; letter-spacing: .2px; }
+.we-wallet-big { font-size: 15px; font-weight: 700; letter-spacing: .1px; }
+.we-link { display: inline-block; margin-top: 14px; color: #10B981; text-decoration: none; font-weight: 600; font-size: 13px; }
+
+/* Phones: edge-to-edge card with everything on screen, no scroll */
 @media (max-width: 480px) {
-  .we-shell { padding: 0; align-items: stretch; background: #fff; }
+  .we-shell {
+    padding: 0;
+    align-items: stretch;
+    background: #fff;
+  }
   .we-card {
     border-radius: 0;
     max-width: 100%;
@@ -237,20 +275,36 @@
     flex-direction: column;
   }
   .we-header {
-    padding-top: max(36px, calc(env(safe-area-inset-top) + 24px));
-    border-radius: 0 0 24px 24px;
+    padding-top: max(20px, calc(env(safe-area-inset-top) + 12px));
+    padding-inline-start: max(18px, env(safe-area-inset-left));
+    padding-inline-end: max(18px, env(safe-area-inset-right));
+    border-radius: 0 0 22px 22px;
+    flex-shrink: 0;
   }
   .we-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     padding:
-      24px
-      max(20px, env(safe-area-inset-right))
-      calc(28px + env(safe-area-inset-bottom))
-      max(20px, env(safe-area-inset-left));
+      14px
+      max(18px, env(safe-area-inset-right))
+      calc(14px + env(safe-area-inset-bottom))
+      max(18px, env(safe-area-inset-left));
   }
-  .we-gender-options { grid-template-columns: 1fr; }
-  .we-gender-opt { justify-content: flex-start; padding: 14px 16px; font-size: 14px; }
-  .we-shop-name { font-size: 20px; }
-  .we-logo { width: 64px; height: 64px; }
+  .we-form .we-submit { margin-top: auto; }
+}
+
+/* Very short screens (iPhone SE, landscape phones): collapse the header further */
+@media (max-width: 480px) and (max-height: 700px) {
+  .we-header { padding: 14px 18px 12px; gap: 6px; }
+  .we-logo { width: 44px; height: 44px; border-radius: 12px; }
+  .we-logo-fallback { font-size: 20px; }
+  .we-shop-name { font-size: 16px; }
+  .we-form h2 { font-size: 15px; }
+  .we-sub { display: none; } /* repetitive with the heading on tiny screens */
+  .we-form label { margin-bottom: 8px; }
+  .we-gender-opt { min-height: 48px; }
+  .we-gender-emoji { font-size: 18px; }
 }
 
 /* Customer management */
