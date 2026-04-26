@@ -169,6 +169,10 @@ export default function WalletEnrollPage({ lang: initialLang = 'ar' }) {
 
   const headerBg = program.card_color || '#10B981'
   const initial = (shop.name || '?').trim().charAt(0).toUpperCase()
+  const stampsRequired = Math.min(Math.max(program.stamps_required || 10, 3), 10)
+  const stampSlots = Array.from({ length: stampsRequired }, (_, i) => i)
+  const rewardTitle = program.reward_title || ''
+  const greeting = name.trim() || (isAr ? 'اسمك' : 'Your name')
 
   return (
     <div className="we-shell" dir={isAr ? 'rtl' : 'ltr'}>
@@ -182,13 +186,49 @@ export default function WalletEnrollPage({ lang: initialLang = 'ar' }) {
           {isAr ? 'EN' : 'عربي'}
         </button>
 
-        <div className="we-header" style={{ background: headerBg }}>
-          {program.logo_url ? (
-            <img src={program.logo_url} alt="" className="we-logo" />
-          ) : (
-            <div className="we-logo we-logo-fallback" aria-hidden>{initial}</div>
+        {/* Live wallet-card preview — what they're enrolling INTO, not a generic header */}
+        <div
+          className="we-pass-preview"
+          style={{ background: headerBg }}
+          aria-label={isAr ? 'معاينة البطاقة' : 'Card preview'}
+        >
+          <div className="we-pass-pattern" aria-hidden />
+          <div className="we-pass-watermark" aria-hidden>{isAr ? 'بطاقة وايا' : 'WAYA · CARD'}</div>
+
+          <div className="we-pass-top">
+            {program.logo_url ? (
+              <img src={program.logo_url} alt="" className="we-logo" />
+            ) : (
+              <div className="we-logo we-logo-fallback" aria-hidden>{initial}</div>
+            )}
+            <div className="we-pass-id">
+              <h1 className="we-shop-name">{shop.name}</h1>
+              <div className="we-pass-holder">
+                <span className="we-pass-holder-label">{isAr ? 'العميل' : 'MEMBER'}</span>
+                <span className={`we-pass-holder-name${name.trim() ? ' is-filled' : ''}`}>{greeting}</span>
+              </div>
+            </div>
+          </div>
+
+          {rewardTitle && (
+            <div className="we-pass-reward">
+              <span className="we-pass-reward-emoji" aria-hidden>🎁</span>
+              <span className="we-pass-reward-text">{rewardTitle}</span>
+            </div>
           )}
-          <h1 className="we-shop-name">{shop.name}</h1>
+
+          <div className="we-pass-stamps" aria-label={isAr ? `صفر من ${stampsRequired} أختام` : `0 of ${stampsRequired} stamps`}>
+            {stampSlots.map((i) => (
+              <span key={i} className="we-stamp-slot" aria-hidden />
+            ))}
+          </div>
+
+          <div className="we-pass-meter">
+            <span>0 / {stampsRequired}</span>
+            <span className="we-pass-meter-hint">
+              {isAr ? `اجمع ${stampsRequired} واحصل على مكافأتك` : `Collect ${stampsRequired} to win`}
+            </span>
+          </div>
         </div>
 
         {!done ? (

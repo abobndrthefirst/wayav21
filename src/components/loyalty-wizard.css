@@ -129,42 +129,168 @@
 .we-lang-toggle:hover { background: rgba(255,255,255,0.3); }
 .we-lang-toggle:active { transform: scale(0.96); }
 
-.we-header {
-  padding: 40px 24px 32px;
-  text-align: center;
+/* Live wallet-card preview — replaces the generic green header.
+   The customer sees the card they're about to receive, with their name
+   filling in live and the empty stamp slots showing what's at stake. */
+.we-pass-preview {
+  position: relative;
+  isolation: isolate;
+  padding: 22px 22px 18px;
   color: #fff;
   display: flex;
   flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+/* Subtle Najdi-inspired diagonal stripes — gives the header a textured,
+   non-flat feel that competitors don't bother with. */
+.we-pass-pattern {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,0.6) 0,
+      rgba(255,255,255,0.6) 1px,
+      transparent 1px,
+      transparent 14px
+    );
+  mask-image: linear-gradient(180deg, #000 0%, transparent 90%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 90%);
+}
+.we-pass-watermark {
+  position: absolute;
+  top: 12px;
+  inset-inline-start: 14px;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  font-weight: 800;
+  opacity: 0.5;
+  z-index: 1;
+}
+.we-pass-preview > * { position: relative; z-index: 1; }
+
+.we-pass-top {
+  display: flex;
   align-items: center;
   gap: 14px;
+  margin-top: 10px;
 }
 .we-logo {
-  width: 84px;
-  height: 84px;
-  border-radius: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
   object-fit: cover;
   display: block;
-  background: rgba(255,255,255,.2);
-  box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+  background: rgba(255,255,255,.22);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+  flex-shrink: 0;
 }
 .we-logo-fallback {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
+  font-size: 24px;
   font-weight: 800;
   color: #fff;
   background: rgba(255,255,255,0.22);
 }
+.we-pass-id {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
 .we-shop-name {
   margin: 0;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.01em;
-  line-height: 1.25;
+  line-height: 1.2;
   color: inherit;
   word-break: break-word;
 }
+.we-pass-holder {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.we-pass-holder-label {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  opacity: 0.75;
+}
+.we-pass-holder-name {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.65;
+  font-style: italic;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.we-pass-holder-name.is-filled {
+  opacity: 1;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.we-pass-reward {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.we-pass-reward-emoji { font-size: 14px; line-height: 1; }
+
+.we-pass-stamps {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+.we-stamp-slot {
+  flex: 1;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  border: 1px dashed rgba(255,255,255,0.45);
+  position: relative;
+}
+/* The next-up slot pulses subtly so the eye is drawn there. */
+.we-stamp-slot:first-child {
+  background: rgba(255,255,255,0.32);
+  animation: weStampPulse 2.4s ease-in-out infinite;
+}
+@keyframes weStampPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.7; transform: scale(0.92); }
+}
+
+.we-pass-meter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  opacity: 0.92;
+}
+.we-pass-meter-hint { font-weight: 500; opacity: 0.75; }
 
 .we-form { padding: 16px 18px 18px; }
 .we-form h2 { margin: 0 0 2px; font-size: 16px; font-weight: 700; }
@@ -273,9 +399,9 @@
     box-shadow: none;
     min-height: 100dvh;
   }
-  .we-header {
-    padding-top: max(48px, calc(env(safe-area-inset-top) + 36px));
-    padding-bottom: 36px;
+  .we-pass-preview {
+    padding-top: max(28px, calc(env(safe-area-inset-top) + 20px));
+    padding-bottom: 20px;
     padding-inline-start: max(20px, env(safe-area-inset-left));
     padding-inline-end: max(20px, env(safe-area-inset-right));
     border-radius: 0 0 28px 28px;
@@ -289,17 +415,20 @@
   }
 }
 
-/* Very short screens (iPhone SE, landscape phones): keep the header
-   prominent but trim padding so everything still fits */
+/* Very short screens (iPhone SE, landscape phones): trim header padding
+   so the live card preview + the form still fit without scroll */
 @media (max-width: 480px) and (max-height: 700px) {
-  .we-header {
-    padding-top: max(28px, calc(env(safe-area-inset-top) + 18px));
-    padding-bottom: 22px;
+  .we-pass-preview {
+    padding-top: max(22px, calc(env(safe-area-inset-top) + 14px));
+    padding-bottom: 14px;
     gap: 10px;
   }
-  .we-logo { width: 64px; height: 64px; border-radius: 16px; }
-  .we-logo-fallback { font-size: 28px; }
-  .we-shop-name { font-size: 20px; }
+  .we-logo { width: 48px; height: 48px; border-radius: 12px; }
+  .we-logo-fallback { font-size: 20px; }
+  .we-shop-name { font-size: 16px; }
+  .we-pass-stamps { gap: 4px; }
+  .we-stamp-slot { height: 10px; }
+  .we-pass-reward { padding: 4px 10px; font-size: 11px; }
   .we-form h2 { font-size: 15px; }
   .we-sub { display: none; }
   .we-form label { margin-bottom: 8px; }
