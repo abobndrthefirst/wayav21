@@ -4942,6 +4942,89 @@ html.ltr-mode .scan-stamp-counter { text-align: left; }
 .why-waya-card-title { font-size: 1.15rem; font-weight: 800; margin: 0 0 8px; color: var(--cream); }
 .why-waya-card-desc { font-size: 0.95rem; color: var(--gray-dim); line-height: 1.7; margin: 0; }
 
+/* ─── Merchant Insights tab — charts + top customers ─── */
+.insights-chart-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 8px;
+}
+.insights-chart-head h2 { margin: 0; }
+.insights-legend {
+  display: inline-flex; align-items: center; gap: 14px;
+  font-size: 0.8rem; color: var(--gray-dim);
+}
+.insights-legend-dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  margin-inline-end: 6px; vertical-align: middle;
+}
+.insights-chart-wrap {
+  width: 100%; overflow-x: auto;
+}
+.insights-svg {
+  width: 100%; min-width: 500px; height: auto; display: block;
+}
+.insights-top-list {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.insights-top-row {
+  display: grid;
+  grid-template-columns: 36px minmax(120px, 1.5fr) minmax(80px, 2fr) minmax(120px, auto);
+  align-items: center; gap: 12px;
+  padding: 10px 12px; border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; background: rgba(255,255,255,0.02);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.insights-top-row:hover {
+  border-color: rgba(16,185,129,0.25);
+  background: rgba(16,185,129,0.04);
+}
+[data-theme="light"] .insights-top-row {
+  border-color: rgba(0,0,0,0.06); background: rgba(0,0,0,0.015);
+}
+.insights-top-rank {
+  font-weight: 800; font-size: 0.85rem; color: var(--gray-dim);
+  text-align: center;
+}
+.insights-top-meta { min-width: 0; }
+.insights-top-name {
+  font-weight: 700; font-size: 0.95rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.insights-top-phone code {
+  font-family: ui-monospace, Menlo, monospace; font-size: 0.78rem; color: var(--gray-dim);
+}
+.insights-top-bar-wrap {
+  height: 8px; border-radius: 999px; background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+[data-theme="light"] .insights-top-bar-wrap { background: rgba(0,0,0,0.06); }
+.insights-top-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981 0%, #3B82F6 100%);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.insights-top-stats {
+  display: inline-flex; gap: 12px; font-size: 0.85rem; white-space: nowrap;
+  justify-self: end;
+}
+.insights-top-stats small { font-size: 0.7rem; color: var(--gray-dim); margin-inline-start: 2px; }
+.insights-top-points { color: #10B981; font-weight: 700; }
+.insights-top-stamps { color: #3B82F6; font-weight: 700; }
+@media (max-width: 720px) {
+  .insights-top-row {
+    grid-template-columns: 28px 1fr;
+    grid-template-areas:
+      'rank meta'
+      'bar bar'
+      'stats stats';
+    gap: 8px;
+  }
+  .insights-top-rank  { grid-area: rank; }
+  .insights-top-meta  { grid-area: meta; }
+  .insights-top-bar-wrap { grid-area: bar; }
+  .insights-top-stats { grid-area: stats; justify-self: start; }
+}
+
 /* ─── FAQ section ─── */
 .faq-section { padding-top: 80px; padding-bottom: 80px; }
 .faq-list {

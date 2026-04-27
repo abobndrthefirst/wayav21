@@ -26,6 +26,7 @@ const EventsPanel = lazy(() => import('./components/EventsPanel'))
 const NotificationsPanel = lazy(() => import('./components/NotificationsPanel'))
 const NotificationsTab = lazy(() => import('./components/NotificationsTab'))
 const AdminDataTab = lazy(() => import('./components/AdminDataTab'))
+const MerchantInsightsTab = lazy(() => import('./components/MerchantInsightsTab'))
 const PassDesignerPage = lazy(() => import('./components/pass-designer/PassDesignerPage'))
 const AdminDesignStudioPage = lazy(() => import('./components/admin-design-studio/AdminDesignStudioPage'))
 const BillingPage = lazy(() => import('./components/BillingPage'))
@@ -201,6 +202,25 @@ const content = {
       scanError: 'صار خطأ، جرّب مرة ثانية.',
       scanRedeemDisabled: 'العميل ما وصل للمكافأة بعد.',
       statLabels: { customers: 'عميل نشط', visits: 'زيارات متكررة', revenue: 'إيرادات إضافية', rewards: 'مكافأة مرسلة' },
+    },
+    insightsPage: {
+      title: 'تحليلات متجرك',
+      subtitle: 'صورة سريعة عن أداء متجرك — العملاء، المبيعات، والاستبدالات',
+      period: 'الفترة',
+      thisMonth: 'هذا الشهر', lastMonth: 'الشهر الماضي',
+      last30: 'آخر 30 يومًا', last90: 'آخر 90 يومًا',
+      pickMonth: 'اختر شهرًا…', customRange: 'فترة مخصصة…',
+      from: 'من', to: 'إلى',
+      customersInRange: 'عملاء جدد', customersTotal: 'من أصل {n}',
+      sales: 'مبيعات', redemptions: 'استبدالات',
+      dailyActivity: 'النشاط اليومي',
+      dayOfWeek: 'أكثر الأيام نشاطًا',
+      topCustomers: 'أفضل العملاء (الكل)',
+      points: 'نقاط', stamps: 'ختم',
+      noActivity: 'لا يوجد نشاط في هذه الفترة بعد.',
+      noCustomers: 'لا يوجد عملاء بعد.',
+      loading: 'جاري التحميل…',
+      rangeError: 'تاريخ البداية يجب أن يكون قبل تاريخ النهاية.',
     },
     dataPage: {
       title: 'البيانات والتحليلات',
@@ -712,6 +732,25 @@ const content = {
       scanError: 'Something went wrong, try again.',
       scanRedeemDisabled: 'Customer has not reached the reward yet.',
       statLabels: { customers: 'Active Customers', visits: 'Repeat Visits', revenue: 'Extra Revenue', rewards: 'Rewards Sent' },
+    },
+    insightsPage: {
+      title: 'Your shop insights',
+      subtitle: 'A quick read on how your shop is doing — customers, sales, and redemptions',
+      period: 'Period',
+      thisMonth: 'This month', lastMonth: 'Last month',
+      last30: 'Last 30 days', last90: 'Last 90 days',
+      pickMonth: 'Pick a month…', customRange: 'Custom range…',
+      from: 'From', to: 'To',
+      customersInRange: 'New customers', customersTotal: 'of {n} lifetime',
+      sales: 'Sales', redemptions: 'Redemptions',
+      dailyActivity: 'Daily activity',
+      dayOfWeek: 'Busiest days of the week',
+      topCustomers: 'Top customers (lifetime)',
+      points: 'pts', stamps: 'stamps',
+      noActivity: 'No activity yet for this period.',
+      noCustomers: 'No customers yet.',
+      loading: 'Loading…',
+      rangeError: 'From date must be before To date.',
     },
     dataPage: {
       title: 'Data & Analytics',
@@ -3610,9 +3649,10 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const [activeTab, setActiveTab] = useState(() => {
     const p = window.location.pathname
     if (p === '/data') return 'data'
+    if (p === '/insights') return 'insights'
     if (p === '/settings') return 'settings'
     const h = window.location.hash.slice(1)
-    if (['home', 'data', 'settings', 'scan', 'designer', 'notifications', 'guide'].includes(h)) return h
+    if (['home', 'data', 'insights', 'settings', 'scan', 'designer', 'notifications', 'guide'].includes(h)) return h
     return 'home'
   })
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -3621,6 +3661,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   useEffect(() => {
     let url
     if (activeTab === 'data') url = '/data'
+    else if (activeTab === 'insights') url = '/insights'
     else if (activeTab === 'settings') url = '/settings'
     else if (activeTab === 'home') url = '/dashboard'
     else url = `/dashboard#${activeTab}`
@@ -3635,8 +3676,9 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
       const p = window.location.pathname
       const h = window.location.hash.slice(1)
       if (p === '/data') setActiveTab('data')
+      else if (p === '/insights') setActiveTab('insights')
       else if (p === '/settings') setActiveTab('settings')
-      else if (h && ['home', 'scan', 'designer', 'notifications', 'guide'].includes(h)) setActiveTab(h)
+      else if (h && ['home', 'insights', 'scan', 'designer', 'notifications', 'guide'].includes(h)) setActiveTab(h)
       else setActiveTab('home')
     }
     window.addEventListener('popstate', sync)
@@ -3723,6 +3765,8 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     { id: 'home', label: d.navHome, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> },
     { id: 'scan', label: d.navScan, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M20 14h1M14 20h3M20 20h1"/></svg> },
     { id: 'designer', label: d.navDesigner, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
+    // Insights = merchant-facing analytics for the owner's own shop. RLS scopes the data.
+    { id: 'insights', label: lang === 'ar' ? 'تحليلات' : 'Insights', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/><circle cx="7" cy="14" r="1"/><circle cx="11" cy="10" r="1"/><circle cx="14" cy="13" r="1"/><circle cx="19" cy="7" r="1"/></svg> },
     // Data console is admin-only — filtered out below for non-admins.
     { id: 'data', adminOnly: true, label: lang === 'ar' ? 'البيانات' : 'Data', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 3h7v9H3z"/><path d="M14 3h7v5h-7z"/><path d="M14 12h7v9h-7z"/><path d="M3 16h7v5H3z"/></svg> },
     // Notifications is admin-only — filtered out below for non-admins.
@@ -3966,6 +4010,12 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
         {activeTab === 'data' && isPlatformAdmin === true && (
           <Suspense fallback={<LazyFallback />}>
             <AdminDataTab lang={lang} t={t} />
+          </Suspense>
+        )}
+
+        {activeTab === 'insights' && (
+          <Suspense fallback={<LazyFallback />}>
+            <MerchantInsightsTab shop={shop} lang={lang} t={t} />
           </Suspense>
         )}
 
