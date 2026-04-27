@@ -3913,7 +3913,7 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
 
         {activeTab === 'notifications' && isPlatformAdmin === true && (
           <Suspense fallback={<LazyFallback />}>
-            <NotificationsTab lang={lang} shopName={shop?.name} />
+            <NotificationsTab lang={lang} shopName={shop?.name} shopId={shop?.id} />
           </Suspense>
         )}
 
