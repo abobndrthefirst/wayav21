@@ -233,170 +233,169 @@ export default function AdminDesignStudioPage({ lang = 'en', onBack }) {
         )}
       </div>
 
-      {/* Top row: prompt + preview */}
-      <div className="ads-top" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 24, marginBottom: 32 }}>
-        {/* Left: prompt */}
-        <div className="ads-prompt" style={{ background: 'var(--surface, #fff)', borderRadius: 16, padding: 20, border: '1px solid var(--border, #e5e7eb)' }}>
-          <label style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            {T('Style preset', 'نمط جاهز')}
-          </label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8, marginBottom: 16 }}>
-            {STYLE_PRESETS.map(p => (
-              <button
-                key={p.key}
-                type="button"
-                onClick={() => setStylePreset(stylePreset === p.key ? '' : p.key)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 999,
-                  border: '1px solid ' + (stylePreset === p.key ? 'var(--accent, #2563eb)' : 'var(--border, #e5e7eb)'),
-                  background: stylePreset === p.key ? 'var(--accent, #2563eb)' : 'transparent',
-                  color: stylePreset === p.key ? '#fff' : 'inherit',
-                  fontSize: 13,
-                  cursor: 'pointer',
-                }}
-              >
-                {isAr ? p.ar : p.en}
-              </button>
-            ))}
-          </div>
-
-          <label htmlFor="ads-prompt" style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-            {T('Prompt', 'الوصف')}
-          </label>
-          <textarea
-            id="ads-prompt"
-            value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            rows={5}
-            maxLength={600}
-            placeholder={T(
-              'e.g. Revolut-style dark navy with electric-blue gradient and frosted-glass logo area. Premium feel.',
-              'مثلاً: تصميم على طراز ريفولوت، أزرق داكن مع تدرّج كهربائي وزجاج ضبابي، إحساس فاخر.'
-            )}
-            style={{
-              width: '100%',
-              marginTop: 8,
-              padding: 12,
-              borderRadius: 10,
-              border: '1px solid var(--border, #e5e7eb)',
-              fontSize: 14,
-              resize: 'vertical',
-              fontFamily: 'inherit',
-            }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>
-            <span>{prompt.length}/600</span>
-            <span>
-              {T('Powered by Google Gemini · free tier · daily quota', 'بدعم من جيميني · النسخة المجانية · حد يومي')}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={generating || !prompt.trim()}
-            style={{
-              marginTop: 16,
-              width: '100%',
-              padding: '12px 16px',
-              borderRadius: 10,
-              border: 'none',
-              background: generating ? 'var(--muted, #9ca3af)' : 'var(--accent, #2563eb)',
-              color: '#fff',
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: generating || !prompt.trim() ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {generating ? T('Generating…', 'جاري التوليد…') : T('Generate', 'توليد')}
-          </button>
-
-          {genError && (
-            <div style={{ marginTop: 12, padding: 10, background: '#fee2e2', color: '#991b1b', borderRadius: 8, fontSize: 13 }}>
-              {genError}
-            </div>
-          )}
-
-          {draft && (
-            <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--border, #e5e7eb)' }}>
-              <div style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-                {T('Generated palette', 'الألوان المولّدة')}
-              </div>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                {[
-                  { label: T('Card', 'بطاقة'),    color: draft.theme.card_color },
-                  { label: T('Text', 'نص'),       color: draft.theme.text_color },
-                  { label: T('From', 'من'),       color: draft.theme.gradient.from },
-                  { label: T('To', 'إلى'),        color: draft.theme.gradient.to },
-                  { label: T('Accent', 'تمييز'),  color: draft.theme.accent },
-                ].map(s => (
-                  <div key={s.label} style={{ flex: 1, textAlign: 'center' }}>
-                    <div style={{ width: '100%', height: 36, borderRadius: 8, background: s.color, border: '1px solid rgba(0,0,0,.06)' }} />
-                    <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 4 }}>{s.label}</div>
-                    <div style={{ fontSize: 10, fontFamily: 'monospace' }}>{s.color}</div>
-                  </div>
-                ))}
-              </div>
-              <input
-                value={draftName}
-                onChange={e => setDraftName(e.target.value)}
-                maxLength={60}
-                placeholder={T('Template name', 'اسم القالب')}
-                style={{
-                  width: '100%',
-                  padding: 10,
-                  borderRadius: 8,
-                  border: '1px solid var(--border, #e5e7eb)',
-                  fontSize: 14,
-                  marginBottom: 8,
-                }}
-              />
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving || !draftName.trim()}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: 8,
-                  border: '1px solid var(--accent, #2563eb)',
-                  background: 'transparent',
-                  color: 'var(--accent, #2563eb)',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: saving || !draftName.trim() ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {saving ? T('Saving…', 'جاري الحفظ…') : T('Save Template', 'حفظ القالب')}
-              </button>
-              {saveError && (
-                <div style={{ marginTop: 8, padding: 8, background: '#fee2e2', color: '#991b1b', borderRadius: 6, fontSize: 12 }}>
-                  {saveError}
-                </div>
-              )}
-            </div>
-          )}
+      {/* Prompt card — always visible, full-width, explicit colors so it can't disappear behind a missing CSS variable. */}
+      <div style={{ background: '#ffffff', borderRadius: 16, padding: 20, border: '1px solid #e5e7eb', marginBottom: 24, color: '#111827' }}>
+        <label style={{ display: 'block', fontSize: 12, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          {T('Style preset', 'نمط جاهز')}
+        </label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8, marginBottom: 16 }}>
+          {STYLE_PRESETS.map(p => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => setStylePreset(stylePreset === p.key ? '' : p.key)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 999,
+                border: '1px solid ' + (stylePreset === p.key ? '#2563eb' : '#e5e7eb'),
+                background: stylePreset === p.key ? '#2563eb' : '#ffffff',
+                color: stylePreset === p.key ? '#ffffff' : '#111827',
+                fontSize: 13,
+                cursor: 'pointer',
+              }}
+            >
+              {isAr ? p.ar : p.en}
+            </button>
+          ))}
         </div>
 
-        {/* Right: preview */}
-        <div style={{ background: 'var(--surface, #fff)', borderRadius: 16, padding: 20, border: '1px solid var(--border, #e5e7eb)' }}>
+        <label htmlFor="ads-prompt" style={{ display: 'block', fontSize: 12, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          {T('Prompt', 'الوصف')}
+        </label>
+        <textarea
+          id="ads-prompt"
+          value={prompt}
+          onChange={e => setPrompt(e.target.value)}
+          rows={5}
+          maxLength={600}
+          placeholder={T(
+            'e.g. Revolut-style dark navy with electric-blue gradient and frosted-glass logo area. Premium feel.',
+            'مثلاً: تصميم على طراز ريفولوت، أزرق داكن مع تدرّج كهربائي وزجاج ضبابي، إحساس فاخر.'
+          )}
+          style={{
+            display: 'block',
+            width: '100%',
+            boxSizing: 'border-box',
+            marginTop: 8,
+            padding: 12,
+            borderRadius: 10,
+            border: '1px solid #e5e7eb',
+            background: '#ffffff',
+            color: '#111827',
+            fontSize: 14,
+            resize: 'vertical',
+            fontFamily: 'inherit',
+          }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+          <span>{prompt.length}/600</span>
+          <span>{T('Powered by Google Gemini · free tier', 'بدعم من جيميني · النسخة المجانية')}</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={generating || !prompt.trim()}
+          style={{
+            display: 'block',
+            marginTop: 16,
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: 10,
+            border: 'none',
+            background: generating || !prompt.trim() ? '#9ca3af' : '#2563eb',
+            color: '#ffffff',
+            fontSize: 16,
+            fontWeight: 700,
+            cursor: generating || !prompt.trim() ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {generating ? T('Generating…', 'جاري التوليد…') : T('✨ Generate Design', '✨ توليد التصميم')}
+        </button>
+
+        {genError && (
+          <div style={{ marginTop: 12, padding: 10, background: '#fee2e2', color: '#991b1b', borderRadius: 8, fontSize: 13 }}>
+            {genError}
+          </div>
+        )}
+      </div>
+
+      {/* Preview + save controls — only render once we have a generated draft, so a broken preview can never hide the prompt. */}
+      {draft && (
+        <div style={{ background: '#ffffff', borderRadius: 16, padding: 20, border: '1px solid #e5e7eb', marginBottom: 32, color: '#111827' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
             <PlatformToggle value={platform} onChange={setPlatform} T={T} />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
             {platform === 'apple'
               ? <ApplePassPreview data={previewData} sampleName="Waya" T={T} />
               : <GooglePassPreview data={previewData} sampleName="Waya" T={T} />
             }
           </div>
-          {!draft && (
-            <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: 13, marginTop: 16 }}>
-              {T('Generate a design to populate this preview.', 'ولّد تصميماً لتعبئة هذه المعاينة.')}
-            </p>
-          )}
+
+          <div style={{ paddingTop: 20, borderTop: '1px solid #e5e7eb' }}>
+            <div style={{ fontSize: 12, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+              {T('Generated palette', 'الألوان المولّدة')}
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {[
+                { label: T('Card', 'بطاقة'),    color: draft.theme.card_color },
+                { label: T('Text', 'نص'),       color: draft.theme.text_color },
+                { label: T('From', 'من'),       color: draft.theme.gradient.from },
+                { label: T('To', 'إلى'),        color: draft.theme.gradient.to },
+                { label: T('Accent', 'تمييز'),  color: draft.theme.accent },
+              ].map(s => (
+                <div key={s.label} style={{ flex: 1, textAlign: 'center' }}>
+                  <div style={{ width: '100%', height: 36, borderRadius: 8, background: s.color, border: '1px solid rgba(0,0,0,.06)' }} />
+                  <div style={{ fontSize: 10, color: '#6b7280', marginTop: 4 }}>{s.label}</div>
+                  <div style={{ fontSize: 10, fontFamily: 'monospace' }}>{s.color}</div>
+                </div>
+              ))}
+            </div>
+            <input
+              value={draftName}
+              onChange={e => setDraftName(e.target.value)}
+              maxLength={60}
+              placeholder={T('Template name', 'اسم القالب')}
+              style={{
+                display: 'block',
+                width: '100%',
+                boxSizing: 'border-box',
+                padding: 10,
+                borderRadius: 8,
+                border: '1px solid #e5e7eb',
+                background: '#ffffff',
+                color: '#111827',
+                fontSize: 14,
+                marginBottom: 8,
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !draftName.trim()}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: 8,
+                border: '1px solid #2563eb',
+                background: '#ffffff',
+                color: '#2563eb',
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: saving || !draftName.trim() ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {saving ? T('Saving…', 'جاري الحفظ…') : T('Save Template', 'حفظ القالب')}
+            </button>
+            {saveError && (
+              <div style={{ marginTop: 8, padding: 8, background: '#fee2e2', color: '#991b1b', borderRadius: 6, fontSize: 12 }}>
+                {saveError}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Gallery */}
       <div>
