@@ -81,7 +81,7 @@ begin
   end if;
 
   return query
-    select s.id, s.name, u.email
+    select s.id, s.name, u.email::text
       from public.shops s
       left join auth.users u on u.id = s.user_id
      order by lower(coalesce(s.name, '')) asc;
@@ -137,7 +137,7 @@ begin
     select
       s.id,
       s.name,
-      u.email,
+      u.email::text,
       lp.id,
       lp.name,
       cp.id,
