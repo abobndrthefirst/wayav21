@@ -61,6 +61,33 @@ function isHex(s: unknown): s is string {
   return typeof s === "string" && /^#[0-9a-fA-F]{6}$/.test(s);
 }
 
+// Wrapper around fetch that retries on transient Gemini errors.
+// Free-tier Gemini frequently returns 503 UNAVAILABLE during demand spikes;
+// 429 also flickers when many requests fire in the same minute. Both clear
+// in seconds. Retry with jittered backoff before bubbling to the user.
+async function fetchWithRetry(url: string, init: RequestInit, label: string): Promise<Response> {
+  const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
+  const delaysMs = [800, 1800, 3500]; // total ~6s worst case
+  let lastErr: unknown = null;
+  for (let attempt = 0; attempt <= delaysMs.length; attempt++) {
+    try {
+      const res = await fetch(url, init);
+      if (res.ok) return res;
+      if (!RETRY_STATUSES.has(res.status) || attempt === delaysMs.length) return res;
+      const body = await res.text().catch(() => "");
+      console.warn(`[${label}] ${res.status} (attempt ${attempt + 1}); retrying. body=${body.slice(0, 200)}`);
+    } catch (e) {
+      lastErr = e;
+      if (attempt === delaysMs.length) throw e;
+      console.warn(`[${label}] fetch threw (attempt ${attempt + 1}); retrying.`, e);
+    }
+    const jitter = Math.random() * 0.4 + 0.8; // 0.8x - 1.2x
+    await new Promise(r => setTimeout(r, Math.round(delaysMs[attempt] * jitter)));
+  }
+  // Unreachable in practice — the loop always returns or throws.
+  throw lastErr ?? new Error(`${label}: exhausted retries`);
+}
+
 function validateTheme(t: any): Theme {
   if (!t || typeof t !== "object") throw new Error("theme is not an object");
   if (!isHex(t.card_color)) throw new Error("theme.card_color must be #RRGGBB");
@@ -120,13 +147,19 @@ async function callGeminiText(prompt: string, stylePreset?: string): Promise<{ t
   };
 
   const url = `${GEMINI_BASE}/models/${TEXT_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-  });
+  }, "gemini-text");
   if (!res.ok) {
     const txt = await res.text();
+    if (res.status === 503) {
+      throw new Error("Gemini is overloaded right now (free-tier capacity). Please try again in 30 seconds.");
+    }
+    if (res.status === 429) {
+      throw new Error("Daily Gemini quota reached. Resets at midnight Pacific.");
+    }
     throw new Error(`Gemini text ${res.status}: ${txt.slice(0, 400)}`);
   }
   const json = await res.json();
@@ -160,11 +193,11 @@ async function callGeminiImage(prompt: string, theme: Theme, stylePreset?: strin
   };
 
   const url = `${GEMINI_BASE}/models/${IMAGE_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-  });
+  }, "gemini-image");
   if (!res.ok) {
     const txt = await res.text();
     throw new Error(`Gemini image ${res.status}: ${txt.slice(0, 400)}`);
