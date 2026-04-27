@@ -195,6 +195,10 @@ function adminRowToTemplate(row) {
       reward_description_ar: '',
       barcode_type: 'QR',
       rewardEmoji: '✨',
+      // AI templates render as credit-card-style minimal passes — wallet
+      // pass functions read this flag and emit a stripped-down layout
+      // (holder name + AI bg + QR, nothing else).
+      minimal_layout: true,
     },
   }
 }

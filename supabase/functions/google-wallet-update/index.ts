@@ -71,7 +71,15 @@ Deno.serve(async (req: Request) => {
     const lang = pickLang(program?.pass_language, null);
     const need = program?.stamps_required || 10;
 
-    const patchBody: any = {
+    // Mirror google-wallet-public: minimal_layout cards keep the front blank
+    // (just holder name + AI hero + QR). PATCH overwrites the same keys, so
+    // we explicitly clear them on every update — otherwise a card flipped to
+    // minimal after issuance would still carry stale stamp/rewards strings.
+    const patchBody: any = program?.minimal_layout === true ? {
+      loyaltyPoints: { label: "", balance: { string: "" } },
+      secondaryLoyaltyPoints: { label: "", balance: { string: "" } },
+      textModulesData: [],
+    } : {
       loyaltyPoints: {
         label: `${labelFor(lang, "STAMPS")} ${stamps}/${need}`,
         balance: { string: stampRow(stamps, need) },

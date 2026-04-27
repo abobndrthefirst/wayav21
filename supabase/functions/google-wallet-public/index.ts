@@ -289,8 +289,24 @@ Deno.serve(async (req: Request) => {
     const haveStamps = existing?.stamps ?? 0;
     const haveRewards = existing?.rewards_balance ?? 0;
     const need = programWithShopName.stamps_required || 10;
+    const isMinimal = programWithShopName.minimal_layout === true;
 
-    const loyaltyObject: any = {
+    // Minimal layout (AI Studio templates): hero image is the AI art, the
+    // only on-pass text is the holder name (accountName). No stamp progress,
+    // no points row, no rewards counter. Stamps still tracked server-side.
+    const loyaltyObject: any = isMinimal ? {
+      id: objectId,
+      classId,
+      state: "ACTIVE",
+      accountId: input.customer_phone,
+      accountName: input.customer_name,
+      barcode: { type: "QR_CODE", value: objectId, alternateText: input.customer_name },
+      // Force-clear progress / points / rewards on PATCH so previously-set
+      // fields don't linger after a non-minimal -> minimal switch.
+      textModulesData: [],
+      loyaltyPoints: { label: "", balance: { string: "" } },
+      secondaryLoyaltyPoints: { label: "", balance: { string: "" } },
+    } : {
       id: objectId,
       classId,
       state: "ACTIVE",

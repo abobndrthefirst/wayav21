@@ -189,6 +189,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       address: design.address?.trim() || null,
       google_maps_url: design.google_maps_url?.trim() || null,
       pass_language: design.pass_language || 'auto',
+      minimal_layout: !!design.minimal_layout,
       is_active: true,
       updated_at: new Date().toISOString(),
     }

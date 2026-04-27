@@ -23,6 +23,7 @@ export const DEFAULT_DESIGN = {
   google_maps_url: '',
   pass_language: 'auto',
   expires_at: null,
+  minimal_layout: false,
 }
 
 const HISTORY_CAP = 50

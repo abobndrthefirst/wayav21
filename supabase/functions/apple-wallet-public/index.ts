@@ -144,7 +144,24 @@ function hexToRgb(hex: string): string {
 //     white text overlapping the strip image. Strip is the hero — let it breathe.
 //   - secondaryFields: SHOP name below the strip
 //   - auxiliaryFields: REWARD title below the strip (what the reward is)
+//
+// minimal_layout (set by AI templates from the admin Design Studio): emits a
+// credit-card-style pass — strip image is the AI art, the only visible field
+// is the holder name. No stamps/rewards counter, no shop label, no reward
+// label. Stamps are still tracked server-side; merchants see counts on the
+// dashboard.
 function buildPassFields(program: any, customer: any, lang: "en" | "ar") {
+  if (program.minimal_layout === true) {
+    return {
+      headerFields: [],
+      primaryFields: [],
+      secondaryFields: [
+        { key: "holder", label: "", value: customer.customer_name || "" },
+      ],
+      auxiliaryFields: [],
+    };
+  }
+
   const rewards = customer.rewards_balance || 0;
   const need = program.stamps_required || 10;
   const have = customer.stamps || 0;
