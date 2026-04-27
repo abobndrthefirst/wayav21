@@ -25,6 +25,7 @@ const WalletEnrollPage = lazy(() => import('./components/WalletEnrollPage'))
 const EventsPanel = lazy(() => import('./components/EventsPanel'))
 const NotificationsPanel = lazy(() => import('./components/NotificationsPanel'))
 const NotificationsTab = lazy(() => import('./components/NotificationsTab'))
+const AdminDataTab = lazy(() => import('./components/AdminDataTab'))
 const PassDesignerPage = lazy(() => import('./components/pass-designer/PassDesignerPage'))
 const BillingPage = lazy(() => import('./components/BillingPage'))
 const BillingReturnPage = lazy(() => import('./components/BillingReturnPage'))
@@ -202,8 +203,27 @@ const content = {
     },
     dataPage: {
       title: 'البيانات والتحليلات',
+      subtitle: 'بيانات حقيقية لكل متجر — للمشرفين فقط',
       customers: 'عملاء', totalScans: 'مسحات', rewardsRedeemed: 'مكافآت', totalPoints: 'إجمالي النقاط',
       moreComingSoon: 'تحليلات أكثر قريباً — رسوم بيانية، تقارير أسبوعية، وأكثر!',
+      store: 'المتجر', allStores: 'كل المتاجر',
+      period: 'الفترة',
+      thisMonth: 'هذا الشهر', lastMonth: 'الشهر الماضي',
+      last30: 'آخر 30 يومًا', last90: 'آخر 90 يومًا',
+      pickMonth: 'اختر شهرًا…', customRange: 'فترة مخصصة…',
+      from: 'من', to: 'إلى',
+      customersInRange: 'عملاء جدد في الفترة',
+      customersTotal: 'من أصل {n}',
+      sales: 'مبيعات', redemptions: 'استبدالات',
+      tableTitle: 'العملاء (بيانات خام)',
+      name: 'الاسم', gender: 'الجنس', phone: 'الجوال',
+      stamps: 'الأختام', points: 'النقاط', rewards: 'المكافآت',
+      joined: 'تاريخ التسجيل', lastVisit: 'آخر زيارة',
+      male: 'ذكر', female: 'أنثى', preferNot: 'لم يُفصح', genderUnknown: '—',
+      exportCsv: 'تصدير CSV', noData: 'لا توجد بيانات في هذه الفترة.',
+      loading: 'جاري التحميل…',
+      rangeError: 'تاريخ البداية يجب أن يكون قبل تاريخ النهاية.',
+      forbidden: 'هذه الصفحة متاحة للمشرفين فقط.',
     },
     loyaltyPage: {
       title: 'برنامج الولاء',
@@ -694,8 +714,27 @@ const content = {
     },
     dataPage: {
       title: 'Data & Analytics',
+      subtitle: 'Real per-store data — admin only',
       customers: 'Customers', totalScans: 'Total Scans', rewardsRedeemed: 'Rewards Redeemed', totalPoints: 'Total Points',
       moreComingSoon: 'More analytics coming soon — charts, weekly reports, and more!',
+      store: 'Store', allStores: 'All stores',
+      period: 'Period',
+      thisMonth: 'This month', lastMonth: 'Last month',
+      last30: 'Last 30 days', last90: 'Last 90 days',
+      pickMonth: 'Pick a month…', customRange: 'Custom range…',
+      from: 'From', to: 'To',
+      customersInRange: 'New customers in range',
+      customersTotal: 'of {n} lifetime',
+      sales: 'Sales', redemptions: 'Redemptions',
+      tableTitle: 'Customers (raw data)',
+      name: 'Name', gender: 'Gender', phone: 'Phone',
+      stamps: 'Stamps', points: 'Points', rewards: 'Rewards',
+      joined: 'Joined', lastVisit: 'Last visit',
+      male: 'Male', female: 'Female', preferNot: 'Prefer not', genderUnknown: '—',
+      exportCsv: 'Export CSV', noData: 'No data for this period.',
+      loading: 'Loading…',
+      rangeError: 'From date must be before To date.',
+      forbidden: 'This page is admin-only.',
     },
     loyaltyPage: {
       title: 'Loyalty Program',
@@ -3668,6 +3707,11 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     if (activeTab === 'notifications' && isPlatformAdmin === false) setActiveTab('home')
   }, [activeTab, isPlatformAdmin])
 
+  // Same guard for the admin-only Data console at /data.
+  useEffect(() => {
+    if (activeTab === 'data' && isPlatformAdmin === false) setActiveTab('home')
+  }, [activeTab, isPlatformAdmin])
+
   if (loadingShop) return <div className="auth-page"><div className="dash-loading"><Logo size={72} /></div></div>
   if (!shop) return null
 
@@ -3678,6 +3722,8 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     { id: 'home', label: d.navHome, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> },
     { id: 'scan', label: d.navScan, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M20 14h1M14 20h3M20 20h1"/></svg> },
     { id: 'designer', label: d.navDesigner, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
+    // Data console is admin-only — filtered out below for non-admins.
+    { id: 'data', adminOnly: true, label: lang === 'ar' ? 'البيانات' : 'Data', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 3h7v9H3z"/><path d="M14 3h7v5h-7z"/><path d="M14 12h7v9h-7z"/><path d="M3 16h7v5H3z"/></svg> },
     // Notifications is admin-only — filtered out below for non-admins.
     { id: 'notifications', adminOnly: true, label: lang === 'ar' ? 'الإشعارات' : 'Notifications', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
     { id: 'settings', label: d.navSettings, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
@@ -3910,27 +3956,10 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           </Suspense>
         )}
 
-        {activeTab === 'data' && (
-          <>
-            <h1 className="dash-title">{t.dataPage.title}</h1>
-            <div className="data-stats-grid">
-              {[
-                { label: t.dataPage.customers, value: stats.customers.toLocaleString('en-US'), icon: '👥', color: '#10B981' },
-                { label: t.dataPage.totalScans, value: stats.scans.toLocaleString('en-US'), icon: '📱', color: '#3B82F6' },
-                { label: t.dataPage.rewardsRedeemed, value: stats.rewardsRedeemed.toLocaleString('en-US'), icon: '🎁', color: '#F59E0B' },
-                { label: t.dataPage.totalPoints, value: stats.totalPoints.toLocaleString('en-US'), icon: '⭐', color: '#8B5CF6' },
-              ].map((sc, i) => (
-                <motion.div key={i} className="data-stat-card" initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}>
-                  <div className="data-stat-icon" style={{ background: sc.color + '18', color: sc.color }}>{sc.icon}</div>
-                  <div className="data-stat-value"><CountUp value={sc.value} duration={2} delay={i * 0.15} /></div>
-                  <div className="data-stat-label">{sc.label}</div>
-                </motion.div>
-              ))}
-            </div>
-            <motion.div className="dash-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-              <div className="dash-empty"><p>{t.dataPage.moreComingSoon}</p></div>
-            </motion.div>
-          </>
+        {activeTab === 'data' && isPlatformAdmin === true && (
+          <Suspense fallback={<LazyFallback />}>
+            <AdminDataTab lang={lang} t={t} />
+          </Suspense>
         )}
 
         {activeTab === 'scan' && (
@@ -4514,7 +4543,7 @@ function AdminMetricsPage({ lang, setLang, theme, setTheme, t }) {
   }
 
   const downloadCsv = () => {
-    const headers = ['business_name', 'owner_email', 'program_name', 'customer_name', 'customer_phone', 'stamps', 'points', 'rewards_balance', 'last_visit_at', 'created_at']
+    const headers = ['business_name', 'owner_email', 'program_name', 'customer_name', 'customer_phone', 'customer_gender', 'stamps', 'points', 'rewards_balance', 'last_visit_at', 'created_at']
     const esc = (v) => {
       if (v == null) return ''
       const s = String(v)
@@ -4619,6 +4648,7 @@ function AdminMetricsPage({ lang, setLang, theme, setTheme, t }) {
                   <th>{isAr ? 'البرنامج' : 'Program'}</th>
                   <th>{isAr ? 'الاسم' : 'Name'}</th>
                   <th>{isAr ? 'الجوال' : 'Phone'}</th>
+                  <th>{isAr ? 'الجنس' : 'Gender'}</th>
                   <th style={{ textAlign: 'end' }}>{isAr ? 'الأختام' : 'Stamps'}</th>
                   <th style={{ textAlign: 'end' }}>{isAr ? 'النقاط' : 'Points'}</th>
                   <th>{isAr ? 'آخر زيارة' : 'Last visit'}</th>
@@ -4627,21 +4657,29 @@ function AdminMetricsPage({ lang, setLang, theme, setTheme, t }) {
               </thead>
               <tbody>
                 {filteredCustomers.length === 0 ? (
-                  <tr><td colSpan={8} className="admin-customers-empty">
+                  <tr><td colSpan={9} className="admin-customers-empty">
                     {isAr ? 'لا يوجد عملاء' : 'No customers to show'}
                   </td></tr>
-                ) : filteredCustomers.map(r => (
+                ) : filteredCustomers.map(r => {
+                  const g = r.customer_gender
+                  const genderLabel = g === 'male' ? (isAr ? 'ذكر' : 'Male')
+                    : g === 'female' ? (isAr ? 'أنثى' : 'Female')
+                    : g === 'prefer_not' ? (isAr ? 'مفضل عدم القول' : 'Prefer not')
+                    : '—'
+                  return (
                   <tr key={r.customer_pass_id}>
                     <td>{r.business_name || '—'}</td>
                     <td>{r.program_name || '—'}</td>
                     <td>{r.customer_name || '—'}</td>
                     <td dir="ltr" style={{ textAlign: isAr ? 'end' : 'start' }}>{r.customer_phone || '—'}</td>
+                    <td>{genderLabel}</td>
                     <td style={{ textAlign: 'end' }}>{fmt(r.stamps)}</td>
                     <td style={{ textAlign: 'end' }}>{fmt(r.points)}</td>
                     <td>{fmtDt(r.last_visit_at)}</td>
                     <td>{fmtDt(r.created_at)}</td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
