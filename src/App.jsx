@@ -25,6 +25,7 @@ const WalletEnrollPage = lazy(() => import('./components/WalletEnrollPage'))
 const EventsPanel = lazy(() => import('./components/EventsPanel'))
 const NotificationsPanel = lazy(() => import('./components/NotificationsPanel'))
 const PassDesignerPage = lazy(() => import('./components/pass-designer/PassDesignerPage'))
+const AdminDesignStudioPage = lazy(() => import('./components/admin-design-studio/AdminDesignStudioPage'))
 const BillingPage = lazy(() => import('./components/BillingPage'))
 const BillingReturnPage = lazy(() => import('./components/BillingReturnPage'))
 const BillingCancelPage = lazy(() => import('./components/BillingCancelPage'))
@@ -3684,6 +3685,12 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               <span className="sidebar-item-label">{lang === 'ar' ? 'لوحة المقاييس' : 'Admin Metrics'}</span>
             </button>
           )}
+          {isPlatformAdmin && (
+            <button className="sidebar-item sidebar-admin-link" onClick={() => navigate('/admin/design-studio')}>
+              <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></span>
+              <span className="sidebar-item-label">{lang === 'ar' ? 'استوديو التصميم' : 'Design Studio'}</span>
+            </button>
+          )}
           <button className="sidebar-item sidebar-billing-link" onClick={() => navigate('/billing')}>
             <span className="sidebar-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h6"/></svg></span>
             <span className="sidebar-item-label">{lang === 'ar' ? 'الاشتراك' : 'Subscription'}</span>
@@ -4640,6 +4647,7 @@ export default function App() {
     if (p === '/billing/cancel') return 'billing-cancel'
     if (p === '/admin/events') return 'admin-events'
     if (p === '/admin/metrics') return 'admin-metrics'
+    if (p === '/admin/design-studio') return 'admin-design-studio'
     if (p === '/reset-password') return 'reset-password'
     if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
     if (p.startsWith('/w/')) return 'enroll'
@@ -4691,6 +4699,7 @@ export default function App() {
   if (page === 'billing-cancel') return <AuthProvider><Suspense fallback={<LazyFallback />}><BillingCancelPage lang={lang} /></Suspense></AuthProvider>
   if (page === 'admin-events') return <AuthProvider><AdminEventsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} /></AuthProvider>
   if (page === 'admin-metrics') return <AuthProvider><AdminMetricsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'admin-design-studio') return <AuthProvider><Suspense fallback={<LazyFallback />}><AdminDesignStudioPage lang={lang} onBack={() => navigate('/dashboard')} /></Suspense></AuthProvider>
   if (page === 'guide') return <Suspense fallback={<LazyFallback />}><GuidePage /></Suspense>
 
   return (

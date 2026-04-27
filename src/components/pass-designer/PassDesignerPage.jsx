@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import DesignerEditorPanel from './DesignerEditorPanel'
 import DesignerPreviewPanel from './DesignerPreviewPanel'
 import TemplateGallery from './TemplateGallery'
+import { loadAllTemplates } from './templates'
 import useDesignState from './useDesignState'
 import { buildStripImage } from './buildStripImage'
 import { buildLogoImage } from './buildLogoImage'
@@ -47,6 +48,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
   const [toast, setToast] = useState(null)
   const [draftBanner, setDraftBanner] = useState(null)
   const [showGallery, setShowGallery] = useState(isNew)
+  const [galleryTemplates, setGalleryTemplates] = useState(null)
   const [sampleBalance, setSampleBalance] = useState(0)
   const [darkPreview, setDarkPreview] = useState(false)
   const [showQr, setShowQr] = useState(false)
@@ -58,6 +60,15 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
     const draft = loadDraftFromStorage()
     if (draft?.design) setDraftBanner(draft)
   }, [isNew, loadDraftFromStorage])
+
+  // Pull published admin AI templates (if any) and merge with the eight built-ins.
+  // Falls back to built-ins on failure (handled inside loadAllTemplates).
+  useEffect(() => {
+    if (!isNew) return
+    let cancelled = false
+    loadAllTemplates().then(list => { if (!cancelled) setGalleryTemplates(list) })
+    return () => { cancelled = true }
+  }, [isNew])
 
   useEffect(() => {
     if (!isDirty) return
@@ -257,6 +268,7 @@ export default function PassDesignerPage({ program, shop, onBack, onCreated, lan
       <TemplateGallery
         T={T}
         isAr={isAr}
+        templates={galleryTemplates}
         onPick={(tpl) => { loadTemplate({ ...tpl, name: tpl.name || shop?.name || '' }); setShowGallery(false) }}
         onStartBlank={() => setShowGallery(false)}
         onBack={onBack}
