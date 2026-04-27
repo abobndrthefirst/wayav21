@@ -24,6 +24,7 @@ const ScanRedeemTab = lazy(() => import('./components/ScanRedeemTab'))
 const WalletEnrollPage = lazy(() => import('./components/WalletEnrollPage'))
 const EventsPanel = lazy(() => import('./components/EventsPanel'))
 const NotificationsPanel = lazy(() => import('./components/NotificationsPanel'))
+const NotificationsTab = lazy(() => import('./components/NotificationsTab'))
 const PassDesignerPage = lazy(() => import('./components/pass-designer/PassDesignerPage'))
 const BillingPage = lazy(() => import('./components/BillingPage'))
 const BillingReturnPage = lazy(() => import('./components/BillingReturnPage'))
@@ -47,23 +48,66 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 /* ─── Auth Context ─── */
 const AuthContext = createContext({ user: null, loading: true, signOut: async () => {} })
 
+// Hard session limit: 12 hours from sign-in, regardless of activity.
+const SESSION_MAX_MS = 12 * 60 * 60 * 1000
+const LOGIN_AT_KEY = 'waya_login_at'
+
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+    const isExpired = () => {
+      const at = parseInt(localStorage.getItem(LOGIN_AT_KEY) || '0', 10)
+      return at > 0 && Date.now() - at > SESSION_MAX_MS
+    }
+
+    const enforce = async (session) => {
+      if (!session) return false
+      if (isExpired()) {
+        await supabase.auth.signOut()
+        localStorage.removeItem(LOGIN_AT_KEY)
+        return true
+      }
+      return false
+    }
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session && !localStorage.getItem(LOGIN_AT_KEY)) {
+        // Existing session from before this policy existed — start the 12h clock now.
+        localStorage.setItem(LOGIN_AT_KEY, String(Date.now()))
+      }
+      const expired = await enforce(session)
+      setUser(expired ? null : (session?.user ?? null))
       setLoading(false)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && !localStorage.getItem(LOGIN_AT_KEY)) {
+        localStorage.setItem(LOGIN_AT_KEY, String(Date.now()))
+      }
+      if (event === 'SIGNED_OUT') {
+        localStorage.removeItem(LOGIN_AT_KEY)
+      }
+      const expired = await enforce(session)
+      setUser(expired ? null : (session?.user ?? null))
       setLoading(false)
     })
-    return () => subscription.unsubscribe()
+
+    const intervalId = setInterval(async () => {
+      if (isExpired()) {
+        await supabase.auth.signOut()
+        localStorage.removeItem(LOGIN_AT_KEY)
+      }
+    }, 60_000)
+
+    return () => { subscription.unsubscribe(); clearInterval(intervalId) }
   }, [])
 
-  const signOut = async () => { await supabase.auth.signOut() }
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    localStorage.removeItem(LOGIN_AT_KEY)
+  }
 
   return <AuthContext.Provider value={{ user, loading, signOut }}>{children}</AuthContext.Provider>
 }
@@ -3523,8 +3567,45 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
   const d = t.dashboard
   const [shop, setShop] = useState(null)
   const [memberRole, setMemberRole] = useState(null)  // null = owner; 'cashier' | 'branch_manager' = sub-account
-  const [activeTab, setActiveTab] = useState('home')
+  const [activeTab, setActiveTab] = useState(() => {
+    const p = window.location.pathname
+    if (p === '/data') return 'data'
+    if (p === '/settings') return 'settings'
+    const h = window.location.hash.slice(1)
+    if (['home', 'data', 'settings', 'scan', 'designer', 'notifications', 'guide'].includes(h)) return h
+    return 'home'
+  })
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
+  // Mirror activeTab into the URL so refresh restores the same tab.
+  useEffect(() => {
+    let url
+    if (activeTab === 'data') url = '/data'
+    else if (activeTab === 'settings') url = '/settings'
+    else if (activeTab === 'home') url = '/dashboard'
+    else url = `/dashboard#${activeTab}`
+    if (window.location.pathname + window.location.hash !== url) {
+      window.history.replaceState({}, '', url)
+    }
+  }, [activeTab])
+
+  // Keep activeTab in sync with browser back/forward and manual hash edits.
+  useEffect(() => {
+    const sync = () => {
+      const p = window.location.pathname
+      const h = window.location.hash.slice(1)
+      if (p === '/data') setActiveTab('data')
+      else if (p === '/settings') setActiveTab('settings')
+      else if (h && ['home', 'scan', 'designer', 'notifications', 'guide'].includes(h)) setActiveTab(h)
+      else setActiveTab('home')
+    }
+    window.addEventListener('popstate', sync)
+    window.addEventListener('hashchange', sync)
+    return () => {
+      window.removeEventListener('popstate', sync)
+      window.removeEventListener('hashchange', sync)
+    }
+  }, [])
   const [loadingShop, setLoadingShop] = useState(true)
   const [showCustomers, setShowCustomers] = useState(false)
   const [programs, setPrograms] = useState([])
@@ -3591,15 +3672,22 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
     { id: 'home', label: d.navHome, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg> },
     { id: 'scan', label: d.navScan, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M20 14h1M14 20h3M20 20h1"/></svg> },
     { id: 'designer', label: d.navDesigner, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
-    { id: 'notifications', label: lang === 'ar' ? 'الإشعارات' : 'Notifications', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
+    // Notifications is admin-only — filtered out below for non-admins.
+    { id: 'notifications', adminOnly: true, label: lang === 'ar' ? 'الإشعارات' : 'Notifications', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
     { id: 'settings', label: d.navSettings, icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> },
     { id: 'guide', href: '/guide', label: lang === 'ar' ? 'دليل الموظفين' : 'Staff Guide', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M8 7h8M8 11h6"/></svg> },
   ]
 
   // Sub-accounts see only Scan & Redeem + the staff guide. Everything else is owner-only.
+  // Admin-only items (e.g. notifications) are filtered for non-platform-admins.
   const menuItems = memberRole
     ? allMenuItems.filter((i) => i.id === 'scan' || i.id === 'guide')
-    : allMenuItems
+    : allMenuItems.filter((i) => !i.adminOnly || isPlatformAdmin === true)
+
+  // Bounce non-admins off the notifications hash so #notifications can't be reached via URL.
+  useEffect(() => {
+    if (activeTab === 'notifications' && isPlatformAdmin === false) setActiveTab('home')
+  }, [activeTab, isPlatformAdmin])
 
   const statIcons = [
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
@@ -3726,32 +3814,39 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
               </div>
             )}
             <div className="data-stats-grid">
-              {([
-                { key: 'customers', value: stats.customers },
-                { key: 'visits', value: `${stats.repeatRatePct}%` },
-                { key: 'revenue', value: stats.rewardsSent.toLocaleString('en-US') },
-                { key: 'rewards', value: stats.rewardsRedeemed.toLocaleString('en-US') },
-              ]).map((s, i) => {
-                const clickable = s.key === 'customers'
-                return (
-                  <motion.div
-                    key={s.key}
-                    className={`data-stat-card${clickable ? ' clickable' : ''}`}
-                    role={clickable ? 'button' : undefined}
-                    tabIndex={clickable ? 0 : undefined}
-                    onClick={clickable ? () => setShowCustomers(true) : undefined}
-                    onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowCustomers(true) } } : undefined}
-                    initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                    whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
-                  >
-                    <div className="data-stat-icon-wrap">{statIcons[i]}</div>
-                    <div className="data-stat-value"><CountUp value={typeof s.value === 'number' ? s.value.toLocaleString('en-US') : s.value} duration={2} delay={i * 0.15} /></div>
-                    <div className="data-stat-label">{d.statLabels[s.key]}</div>
-                  </motion.div>
-                )
-              })}
+              {(() => {
+                const statsLoading = stats.loading || !shop?.id
+                return ([
+                  { key: 'customers', value: stats.customers },
+                  { key: 'visits', value: `${stats.repeatRatePct}%` },
+                  { key: 'revenue', value: stats.rewardsSent.toLocaleString('en-US') },
+                  { key: 'rewards', value: stats.rewardsRedeemed.toLocaleString('en-US') },
+                ]).map((s, i) => {
+                  const clickable = s.key === 'customers'
+                  return (
+                    <motion.div
+                      key={s.key}
+                      className={`data-stat-card${clickable ? ' clickable' : ''}`}
+                      role={clickable ? 'button' : undefined}
+                      tabIndex={clickable ? 0 : undefined}
+                      onClick={clickable ? () => setShowCustomers(true) : undefined}
+                      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowCustomers(true) } } : undefined}
+                      initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+                    >
+                      <div className="data-stat-icon-wrap">{statIcons[i]}</div>
+                      <div className="data-stat-value">
+                        {statsLoading
+                          ? <span style={{ opacity: 0.4 }}>—</span>
+                          : <CountUp value={typeof s.value === 'number' ? s.value.toLocaleString('en-US') : s.value} duration={2} delay={i * 0.15} />}
+                      </div>
+                      <div className="data-stat-label">{d.statLabels[s.key]}</div>
+                    </motion.div>
+                  )
+                })
+              })()}
             </div>
             <AnimatePresence>
               {showCustomers && (
@@ -3808,18 +3903,10 @@ function DashboardPage({ t, lang, setLang, theme, setTheme }) {
           </>
         )}
 
-        {activeTab === 'notifications' && (
-          <>
-            <h1 className="dash-title">{lang === 'ar' ? 'الإشعارات' : 'Notifications'}</h1>
-            <p className="dash-subtitle" style={{ marginBottom: 16, color: 'var(--muted, #888)' }}>
-              {lang === 'ar'
-                ? 'أرسل رسالة لكل حاملي بطاقاتك مباشرة على محفظتهم.'
-                : 'Broadcast a message straight to every cardholder’s wallet.'}
-            </p>
-            <Suspense fallback={<LazyFallback />}>
-              <NotificationsPanel shopId={shop?.id} lang={lang} />
-            </Suspense>
-          </>
+        {activeTab === 'notifications' && isPlatformAdmin === true && (
+          <Suspense fallback={<LazyFallback />}>
+            <NotificationsTab lang={lang} shopName={shop?.name} />
+          </Suspense>
         )}
 
         {activeTab === 'data' && (
