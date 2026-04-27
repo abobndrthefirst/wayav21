@@ -1,4 +1,5 @@
 import { emojiToDataUrl } from './PresetIconPicker'
+import { supabase } from '../../lib/supabase'
 
 function icon(emoji) {
   if (typeof document === 'undefined') return ''
@@ -165,4 +166,56 @@ export function materializeTemplate(tpl, isAr) {
     delete d.rewardEmoji
   }
   return d
+}
+
+// Admin-curated, AI-generated card_templates rows are mapped into the same
+// shape as the built-ins above so TemplateGallery + useDesignState consume
+// them without branching. Only published rows flow back (RLS enforces this).
+function adminRowToTemplate(row) {
+  const theme = row?.theme || {}
+  const grad = theme.gradient && theme.gradient.from && theme.gradient.to
+    ? { from: theme.gradient.from, to: theme.gradient.to, angle: Number(theme.gradient.angle) || 135 }
+    : null
+  return {
+    key: `admin-${row.id}`,
+    nameEn: row.name || 'AI Template',
+    nameAr: row.name || 'قالب ذكي',
+    emoji: '✨',
+    isAdmin: true,
+    design: {
+      loyalty_type: 'stamp',
+      stamps_required: 10,
+      card_color: theme.card_color || '#1a1a2e',
+      text_color: theme.text_color || '#FFFFFF',
+      card_gradient: grad,
+      background_url: row.background_url || '',
+      reward_title: 'Free reward',
+      reward_title_ar: 'مكافأة مجانية',
+      reward_description: '',
+      reward_description_ar: '',
+      barcode_type: 'QR',
+      rewardEmoji: '✨',
+    },
+  }
+}
+
+// Returns built-in templates plus published admin templates. Failure to load
+// admin rows is non-fatal — fall back to built-ins so the merchant designer
+// still works offline / with cold cache.
+export async function loadAllTemplates() {
+  try {
+    const { data, error } = await supabase
+      .from('card_templates')
+      .select('id, name, theme, background_url, is_published, created_at')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+    if (error) {
+      console.warn('[loadAllTemplates] admin fetch failed:', error.message)
+      return TEMPLATES
+    }
+    return [...(data || []).map(adminRowToTemplate), ...TEMPLATES]
+  } catch (e) {
+    console.warn('[loadAllTemplates] admin fetch threw:', e)
+    return TEMPLATES
+  }
 }
