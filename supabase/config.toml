@@ -29,3 +29,8 @@ verify_jwt = false
 
 [functions.send-notification]
 verify_jwt = false
+
+# admin-design-studio uses _shared/auth.ts (JWKS-based ES256 verify) and then
+# enforces is_platform_admin() inside the handler. Same ES256 workaround.
+[functions.admin-design-studio]
+verify_jwt = false
