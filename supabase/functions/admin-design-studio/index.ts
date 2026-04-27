@@ -194,14 +194,19 @@ async function callGeminiText(prompt: string, stylePreset?: string): Promise<{ t
 }
 
 async function callGeminiImage(prompt: string, theme: Theme, stylePreset?: string): Promise<{ base64: string; mimeType: string }> {
-  // Tell the image model what colors to honor, otherwise it drifts off-palette.
+  // Permissive prompt — admin wants themed character/franchise art (Hello Kitty,
+  // Cyberpunk, Witcher, etc.), not abstract fintech shapes. The only hard rules:
+  //   - No text/numbers (the wallet runtime overlays the merchant name + balance)
+  //   - Keep top corners visually quiet so the merchant logo can sit there cleanly
+  //   - Wide horizontal aspect so it works as the Apple Wallet strip image
   const richPrompt = [
-    "Generate a single horizontal banner image, ~1125x432 aspect, suitable as a loyalty-card cover/strip.",
-    "No text, no logos, no people, no brand marks. Premium fintech aesthetic.",
-    stylePreset ? `Style: ${stylePreset}.` : null,
+    "Generate a single wide horizontal illustration (~1125x432), to be used as the cover/strip image of a loyalty card.",
+    "No text, numbers, words, or letters anywhere in the image.",
+    "Leave the top corners visually quiet — the merchant's small logo will be overlaid there, like a Mastercard logo on a credit card.",
+    stylePreset ? `Theme: ${stylePreset}.` : null,
     `Brief: ${prompt}`,
-    `Color palette must align with: card ${theme.card_color}, gradient ${theme.gradient.from} → ${theme.gradient.to}, accent ${theme.accent}.`,
-    "High polish, modern, abstract — like Revolut, Monzo, or a neo-bank metal card.",
+    `Color palette guidance: ${theme.card_color}, gradient ${theme.gradient.from} → ${theme.gradient.to}, accent ${theme.accent}.`,
+    "High-polish illustration. Characters, scenes, and franchise aesthetics are welcome.",
   ].filter(Boolean).join(" ");
 
   const body = {

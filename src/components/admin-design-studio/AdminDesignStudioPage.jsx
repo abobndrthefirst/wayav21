@@ -9,12 +9,14 @@ import PlatformToggle from '../pass-designer/PlatformToggle'
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 const STYLE_PRESETS = [
-  { key: 'revolut',   en: 'Revolut',         ar: 'ريفولوت' },
-  { key: 'neo',       en: 'Neo Bank',        ar: 'بنك رقمي' },
-  { key: 'monzo',     en: 'Monzo',           ar: 'مونزو' },
-  { key: 'frosted',   en: 'Frosted Glass',   ar: 'زجاج ضبابي' },
-  { key: 'darkprem',  en: 'Dark Premium',    ar: 'أسود فاخر' },
-  { key: 'aurora',    en: 'Aurora',          ar: 'شفق' },
+  { key: 'hellokitty', en: 'Hello Kitty',  ar: 'هيلو كيتي' },
+  { key: 'cyberpunk',  en: 'Cyberpunk',    ar: 'سايبربانك' },
+  { key: 'witcher',    en: 'The Witcher',  ar: 'ذا ويتشر' },
+  { key: 'anime',      en: 'Anime',        ar: 'أنمي' },
+  { key: 'retrowave',  en: 'Retro Wave',   ar: 'ريترو ويف' },
+  { key: 'studioghibli', en: 'Ghibli',     ar: 'غيبلي' },
+  { key: 'minimal',    en: 'Minimal',      ar: 'بسيط' },
+  { key: 'revolut',    en: 'Revolut Glass', ar: 'ريفولوت' },
 ]
 
 function base64ToBlob(b64, mimeType) {
@@ -269,8 +271,8 @@ export default function AdminDesignStudioPage({ lang = 'en', onBack }) {
           rows={5}
           maxLength={600}
           placeholder={T(
-            'e.g. Revolut-style dark navy with electric-blue gradient and frosted-glass logo area. Premium feel.',
-            'مثلاً: تصميم على طراز ريفولوت، أزرق داكن مع تدرّج كهربائي وزجاج ضبابي، إحساس فاخر.'
+            'e.g. Hello Kitty pastel pink café · Cyberpunk neon Tokyo street · The Witcher dark forest with wolves. Just describe the vibe.',
+            'مثلاً: هيلو كيتي وردي · شارع طوكيو سايبربانك · غابة ذا ويتشر مع الذئاب. اوصف الجو فقط.'
           )}
           style={{
             display: 'block',
@@ -334,22 +336,10 @@ export default function AdminDesignStudioPage({ lang = 'en', onBack }) {
           </div>
 
           <div style={{ paddingTop: 20, borderTop: '1px solid #e5e7eb' }}>
-            <div style={{ fontSize: 12, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-              {T('Generated palette', 'الألوان المولّدة')}
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-              {[
-                { label: T('Card', 'بطاقة'),    color: draft.theme.card_color },
-                { label: T('Text', 'نص'),       color: draft.theme.text_color },
-                { label: T('From', 'من'),       color: draft.theme.gradient.from },
-                { label: T('To', 'إلى'),        color: draft.theme.gradient.to },
-                { label: T('Accent', 'تمييز'),  color: draft.theme.accent },
-              ].map(s => (
-                <div key={s.label} style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{ width: '100%', height: 36, borderRadius: 8, background: s.color, border: '1px solid rgba(0,0,0,.06)' }} />
-                  <div style={{ fontSize: 10, color: '#6b7280', marginTop: 4 }}>{s.label}</div>
-                  <div style={{ fontSize: 10, fontFamily: 'monospace' }}>{s.color}</div>
-                </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 12, color: '#6b7280' }}>{T('Palette', 'الألوان')}:</span>
+              {[draft.theme.card_color, draft.theme.gradient.from, draft.theme.gradient.to, draft.theme.accent, draft.theme.text_color].map((c, i) => (
+                <span key={i} title={c} style={{ width: 22, height: 22, borderRadius: '50%', background: c, border: '1px solid rgba(0,0,0,.08)', display: 'inline-block' }} />
               ))}
             </div>
             <input
