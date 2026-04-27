@@ -870,15 +870,32 @@ function RecipientsSection({ tt, lang, shopId, shopName, onChange }) {
           client_request_id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         },
       })
-      if (error) throw error
+      // The edge function returns { success:false, error:'...' } with a 4xx
+      // status on validation/auth/quota failures. Supabase-js wraps that as
+      // FunctionsHttpError with a generic message, but the parsed body is
+      // still on `data`. Prefer the specific reason when present.
       if (data && data.success === false) throw new Error(data.error || 'Send failed')
+      if (error) {
+        // Last-resort: try to read the response body for the real reason.
+        let detail = ''
+        try {
+          const ctxRes = error.context
+          if (ctxRes && typeof ctxRes.json === 'function') {
+            const j = await ctxRes.json()
+            if (j?.error) detail = j.error
+          } else if (ctxRes && typeof ctxRes.text === 'function') {
+            detail = await ctxRes.text()
+          }
+        } catch {}
+        throw new Error(detail || error.message || 'Send failed')
+      }
       setSent(true)
       setMsg('')
       setSelected(new Set())
       setTimeout(() => setSent(false), 2800)
     } catch (e) {
       setErrMsg(e?.message || 'Send failed')
-      setTimeout(() => setErrMsg(''), 4000)
+      setTimeout(() => setErrMsg(''), 8000)
     } finally {
       setSending(false)
     }
