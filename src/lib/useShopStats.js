@@ -20,16 +20,21 @@ export function useShopStats({ shopId }) {
   const [error, setError] = useState(null)
   const mounted = useRef(true)
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (attempt = 0) => {
     if (!shopId) return
     setLoading(true)
     setError(null)
     const { data, error: err } = await supabase.rpc('shop_stats', { _shop_id: shopId })
     if (!mounted.current) return
-    if (err) {
-      setError(err.message || String(err))
+    if (err || !(data && typeof data === 'object')) {
+      // Transient auth/network race: retry once before giving up.
+      if (attempt < 1) {
+        setTimeout(() => { if (mounted.current) load(1) }, 1000)
+        return
+      }
+      if (err) setError(err.message || String(err))
       setStats(ZERO)
-    } else if (data && typeof data === 'object') {
+    } else {
       setStats({
         customers: Number(data.customers ?? 0),
         scans: Number(data.scans ?? 0),
@@ -38,8 +43,6 @@ export function useShopStats({ shopId }) {
         rewardsSent: Number(data.rewards_sent ?? 0),
         repeatRatePct: Number(data.repeat_rate_pct ?? 0),
       })
-    } else {
-      setStats(ZERO)
     }
     setLoading(false)
   }, [shopId])
@@ -52,6 +55,16 @@ export function useShopStats({ shopId }) {
   useEffect(() => {
     if (!shopId) { setStats(ZERO); setLoading(false); return }
     load()
+  }, [shopId, load])
+
+  // Refetch when the tab regains visibility — recovers from a stale 0
+  // without the user having to manually refresh.
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === 'visible' && shopId) load()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
   }, [shopId, load])
 
   return {
