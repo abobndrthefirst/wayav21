@@ -318,7 +318,7 @@ const content = {
         { q: 'كم ياخذ الإعداد؟', a: 'دقائق. تسجّل متجرك، تصمّم بطاقتك، وتشارك كود QR مع عملائك.' },
         { q: 'هل أقدر ألغي بأي وقت؟', a: 'نعم بدون عقد. تقدر تلغي من لوحة التحكم، والخدمة تستمر لنهاية فترة الفوترة الحالية.' },
         { q: 'أي أنظمة نقاط البيع مدعومة؟', a: 'Foodics وZid وSalla وRewaa وOdoo حالياً. لو عندك نظام غيرهم، تواصل معنا ونربطه لك.' },
-        { q: 'هل بياناتي آمنة؟', a: 'كلها مشفّرة، محفوظة في خوادم Supabase، وما نبيع ولا نشارك بياناتك مع أي طرف ثالث.' },
+        { q: 'هل بياناتي آمنة؟', a: 'بياناتك آمنة 100%. مشفّرة بالكامل ومحفوظة بأعلى معايير الأمان. ما نبيع ولا نشارك بياناتك مع أي طرف ثالث.' },
       ],
     },
     comparison: {
@@ -810,7 +810,7 @@ const content = {
         { q: 'How long does setup take?',                         a: 'A few minutes. Register your shop, design your card, and share the QR code with customers.' },
         { q: 'Can I cancel anytime?',                             a: "Yes, no contract. Cancel from the dashboard; the service stays active until the end of the current billing period." },
         { q: 'Which POS systems are supported?',                  a: 'Foodics, Zid, Salla, Rewaa, and Odoo today. If you use something else, contact us and we\'ll add it for you.' },
-        { q: 'Is my data safe?',                                  a: "Everything is encrypted, stored on Supabase, and we never sell or share your data with any third party." },
+        { q: 'Is my data safe?',                                  a: "Your data is 100% secure. Fully encrypted and stored to the highest security standards. We never sell or share your data with any third party." },
       ],
     },
     comparison: {
