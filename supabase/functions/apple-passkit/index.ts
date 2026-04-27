@@ -147,13 +147,13 @@ Deno.serve(async (req: Request) => {
           .eq("pass_type_identifier", passTypeId);
         const serials = (regs || []).map((r: any) => r.serial_number);
         if (serials.length === 0) {
-          return new Response("", { status: 204, headers: cors });
+          return new Response(null, { status: 204, headers: cors });
         }
         let q = supabase.from("customer_passes").select("apple_serial, updated_at").in("apple_serial", serials);
         if (sinceIso) q = q.gt("updated_at", sinceIso);
         const { data: passes } = await q;
         if (!passes || passes.length === 0) {
-          return new Response("", { status: 204, headers: cors });
+          return new Response(null, { status: 204, headers: cors });
         }
         const lastUpdated = String(Math.max(...passes.map((p: any) => new Date(p.updated_at).getTime())));
         return new Response(JSON.stringify({
