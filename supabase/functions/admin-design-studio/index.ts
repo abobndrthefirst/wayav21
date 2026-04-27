@@ -27,8 +27,15 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || "";
 
 // Models — overridable via env without redeploying code.
-const TEXT_MODEL  = Deno.env.get("GEMINI_TEXT_MODEL")  || "gemini-2.5-flash";
-const IMAGE_MODEL = Deno.env.get("GEMINI_IMAGE_MODEL") || "gemini-2.5-flash-image";
+// Comma-separated lists let us fall through when any one model is overloaded
+// (free-tier 2.5-flash 503s a lot during peak hours). First model that
+// responds wins. Order: best quality first, smallest/least-loaded last.
+const TEXT_MODELS = (Deno.env.get("GEMINI_TEXT_MODELS")
+  || "gemini-2.5-flash,gemini-flash-latest,gemini-2.0-flash,gemini-2.0-flash-lite,gemini-flash-lite-latest"
+).split(",").map(s => s.trim()).filter(Boolean);
+const IMAGE_MODELS = (Deno.env.get("GEMINI_IMAGE_MODELS")
+  || "gemini-2.5-flash-image"
+).split(",").map(s => s.trim()).filter(Boolean);
 
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
 
@@ -146,23 +153,33 @@ async function callGeminiText(prompt: string, stylePreset?: string): Promise<{ t
     },
   };
 
-  const url = `${GEMINI_BASE}/models/${TEXT_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-  const res = await fetchWithRetry(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  }, "gemini-text");
-  if (!res.ok) {
-    const txt = await res.text();
-    if (res.status === 503) {
-      throw new Error("Gemini is overloaded right now (free-tier capacity). Please try again in 30 seconds.");
-    }
-    if (res.status === 429) {
-      throw new Error("Daily Gemini quota reached. Resets at midnight Pacific.");
-    }
-    throw new Error(`Gemini text ${res.status}: ${txt.slice(0, 400)}`);
+  // Walk the model chain. fetchWithRetry handles transient blips inside one
+  // model; if a whole model is exhausted (still 503/429 after retries), we
+  // fall through to the next model in the list.
+  let lastStatus = 0;
+  let lastBody = "";
+  let json: any = null;
+  for (const model of TEXT_MODELS) {
+    const url = `${GEMINI_BASE}/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    const res = await fetchWithRetry(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }, `gemini-text:${model}`);
+    if (res.ok) { json = await res.json(); break; }
+    lastStatus = res.status;
+    lastBody = await res.text().catch(() => "");
+    console.warn(`[gemini-text] ${model} -> ${lastStatus}; trying next model. body=${lastBody.slice(0, 200)}`);
   }
-  const json = await res.json();
+  if (!json) {
+    if (lastStatus === 503) {
+      throw new Error("All Gemini text models are overloaded right now (free-tier capacity). Please try again in 30 seconds.");
+    }
+    if (lastStatus === 429) {
+      throw new Error("Daily Gemini quota reached on all configured models. Resets at midnight Pacific.");
+    }
+    throw new Error(`Gemini text ${lastStatus}: ${lastBody.slice(0, 400)}`);
+  }
   const raw = json?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (typeof raw !== "string") throw new Error("Gemini text: empty response");
   let parsed: any;
@@ -192,17 +209,23 @@ async function callGeminiImage(prompt: string, theme: Theme, stylePreset?: strin
     generationConfig: { responseModalities: ["IMAGE"] },
   };
 
-  const url = `${GEMINI_BASE}/models/${IMAGE_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-  const res = await fetchWithRetry(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  }, "gemini-image");
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Gemini image ${res.status}: ${txt.slice(0, 400)}`);
+  // Same model-chain walk as the text call.
+  let lastStatus = 0;
+  let lastBody = "";
+  let json: any = null;
+  for (const model of IMAGE_MODELS) {
+    const url = `${GEMINI_BASE}/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    const res = await fetchWithRetry(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }, `gemini-image:${model}`);
+    if (res.ok) { json = await res.json(); break; }
+    lastStatus = res.status;
+    lastBody = await res.text().catch(() => "");
+    console.warn(`[gemini-image] ${model} -> ${lastStatus}; trying next model.`);
   }
-  const json = await res.json();
+  if (!json) throw new Error(`Gemini image ${lastStatus}: ${lastBody.slice(0, 400)}`);
   const parts = json?.candidates?.[0]?.content?.parts || [];
   const inline = parts.find((p: any) => p?.inlineData?.data)?.inlineData;
   if (!inline?.data) throw new Error("Gemini image: no inlineData in response");
