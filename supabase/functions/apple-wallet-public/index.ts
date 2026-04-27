@@ -307,6 +307,44 @@ Deno.serve(async (req: Request) => {
     const fgRgb = (program.text_color || "#FFFFFF").startsWith("#") ? hexToRgb(program.text_color) : program.text_color;
 
     const backFields: any[] = [];
+
+    // Latest broadcast message (if any). The merchant-side send-notification
+    // edge fn writes to notification_campaigns then pushes a silent APNs ping
+    // that asks iOS to refetch the pass. iOS only surfaces a banner when the
+    // pass.json content actually changed — so we include the latest broadcast
+    // body as a back field with `changeMessage: "%@"`. That makes iOS show
+    // "{shop}: {body}" as a banner notification when the value differs from
+    // the cached version.
+    //
+    // Limited to the last 30 days so a freshly installed pass doesn't surface
+    // an ancient promo on first install. Falls back silently on any error
+    // (notification feature is non-critical for pass rendering).
+    try {
+      if (pass_row?.shop_id) {
+        const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { data: latestBroadcast } = await supabase
+          .from("notification_campaigns")
+          .select("title, body")
+          .eq("shop_id", pass_row.shop_id)
+          .eq("kind", "broadcast")
+          .in("status", ["sending", "sent"])
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (latestBroadcast?.body) {
+          backFields.push({
+            key: "broadcast",
+            label: latestBroadcast.title || (program.name || program.shop_name),
+            value: latestBroadcast.body,
+            changeMessage: "%@",
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("[apple-wallet-public] broadcast lookup failed:", (e as Error).message);
+    }
+
     if (program.reward_description) backFields.push({ key: "rewardDesc", label: labelFor(lang, "REWARD_DESC"), value: program.reward_description });
     if (program.terms) backFields.push({ key: "terms", label: labelFor(lang, "TERMS"), value: program.terms });
     if (program.expires_at) backFields.push({ key: "expires", label: labelFor(lang, "EXPIRES"), value: new Date(program.expires_at).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US") });
@@ -321,12 +359,18 @@ Deno.serve(async (req: Request) => {
     // Waya signature — always last, non-removable.
     backFields.push(appleSignatureBackField(lang));
 
+    // organizationName is what iOS shows as the sender on wallet update banners.
+    // Use the shop name so push notifications appear as coming from the merchant,
+    // not "Waya". Falls back to the env-configured platform name if the shop
+    // doesn't have a name set yet.
+    const merchantOrgName = (program.shop_name || program.name || orgName).slice(0, 80);
+
     const pass: any = {
       formatVersion: 1,
       passTypeIdentifier: passTypeId,
       serialNumber: pass_row.apple_serial,
       teamIdentifier: teamId,
-      organizationName: orgName,
+      organizationName: merchantOrgName,
       description: passDescription(program.name || program.shop_name),
       logoText: program.name || program.shop_name,
       foregroundColor: fgRgb,

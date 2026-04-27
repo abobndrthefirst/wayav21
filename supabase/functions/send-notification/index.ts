@@ -195,6 +195,21 @@ Deno.serve(async (req: Request) => {
       await supabase.from("notification_sends").insert(sendRows);
     }
 
+    // Bump updated_at on every recipient pass. The apple-passkit
+    // /v1/devices/.../registrations endpoint filters by updated_at > sinceIso
+    // — without this bump, iOS hits 204 ("nothing changed") after the silent
+    // push and never re-fetches the pass, so the broadcast back-field never
+    // displays. Doing this AFTER the campaign row is created so the bumped
+    // pass.json (regenerated on iOS fetch) sees the new campaign.
+    {
+      let bumpQuery = supabase
+        .from("customer_passes")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("shop_id", shop_id);
+      if (audience_tier) bumpQuery = bumpQuery.eq("tier", audience_tier);
+      await bumpQuery;
+    }
+
     // Enqueue jobs
     if (jobRows.length > 0) {
       const { error: jErr } = await supabase

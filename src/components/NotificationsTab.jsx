@@ -74,7 +74,16 @@ const T = {
     },
     history: {
       title: 'آخر الإشعارات المرسلة',
-      empty: 'ما في إشعارات بعد — فعّل أحد المحفّزات وابدأ.',
+      empty: 'ما في إشعارات بعد — أرسل أول إشعار من الأعلى.',
+      cols: ['الرسالة', 'الوصول', 'الحالة', 'الوقت'],
+      loading: 'جاري التحميل...',
+      statusSending: 'جاري الإرسال',
+      statusSent: 'تم الإرسال',
+      statusFailed: 'فشل',
+      statusQueued: 'في الانتظار',
+      statusDraft: 'مسودة',
+      statusCancelled: 'ملغي',
+      recipientsLabel: '{n} مستلم',
     },
     cta: { save: 'حفظ التغييرات', saved: 'تم الحفظ ✓', saving: 'جاري الحفظ...' },
     bar: { unsaved: 'تعديلات لم تُحفظ', saved: 'كل التغييرات محفوظة' },
@@ -141,7 +150,16 @@ const T = {
     },
     history: {
       title: 'Recent notifications',
-      empty: 'No notifications yet — enable a trigger to start.',
+      empty: 'No notifications yet — send your first one above.',
+      cols: ['Message', 'Reach', 'Status', 'Time'],
+      loading: 'Loading...',
+      statusSending: 'Sending',
+      statusSent: 'Sent',
+      statusFailed: 'Failed',
+      statusQueued: 'Queued',
+      statusDraft: 'Draft',
+      statusCancelled: 'Cancelled',
+      recipientsLabel: '{n} recipients',
     },
     cta: { save: 'Save Changes', saved: 'Saved ✓', saving: 'Saving...' },
     bar: { unsaved: 'Unsaved changes', saved: 'All changes saved' },
@@ -770,8 +788,62 @@ function NotifPreview({ app, shop, text, when }) {
   )
 }
 
-/* ─── History (empty state — no notifications-sent backend yet) ─── */
-function HistoryTable({ tt }) {
+/* ─── History (real campaigns from notification_campaigns) ─── */
+function HistoryTable({ tt, lang, shopId, refreshSignal }) {
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!shopId) { setLoading(false); return }
+    let cancelled = false
+    setLoading(true)
+    supabase
+      .from('notification_campaigns')
+      .select('id, title, body, status, recipient_count, delivered_count, failed_count, created_at, sent_at')
+      .eq('shop_id', shopId)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data, error }) => {
+        if (cancelled) return
+        if (error) console.error('notification_campaigns', error)
+        setRows(Array.isArray(data) ? data : [])
+        setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [shopId, refreshSignal])
+
+  const fmtTime = (iso) => {
+    if (!iso) return '—'
+    const d = new Date(iso)
+    const diffMs = Date.now() - d.getTime()
+    const diffMin = Math.floor(diffMs / 60000)
+    if (diffMin < 1) return lang === 'ar' ? 'الآن' : 'just now'
+    if (diffMin < 60) return lang === 'ar' ? `منذ ${toAr(diffMin)} د` : `${diffMin}m ago`
+    const diffH = Math.floor(diffMin / 60)
+    if (diffH < 24) return lang === 'ar' ? `منذ ${toAr(diffH)} س` : `${diffH}h ago`
+    return d.toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  }
+
+  const statusLabel = (s) => {
+    switch (s) {
+      case 'sending':   return tt.history.statusSending
+      case 'sent':      return tt.history.statusSent
+      case 'failed':    return tt.history.statusFailed
+      case 'queued':    return tt.history.statusQueued
+      case 'draft':     return tt.history.statusDraft
+      case 'cancelled': return tt.history.statusCancelled
+      default:          return s || '—'
+    }
+  }
+
+  const statusColor = (s) => {
+    if (s === 'sent') return 'var(--nt-green)'
+    if (s === 'failed' || s === 'cancelled') return 'var(--nt-warn)'
+    return 'var(--nt-text-3)'
+  }
+
+  const tdCss = { padding: '14px 18px', textAlign: lang === 'ar' ? 'right' : 'left' }
+
   return (
     <section style={{
       background: 'var(--nt-bg-elev)', border: '1px solid var(--nt-border)',
@@ -780,15 +852,61 @@ function HistoryTable({ tt }) {
       <header style={{ padding: '18px 24px', borderBottom: '1px solid var(--nt-border-soft)' }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--nt-text)' }}>{tt.history.title}</h2>
       </header>
-      <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--nt-text-3)', fontSize: 13.5 }}>
-        {tt.history.empty}
-      </div>
+
+      {loading && (
+        <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--nt-text-3)', fontSize: 13.5 }}>
+          {tt.history.loading}
+        </div>
+      )}
+
+      {!loading && rows.length === 0 && (
+        <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--nt-text-3)', fontSize: 13.5 }}>
+          {tt.history.empty}
+        </div>
+      )}
+
+      {!loading && rows.length > 0 && (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+            <thead>
+              <tr style={{ background: 'var(--nt-bg-elev-2)' }}>
+                {tt.history.cols.map((c, i) => (
+                  <th key={i} style={{
+                    padding: '10px 18px', textAlign: lang === 'ar' ? 'right' : 'left',
+                    fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+                    textTransform: 'uppercase', color: 'var(--nt-text-3)',
+                    borderBottom: '1px solid var(--nt-border-soft)',
+                  }}>{c}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={r.id} style={{ borderBottom: i < rows.length - 1 ? '1px solid var(--nt-border-soft)' : 'none' }}>
+                  <td style={{ ...tdCss, color: 'var(--nt-text-2)', maxWidth: 360, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {r.body}
+                  </td>
+                  <td style={{ ...tdCss, fontWeight: 600, color: 'var(--nt-text)' }}>
+                    {tt.history.recipientsLabel.replace('{n}', lang === 'ar' ? toAr(r.recipient_count || 0) : (r.recipient_count || 0))}
+                  </td>
+                  <td style={tdCss}>
+                    <span style={{ color: statusColor(r.status), fontWeight: 700, fontSize: 12 }}>
+                      {statusLabel(r.status)}
+                    </span>
+                  </td>
+                  <td style={{ ...tdCss, color: 'var(--nt-text-3)' }}>{fmtTime(r.sent_at || r.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   )
 }
 
 /* ─── Recipients (real customers) ─── */
-function RecipientsSection({ tt, lang, shopId, shopName, onChange }) {
+function RecipientsSection({ tt, lang, shopId, shopName, onChange, onSent }) {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -892,6 +1010,7 @@ function RecipientsSection({ tt, lang, shopId, shopName, onChange }) {
       setSent(true)
       setMsg('')
       setSelected(new Set())
+      onSent?.()
       setTimeout(() => setSent(false), 2800)
     } catch (e) {
       setErrMsg(e?.message || 'Send failed')
@@ -1135,6 +1254,7 @@ export default function NotificationsTab({ lang = 'ar', shopName, shopId }) {
   const [instOn, setInstOn] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0)
 
   const dismissWelcome = () => {
     try { localStorage.setItem(WELCOME_DISMISSED_KEY, '1') } catch {}
@@ -1171,10 +1291,10 @@ export default function NotificationsTab({ lang = 'ar', shopName, shopId }) {
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-          <RecipientsSection tt={tt} lang={lang} shopId={shopId} shopName={effectiveShopName} onChange={markDirty} />
+          <RecipientsSection tt={tt} lang={lang} shopId={shopId} shopName={effectiveShopName} onChange={markDirty} onSent={() => setHistoryRefreshKey(k => k + 1)} />
           <LocationSection   tt={tt} lang={lang} on={locOn}  setOn={(v) => { setLocOn(v); markDirty() }}  onChange={markDirty} />
           <InstantSection    tt={tt} lang={lang} shopName={effectiveShopName} on={instOn} setOn={(v) => { setInstOn(v); markDirty() }} onChange={markDirty} />
-          <HistoryTable      tt={tt} />
+          <HistoryTable      tt={tt} lang={lang} shopId={shopId} refreshSignal={historyRefreshKey} />
         </div>
 
         <SaveBar tt={tt} dirty={dirty} saving={saving} onSave={save} />
