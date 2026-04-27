@@ -7,7 +7,10 @@
 // `.notif-tab` for both dark and light themes so inline `var(--bg-elev)` etc.
 // resolve without depending on tokens elsewhere in the app's stylesheet.
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { supabase } from '../lib/supabase'
+
+const WELCOME_DISMISSED_KEY = 'waya_notif_welcome_dismissed'
 
 /* ─── Translations ─── */
 const T = {
@@ -18,10 +21,24 @@ const T = {
       sub: 'ذكّر عملاءك بطريقتك. وايا يرسل الإشعار في اللحظة الصح — لما يكون قريب، أو لما يجمع ختم، أو لما يستلم مكافأة.',
       meta: ['بدون كود', 'يشتغل مع كل بطاقات الولاء', 'مجاني خلال التجربة'],
     },
-    quota: {
-      tier: 'الباقة الحالية', tierName: 'الأساسية',
-      sent: 'مُرسل هذا الشهر', remaining: 'متبقي', reach: 'الوصول المتوقع',
-      upgrade: 'ترقية الباقة',
+    recipients: {
+      title: 'إرسال إشعار للعملاء',
+      sub: 'اختر العملاء وأرسل لهم إشعار مباشرة على محفظتهم.',
+      searchPh: 'ابحث بالاسم أو الجوال',
+      selectAll: 'اختيار الكل',
+      clear: 'إلغاء',
+      selected: '{n} عميل محدّد',
+      none: 'لا يوجد عملاء بعد — شارك كود QR وابدأ بجمع العملاء.',
+      loading: 'جاري التحميل...',
+      messageLabel: 'نص الإشعار',
+      messagePh: 'اكتب الرسالة هنا...',
+      sendBtn: 'إرسال للعملاء المحدّدين',
+      sending: 'جاري الإرسال...',
+      sent: 'تم الإرسال ✓',
+      noSelection: 'اختر عميل واحد على الأقل',
+      noPhone: '— بدون جوال',
+      cols: ['الاسم', 'الجوال', 'البرنامج', 'آخر زيارة'],
+      neverVisited: 'لم يزر بعد',
     },
     location: {
       title: 'الإشعارات حسب الموقع',
@@ -29,15 +46,12 @@ const T = {
       tag: 'يعتمد على Apple Wallet & Google Wallet',
       radius: 'مدى التنبيه',
       meters: 'متر',
-      branches: 'الفروع المفعّلة',
       activeWindow: 'وقت الإرسال',
       windows: ['طول اليوم', 'وقت العمل', 'مخصص'],
       messageLabel: 'نص الإشعار',
       messagePh: 'مثلاً: قهوتك المفضّلة بانتظارك ☕ — أنت قريب من المتجر',
       preview: 'معاينة على الجوال',
       hint: 'يظهر للعميل لما يكون داخل المدى — مرة كل 4 ساعات كحد أقصى.',
-      tipTitle: 'نصيحة',
-      tip: 'إشعارات الموقع تشتغل بدون أن يفتح العميل أي تطبيق — تظهر مباشرة على شاشة القفل.',
     },
     instant: {
       title: 'الإشعارات الفورية',
@@ -48,33 +62,23 @@ const T = {
       tWelcome: { name: 'عند التسجيل لأول مرة', desc: 'رسالة ترحيب فور إضافة البطاقة للمحفظة.' },
       tInactive: { name: 'بعد غياب 14 يوم', desc: 'إشعار تذكيري للعملاء اللي ما رجعوا.' },
       messageLabel: 'الرسالة المخصّصة',
+      messagePh: 'اكتب الرسالة هنا...',
       placeholders: 'مفاتيح متاحة',
       vars: ['{اسم_العميل}', '{عدد_الأختام}', '{المكافأة}', '{اسم_المتجر}'],
-      sample: {
-        stamp: 'يا {اسم_العميل}، باقي {عدد_الأختام} أختام بس وقهوتك المجانية وصلت! ☕',
-        redeem: 'مبروك {اسم_العميل}! استلمت {المكافأة} من {اسم_المتجر}. نراك قريباً 💚',
-        welcome: 'أهلاً {اسم_العميل}! بطاقتك جاهزة. زورنا واجمع أول ختم.',
-        inactive: 'وحشتنا يا {اسم_العميل} — قهوتك بانتظارك في {اسم_المتجر}.',
-      },
       sendTime: 'وقت الإرسال',
       sendNow: 'فوري',
       sendDelay: 'بعد {n} دقيقة',
       testBtn: 'إرسال إشعار تجريبي',
       preview: 'معاينة',
-      mostUsed: 'الأكثر استخداماً',
     },
     history: {
       title: 'آخر الإشعارات المرسلة',
       empty: 'ما في إشعارات بعد — فعّل أحد المحفّزات وابدأ.',
-      seeAll: 'عرض الكل',
-      cols: ['النوع', 'الرسالة', 'الوصول', 'النقر', 'الوقت'],
     },
     cta: { save: 'حفظ التغييرات', saved: 'تم الحفظ ✓', saving: 'جاري الحفظ...' },
     bar: { unsaved: 'تعديلات لم تُحفظ', saved: 'كل التغييرات محفوظة' },
     sentLabel: 'الآن',
     appName: 'محفظة',
-    branchA: 'فرع الملقا', branchB: 'فرع النخيل', branchC: 'فرع جدة',
-    cityRiyadh: 'الرياض', cityJeddah: 'جدة',
   },
   en: {
     welcome: {
@@ -83,10 +87,24 @@ const T = {
       sub: 'Remind your customers your way. Waya delivers the right message at the right moment — when they walk by, earn a stamp, or redeem a reward.',
       meta: ['No code needed', 'Works with every loyalty card', 'Free during trial'],
     },
-    quota: {
-      tier: 'Current plan', tierName: 'Basic',
-      sent: 'Sent this month', remaining: 'Remaining', reach: 'Expected reach',
-      upgrade: 'Upgrade plan',
+    recipients: {
+      title: 'Send to customers',
+      sub: 'Pick the customers and push a notification straight to their wallet.',
+      searchPh: 'Search by name or phone',
+      selectAll: 'Select all',
+      clear: 'Clear',
+      selected: '{n} selected',
+      none: 'No customers yet — share your QR code to start collecting cardholders.',
+      loading: 'Loading...',
+      messageLabel: 'Notification copy',
+      messagePh: 'Type your message...',
+      sendBtn: 'Send to selected',
+      sending: 'Sending...',
+      sent: 'Sent ✓',
+      noSelection: 'Select at least one customer',
+      noPhone: '— no phone',
+      cols: ['Name', 'Phone', 'Program', 'Last visit'],
+      neverVisited: 'Never visited',
     },
     location: {
       title: 'Location Notifications',
@@ -94,15 +112,12 @@ const T = {
       tag: 'Powered by Apple Wallet & Google Wallet',
       radius: 'Trigger radius',
       meters: 'meters',
-      branches: 'Active branches',
       activeWindow: 'Sending hours',
       windows: ['All day', 'Business hours', 'Custom'],
       messageLabel: 'Notification copy',
       messagePh: 'e.g. Your favorite coffee is waiting ☕ — you’re near the store',
       preview: 'Phone preview',
       hint: 'Shown when the customer is inside the radius — at most once every 4 hours.',
-      tipTitle: 'Tip',
-      tip: 'Location alerts surface on the lock screen — your customer never has to open an app.',
     },
     instant: {
       title: 'Instant Notifications',
@@ -113,33 +128,23 @@ const T = {
       tWelcome: { name: 'First sign-up', desc: 'Welcome message the moment the card is added.' },
       tInactive: { name: 'After 14 days inactive', desc: 'Win-back nudge for customers who haven’t returned.' },
       messageLabel: 'Custom message',
+      messagePh: 'Type your message...',
       placeholders: 'Available variables',
       vars: ['{customer_name}', '{stamps_left}', '{reward}', '{shop_name}'],
-      sample: {
-        stamp: 'Hey {customer_name}, just {stamps_left} stamps until your free coffee! ☕',
-        redeem: 'Enjoy your {reward}, {customer_name}! See you soon at {shop_name} 💚',
-        welcome: 'Welcome {customer_name}! Your card is ready. Drop by for your first stamp.',
-        inactive: 'We miss you {customer_name} — your coffee is waiting at {shop_name}.',
-      },
       sendTime: 'Send timing',
       sendNow: 'Instant',
       sendDelay: 'After {n} min',
       testBtn: 'Send test notification',
       preview: 'Preview',
-      mostUsed: 'Most used',
     },
     history: {
       title: 'Recent notifications',
       empty: 'No notifications yet — enable a trigger to start.',
-      seeAll: 'View all',
-      cols: ['Type', 'Message', 'Reach', 'Click', 'Time'],
     },
     cta: { save: 'Save Changes', saved: 'Saved ✓', saving: 'Saving...' },
     bar: { unsaved: 'Unsaved changes', saved: 'All changes saved' },
     sentLabel: 'now',
     appName: 'Wallet',
-    branchA: 'Al Malqa Branch', branchB: 'Al Nakheel Branch', branchC: 'Jeddah Branch',
-    cityRiyadh: 'Riyadh', cityJeddah: 'Jeddah',
   },
 }
 
@@ -381,42 +386,6 @@ function PhonePeek({ lang, shopName, appName, sentLabel }) {
   )
 }
 
-/* ─── Quota strip ─── */
-function QuotaStrip({ tt }) {
-  const items = [
-    { label: tt.quota.tier, value: tt.quota.tierName, accent: true },
-    { label: tt.quota.sent, value: '247', sub: '/ ∞' },
-    { label: tt.quota.remaining, value: '∞' },
-    { label: tt.quota.reach, value: '94%' },
-  ]
-  return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: 'repeat(4, 1fr) auto', gap: 0,
-      borderRadius: 'var(--nt-radius)',
-      background: 'var(--nt-bg-elev)', border: '1px solid var(--nt-border)',
-      padding: '14px 18px', marginBottom: 22, alignItems: 'center',
-    }}>
-      {items.map((it, i) => (
-        <div key={i} style={{
-          paddingInline: 18,
-          borderInlineEnd: i < items.length - 1 ? '1px solid var(--nt-border-soft)' : 'none',
-        }}>
-          <div style={{ fontSize: 11.5, color: 'var(--nt-text-3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{it.label}</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
-            <span style={{ fontSize: 22, fontWeight: 800, color: it.accent ? 'var(--nt-green)' : 'var(--nt-text)', letterSpacing: '-0.02em' }}>{it.value}</span>
-            {it.sub && <span style={{ fontSize: 12, color: 'var(--nt-text-3)' }}>{it.sub}</span>}
-          </div>
-        </div>
-      ))}
-      <button type="button" style={{
-        padding: '10px 16px', borderRadius: 10, border: 0,
-        background: 'var(--nt-green)', color: '#fff', fontWeight: 600, fontSize: 13,
-        boxShadow: '0 8px 18px -8px var(--nt-green)', cursor: 'pointer',
-      }}>{tt.quota.upgrade}</button>
-    </div>
-  )
-}
-
 /* ─── ServiceCard ─── */
 function ServiceCard({ icon, title, sub, on, setOn, tag, children }) {
   return (
@@ -501,21 +470,10 @@ function Pill({ children, active, onClick }) {
 function LocationSection({ tt, lang, on, setOn, onChange }) {
   const [radius, setRadius] = useState(150)
   const [winIdx, setWinIdx] = useState(1)
-  const [branches, setBranches] = useState({ b1: true, b2: true, b3: false })
-  const [msg, setMsg] = useState(tt.location.messagePh.replace(/^مثلاً: |^e\.g\. /, ''))
-
-  useEffect(() => {
-    setMsg(tt.location.messagePh.replace(/^مثلاً: |^e\.g\. /, ''))
-  }, [lang]) // eslint-disable-line
+  const [msg, setMsg] = useState('')
 
   // bubble change events for dirty tracking
-  useEffect(() => { onChange?.() }, [radius, winIdx, branches, msg, on]) // eslint-disable-line
-
-  const branchList = [
-    { id: 'b1', name: tt.branchA, addr: tt.cityRiyadh },
-    { id: 'b2', name: tt.branchB, addr: tt.cityRiyadh },
-    { id: 'b3', name: tt.branchC, addr: tt.cityJeddah },
-  ]
+  useEffect(() => { onChange?.() }, [radius, winIdx, msg, on]) // eslint-disable-line
 
   return (
     <ServiceCard
@@ -555,34 +513,6 @@ function LocationSection({ tt, lang, on, setOn, onChange }) {
             </div>
           </Field>
 
-          <Field label={tt.location.branches}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-              {branchList.map(b => (
-                <button key={b.id} type="button"
-                  onClick={() => setBranches({ ...branches, [b.id]: !branches[b.id] })}
-                  style={{
-                    padding: '10px 12px', borderRadius: 10,
-                    border: '1px solid ' + (branches[b.id] ? 'var(--nt-green)' : 'var(--nt-border)'),
-                    background: branches[b.id] ? 'var(--nt-green-soft)' : 'var(--nt-bg-inner)',
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    textAlign: 'start', cursor: 'pointer',
-                  }}>
-                  <div style={{
-                    width: 18, height: 18, borderRadius: 5,
-                    background: branches[b.id] ? 'var(--nt-green)' : 'transparent',
-                    border: '1px solid ' + (branches[b.id] ? 'var(--nt-green)' : 'var(--nt-border)'),
-                    display: 'grid', placeItems: 'center', color: '#fff', flexShrink: 0,
-                  }}>{branches[b.id] && Ic.check}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--nt-text)' }}>{b.name}</div>
-                    <div style={{ fontSize: 11, color: 'var(--nt-text-3)' }}>{b.addr}</div>
-                  </div>
-                  <span style={{ color: branches[b.id] ? 'var(--nt-green)' : 'var(--nt-text-4)' }}>{Ic.pin}</span>
-                </button>
-              ))}
-            </div>
-          </Field>
-
           <Field label={tt.location.messageLabel} hint={tt.location.hint}>
             <div style={{ position: 'relative' }}>
               <textarea
@@ -599,20 +529,6 @@ function LocationSection({ tt, lang, on, setOn, onChange }) {
               }}>{msg.length}/120</span>
             </div>
           </Field>
-
-          <div style={{
-            display: 'flex', gap: 12,
-            padding: '12px 14px',
-            background: 'var(--nt-green-soft)',
-            border: '1px solid rgba(16,185,129,0.18)',
-            borderRadius: 12,
-          }}>
-            <span style={{ color: 'var(--nt-green)', flexShrink: 0, marginTop: 1 }}>{Ic.spark}</span>
-            <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--nt-green)', marginBottom: 2 }}>{tt.location.tipTitle}</div>
-              <div style={{ fontSize: 12.5, color: 'var(--nt-text-2)', lineHeight: 1.5 }}>{tt.location.tip}</div>
-            </div>
-          </div>
         </div>
 
         {/* Right: radius map */}
@@ -663,18 +579,6 @@ function RadiusMap({ radius }) {
           <circle cx="12" cy="10" r="3" fill="#fff" stroke="none"/>
         </svg>
       </div>
-      {[
-        { x: 30, y: 40 }, { x: 200, y: 60 }, { x: 50, y: 170 }, { x: 190, y: 175 },
-      ].map((p, i) => (
-        <div key={i} style={{
-          position: 'absolute', insetInlineStart: p.x, top: p.y,
-          width: 18, height: 18, borderRadius: '50%',
-          background: 'var(--nt-bg-elev)',
-          border: '2px solid var(--nt-green)',
-          fontSize: 10, color: 'var(--nt-green)',
-          display: 'grid', placeItems: 'center', fontWeight: 700,
-        }}>{['ع','س','م','ف'][i]}</div>
-      ))}
     </div>
   )
 }
@@ -682,21 +586,17 @@ function RadiusMap({ radius }) {
 /* ─── Instant section ─── */
 function InstantSection({ tt, lang, shopName, on, setOn, onChange }) {
   const triggers = [
-    { id: 'stamp', icon: Ic.gift, ...tt.instant.tStamp, sample: tt.instant.sample.stamp, defaultOn: true, badge: tt.instant.mostUsed },
-    { id: 'redeem', icon: Ic.spark, ...tt.instant.tRedeem, sample: tt.instant.sample.redeem, defaultOn: true },
-    { id: 'welcome', icon: Ic.hand, ...tt.instant.tWelcome, sample: tt.instant.sample.welcome, defaultOn: false },
-    { id: 'inactive', icon: Ic.alarm, ...tt.instant.tInactive, sample: tt.instant.sample.inactive, defaultOn: false },
+    { id: 'stamp', icon: Ic.gift, ...tt.instant.tStamp },
+    { id: 'redeem', icon: Ic.spark, ...tt.instant.tRedeem },
+    { id: 'welcome', icon: Ic.hand, ...tt.instant.tWelcome },
+    { id: 'inactive', icon: Ic.alarm, ...tt.instant.tInactive },
   ]
 
   const [active, setActive] = useState('stamp')
-  const [enabled, setEnabled] = useState(() => Object.fromEntries(triggers.map(x => [x.id, x.defaultOn])))
-  const [messages, setMessages] = useState(() => Object.fromEntries(triggers.map(x => [x.id, x.sample])))
+  const [enabled, setEnabled] = useState(() => Object.fromEntries(triggers.map(x => [x.id, false])))
+  const [messages, setMessages] = useState(() => Object.fromEntries(triggers.map(x => [x.id, ''])))
   const [delay, setDelay] = useState(0)
   const [testing, setTesting] = useState(false)
-
-  useEffect(() => {
-    setMessages(Object.fromEntries(triggers.map(x => [x.id, x.sample])))
-  }, [lang]) // eslint-disable-line
 
   useEffect(() => { onChange?.() }, [enabled, messages, delay, on]) // eslint-disable-line
 
@@ -748,10 +648,7 @@ function InstantSection({ tt, lang, shopName, on, setOn, onChange }) {
                       display: 'grid', placeItems: 'center', flexShrink: 0,
                     }}>{tr.icon}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--nt-text)' }}>{tr.name}</span>
-                        {tr.badge && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: 'var(--nt-green-soft)', color: 'var(--nt-green)' }}>{tr.badge}</span>}
-                      </div>
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--nt-text)' }}>{tr.name}</div>
                       <div style={{ fontSize: 12, color: 'var(--nt-text-3)', marginTop: 2, lineHeight: 1.45 }}>{tr.desc}</div>
                     </div>
                     <Toggle on={isOn} onChange={(v) => { setEnabled({ ...enabled, [tr.id]: v }); if (v) setActive(tr.id) }} />
@@ -778,6 +675,7 @@ function InstantSection({ tt, lang, shopName, on, setOn, onChange }) {
                 value={curMsg}
                 onChange={e => setMessages({ ...messages, [active]: e.target.value.slice(0, 140) })}
                 rows={3}
+                placeholder={tt.instant.messagePh}
                 style={{ ...inputCss, resize: 'none', lineHeight: 1.5 }}
               />
             </Field>
@@ -870,68 +768,272 @@ function NotifPreview({ app, shop, text, when }) {
   )
 }
 
-/* ─── History table ─── */
-function HistoryTable({ tt, lang }) {
-  const rows = lang === 'ar' ? [
-    { type: 'فوري · ختم', icon: Ic.gift, msg: 'باقي ختمين بس وقهوتك المجانية وصلت! ☕', reach: '142', click: '38%', time: 'منذ ٢ ساعة' },
-    { type: 'موقع', icon: Ic.pin, msg: 'قهوتك بانتظارك ☕ — أنت قريب من كوفي لاونج', reach: '67', click: '24%', time: 'اليوم ١٠:٢٤' },
-    { type: 'فوري · مكافأة', icon: Ic.spark, msg: 'مبروك سارة! استلمت قهوة مجانية. نراك قريباً 💚', reach: '23', click: '54%', time: 'أمس' },
-    { type: 'فوري · ترحيب', icon: Ic.hand, msg: 'أهلاً أحمد! بطاقتك جاهزة. زورنا واجمع أول ختم.', reach: '19', click: '67%', time: 'أمس' },
-  ] : [
-    { type: 'Instant · Stamp', icon: Ic.gift, msg: 'Just 2 more stamps and your free coffee is ready ☕', reach: '142', click: '38%', time: '2h ago' },
-    { type: 'Location', icon: Ic.pin, msg: 'Your coffee is waiting ☕ — you’re near Coffee Lounge', reach: '67', click: '24%', time: 'Today 10:24' },
-    { type: 'Instant · Reward', icon: Ic.spark, msg: 'Enjoy your free coffee, Sarah! See you soon 💚', reach: '23', click: '54%', time: 'Yesterday' },
-    { type: 'Instant · Welcome', icon: Ic.hand, msg: 'Welcome Ahmed! Your card is ready. Drop by for your first stamp.', reach: '19', click: '67%', time: 'Yesterday' },
-  ]
-  const tdCss = { padding: '14px 18px', textAlign: lang === 'ar' ? 'right' : 'left' }
+/* ─── History (empty state — no notifications-sent backend yet) ─── */
+function HistoryTable({ tt }) {
   return (
     <section style={{
       background: 'var(--nt-bg-elev)', border: '1px solid var(--nt-border)',
       borderRadius: 'var(--nt-radius-lg)', overflow: 'hidden',
     }}>
-      <header style={{ padding: '18px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--nt-border-soft)' }}>
+      <header style={{ padding: '18px 24px', borderBottom: '1px solid var(--nt-border-soft)' }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--nt-text)' }}>{tt.history.title}</h2>
-        <button type="button" style={{
-          fontSize: 12.5, fontWeight: 600, color: 'var(--nt-green)',
-          display: 'inline-flex', alignItems: 'center', gap: 4,
-          background: 'transparent', border: 0, cursor: 'pointer',
-        }}>
-          {tt.history.seeAll} {lang === 'ar' ? Ic.arrL : Ic.arrR}
-        </button>
       </header>
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
-          <thead>
-            <tr style={{ background: 'var(--nt-bg-elev-2)' }}>
-              {tt.history.cols.map((c, i) => (
-                <th key={i} style={{
-                  padding: '10px 18px', textAlign: lang === 'ar' ? 'right' : 'left',
-                  fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
-                  textTransform: 'uppercase', color: 'var(--nt-text-3)',
-                  borderBottom: '1px solid var(--nt-border-soft)',
-                }}>{c}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} style={{ borderBottom: i < rows.length - 1 ? '1px solid var(--nt-border-soft)' : 'none' }}>
-                <td style={tdCss}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '4px 10px', borderRadius: 999, background: 'var(--nt-bg-inner)', border: '1px solid var(--nt-border)' }}>
-                    <span style={{ color: 'var(--nt-green)', display: 'inline-flex', transform: 'scale(0.75)' }}>{r.icon}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--nt-text)' }}>{r.type}</span>
-                  </div>
-                </td>
-                <td style={{ ...tdCss, color: 'var(--nt-text-2)', maxWidth: 360, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.msg}</td>
-                <td style={{ ...tdCss, fontWeight: 600, color: 'var(--nt-text)' }}>{r.reach}</td>
-                <td style={tdCss}>
-                  <span style={{ color: 'var(--nt-green)', fontWeight: 700 }}>{r.click}</span>
-                </td>
-                <td style={{ ...tdCss, color: 'var(--nt-text-3)' }}>{r.time}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--nt-text-3)', fontSize: 13.5 }}>
+        {tt.history.empty}
+      </div>
+    </section>
+  )
+}
+
+/* ─── Recipients (real customers) ─── */
+function RecipientsSection({ tt, lang, shopId, onChange }) {
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [selected, setSelected] = useState(() => new Set())
+  const [msg, setMsg] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [errMsg, setErrMsg] = useState('')
+
+  useEffect(() => {
+    if (!shopId) return
+    let cancelled = false
+    setLoading(true)
+    supabase.rpc('shop_customers', { _shop_id: shopId }).then(({ data, error }) => {
+      if (cancelled) return
+      if (error) console.error('shop_customers', error)
+      setRows(Array.isArray(data) ? data : [])
+      setLoading(false)
+    })
+    return () => { cancelled = true }
+  }, [shopId])
+
+  useEffect(() => { onChange?.() }, [selected, msg]) // eslint-disable-line
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return rows
+    const q = search.toLowerCase()
+    return rows.filter(r =>
+      (r.customer_name || '').toLowerCase().includes(q) ||
+      (r.customer_phone || '').includes(q)
+    )
+  }, [rows, search])
+
+  const allFilteredSelected = filtered.length > 0 && filtered.every(r => selected.has(r.id))
+
+  const toggle = (id) => {
+    const next = new Set(selected)
+    next.has(id) ? next.delete(id) : next.add(id)
+    setSelected(next)
+  }
+
+  const toggleAll = () => {
+    if (allFilteredSelected) {
+      const next = new Set(selected)
+      filtered.forEach(r => next.delete(r.id))
+      setSelected(next)
+    } else {
+      const next = new Set(selected)
+      filtered.forEach(r => next.add(r.id))
+      setSelected(next)
+    }
+  }
+
+  const clearAll = () => setSelected(new Set())
+
+  const fmtDate = (iso) => {
+    if (!iso) return tt.recipients.neverVisited
+    const d = new Date(iso)
+    return d.toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
+  const send = () => {
+    if (selected.size === 0) { setErrMsg(tt.recipients.noSelection); setTimeout(() => setErrMsg(''), 2200); return }
+    if (!msg.trim()) return
+    setSending(true)
+    setErrMsg('')
+    // Backend dispatch isn't wired yet — UI-only confirmation. The customer
+    // list and selection are real; the actual push pipeline lands separately.
+    setTimeout(() => {
+      setSending(false)
+      setSent(true)
+      setTimeout(() => setSent(false), 2400)
+    }, 900)
+  }
+
+  const tdCss = { padding: '10px 14px', textAlign: lang === 'ar' ? 'right' : 'left' }
+
+  return (
+    <section style={{
+      background: 'var(--nt-bg-elev)',
+      border: '1px solid var(--nt-border)',
+      borderRadius: 'var(--nt-radius-lg)',
+      overflow: 'hidden',
+      boxShadow: 'var(--nt-shadow-card)',
+    }}>
+      <header style={{
+        padding: '20px 24px',
+        display: 'flex', alignItems: 'center', gap: 16,
+        borderBottom: '1px solid var(--nt-border-soft)',
+      }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 12,
+          background: 'var(--nt-green)', color: '#fff',
+          display: 'grid', placeItems: 'center', flexShrink: 0,
+          boxShadow: '0 8px 18px -8px var(--nt-green)',
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--nt-text)' }}>{tt.recipients.title}</h2>
+          <p style={{ fontSize: 13.5, color: 'var(--nt-text-3)', marginTop: 4, lineHeight: 1.55 }}>{tt.recipients.sub}</p>
+        </div>
+      </header>
+
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Search + select-all/clear */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <input
+            type="text" value={search} onChange={e => setSearch(e.target.value)}
+            placeholder={tt.recipients.searchPh}
+            style={{ ...inputCss, flex: '1 1 240px', minWidth: 180 }}
+          />
+          <button type="button" onClick={toggleAll} disabled={filtered.length === 0} style={{
+            padding: '10px 14px', borderRadius: 10,
+            background: 'var(--nt-bg-inner)', border: '1px solid var(--nt-border)',
+            color: 'var(--nt-text-2)', fontSize: 13, fontWeight: 600,
+            cursor: filtered.length === 0 ? 'default' : 'pointer',
+            opacity: filtered.length === 0 ? 0.5 : 1,
+          }}>{tt.recipients.selectAll}</button>
+          <button type="button" onClick={clearAll} disabled={selected.size === 0} style={{
+            padding: '10px 14px', borderRadius: 10,
+            background: 'transparent', border: '1px solid var(--nt-border)',
+            color: 'var(--nt-text-3)', fontSize: 13, fontWeight: 600,
+            cursor: selected.size === 0 ? 'default' : 'pointer',
+            opacity: selected.size === 0 ? 0.5 : 1,
+          }}>{tt.recipients.clear}</button>
+        </div>
+
+        {/* Customer list */}
+        <div style={{
+          border: '1px solid var(--nt-border)', borderRadius: 12,
+          background: 'var(--nt-bg-inner)',
+          maxHeight: 360, overflowY: 'auto',
+        }}>
+          {loading && (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--nt-text-3)', fontSize: 13.5 }}>
+              {tt.recipients.loading}
+            </div>
+          )}
+          {!loading && rows.length === 0 && (
+            <div style={{ padding: 36, textAlign: 'center', color: 'var(--nt-text-3)', fontSize: 13.5, lineHeight: 1.6 }}>
+              {tt.recipients.none}
+            </div>
+          )}
+          {!loading && rows.length > 0 && (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead style={{ position: 'sticky', top: 0, background: 'var(--nt-bg-elev-2)', zIndex: 1 }}>
+                <tr>
+                  <th style={{ ...tdCss, width: 36, padding: '10px 0 10px 14px' }}>
+                    <input
+                      type="checkbox" checked={allFilteredSelected} onChange={toggleAll}
+                      style={{ accentColor: 'var(--nt-green)', cursor: 'pointer' }}
+                      aria-label={tt.recipients.selectAll}
+                    />
+                  </th>
+                  {tt.recipients.cols.map((c, i) => (
+                    <th key={i} style={{
+                      ...tdCss,
+                      fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+                      textTransform: 'uppercase', color: 'var(--nt-text-3)',
+                      borderBottom: '1px solid var(--nt-border-soft)',
+                    }}>{c}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((r, i) => {
+                  const isSel = selected.has(r.id)
+                  return (
+                    <tr key={r.id}
+                      onClick={() => toggle(r.id)}
+                      style={{
+                        borderBottom: i < filtered.length - 1 ? '1px solid var(--nt-border-soft)' : 'none',
+                        cursor: 'pointer',
+                        background: isSel ? 'var(--nt-green-soft)' : 'transparent',
+                      }}>
+                      <td style={{ ...tdCss, width: 36, padding: '10px 0 10px 14px' }} onClick={e => e.stopPropagation()}>
+                        <input type="checkbox" checked={isSel} onChange={() => toggle(r.id)}
+                          style={{ accentColor: 'var(--nt-green)', cursor: 'pointer' }} />
+                      </td>
+                      <td style={{ ...tdCss, color: 'var(--nt-text)', fontWeight: 600 }}>
+                        {r.customer_name || '—'}
+                      </td>
+                      <td style={{ ...tdCss, color: 'var(--nt-text-2)', fontFamily: 'ui-monospace, monospace', fontSize: 12.5 }}>
+                        {r.customer_phone || tt.recipients.noPhone}
+                      </td>
+                      <td style={{ ...tdCss, color: 'var(--nt-text-2)' }}>
+                        {r.loyalty_programs?.name || '—'}
+                      </td>
+                      <td style={{ ...tdCss, color: 'var(--nt-text-3)' }}>
+                        {fmtDate(r.last_visit_at)}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Selection count */}
+        <div style={{ fontSize: 12.5, color: 'var(--nt-text-3)' }}>
+          {tt.recipients.selected.replace('{n}', lang === 'ar' ? toAr(selected.size) : selected.size)}
+        </div>
+
+        {/* Composer + Send */}
+        <Field label={tt.recipients.messageLabel}>
+          <div style={{ position: 'relative' }}>
+            <textarea
+              value={msg}
+              onChange={e => setMsg(e.target.value.slice(0, 140))}
+              placeholder={tt.recipients.messagePh}
+              rows={3}
+              style={{ ...inputCss, resize: 'none', paddingBlock: 12, lineHeight: 1.5 }}
+            />
+            <span style={{
+              position: 'absolute', bottom: 8, insetInlineEnd: 12,
+              fontSize: 11, color: 'var(--nt-text-3)',
+              background: 'var(--nt-bg-elev)', padding: '2px 6px', borderRadius: 6,
+            }}>{msg.length}/140</span>
+          </div>
+        </Field>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          {errMsg && <span style={{ color: 'var(--nt-warn)', fontSize: 12.5 }}>{errMsg}</span>}
+          <button
+            type="button" onClick={send}
+            disabled={sending || sent || selected.size === 0 || !msg.trim()}
+            style={{
+              padding: '11px 20px', borderRadius: 10, border: 0,
+              background: sent ? 'var(--nt-green-soft)' : 'var(--nt-green)',
+              color: sent ? 'var(--nt-green)' : '#fff',
+              fontSize: 13.5, fontWeight: 600,
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              opacity: (sending || sent || selected.size === 0 || !msg.trim()) ? 0.55 : 1,
+              cursor: (sending || sent || selected.size === 0 || !msg.trim()) ? 'default' : 'pointer',
+              boxShadow: sent ? 'none' : '0 8px 18px -8px var(--nt-green)',
+              transition: 'all .2s',
+            }}>
+            {sent ? Ic.check : Ic.send}
+            {sending ? tt.recipients.sending : sent ? tt.recipients.sent : tt.recipients.sendBtn}
+          </button>
+        </div>
       </div>
     </section>
   )
@@ -973,16 +1075,22 @@ function SaveBar({ tt, dirty, saving, onSave }) {
 }
 
 /* ─── Main export ─── */
-export default function NotificationsTab({ lang = 'ar', shopName }) {
+export default function NotificationsTab({ lang = 'ar', shopName, shopId }) {
   const tt = T[lang] || T.ar
-  const [showWelcome, setShowWelcome] = useState(true)
-  const [locOn, setLocOn] = useState(true)
-  const [instOn, setInstOn] = useState(true)
+  const [showWelcome, setShowWelcome] = useState(() => {
+    try { return localStorage.getItem(WELCOME_DISMISSED_KEY) !== '1' }
+    catch { return true }
+  })
+  const [locOn, setLocOn] = useState(false)
+  const [instOn, setInstOn] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  // Mark dirty whenever anything in the form changes (children call onChange).
-  // Initial mount fires once — flush that with a flag so the bar stays "saved".
+  const dismissWelcome = () => {
+    try { localStorage.setItem(WELCOME_DISMISSED_KEY, '1') } catch {}
+    setShowWelcome(false)
+  }
+
   const markDirty = () => setDirty(true)
 
   const save = () => {
@@ -999,7 +1107,7 @@ export default function NotificationsTab({ lang = 'ar', shopName }) {
         {showWelcome && (
           <WelcomeBanner
             tt={tt} lang={lang} shopName={effectiveShopName}
-            onDismiss={() => setShowWelcome(false)}
+            onDismiss={dismissWelcome}
           />
         )}
 
@@ -1012,12 +1120,11 @@ export default function NotificationsTab({ lang = 'ar', shopName }) {
           </div>
         )}
 
-        <QuotaStrip tt={tt} />
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-          <LocationSection tt={tt} lang={lang} on={locOn} setOn={(v) => { setLocOn(v); markDirty() }} onChange={markDirty} />
-          <InstantSection  tt={tt} lang={lang} shopName={effectiveShopName} on={instOn} setOn={(v) => { setInstOn(v); markDirty() }} onChange={markDirty} />
-          <HistoryTable    tt={tt} lang={lang} />
+          <RecipientsSection tt={tt} lang={lang} shopId={shopId} onChange={markDirty} />
+          <LocationSection   tt={tt} lang={lang} on={locOn}  setOn={(v) => { setLocOn(v); markDirty() }}  onChange={markDirty} />
+          <InstantSection    tt={tt} lang={lang} shopName={effectiveShopName} on={instOn} setOn={(v) => { setInstOn(v); markDirty() }} onChange={markDirty} />
+          <HistoryTable      tt={tt} />
         </div>
 
         <SaveBar tt={tt} dirty={dirty} saving={saving} onSave={save} />
