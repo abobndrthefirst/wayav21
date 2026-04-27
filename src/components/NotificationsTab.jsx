@@ -28,6 +28,7 @@ const T = {
       selectAll: 'اختيار الكل',
       clear: 'إلغاء',
       selected: '{n} عميل محدّد',
+      broadcastHint: 'حالياً يرسل لجميع عملاء متجرك (الاستهداف الفردي قريباً).',
       none: 'لا يوجد عملاء بعد — شارك كود QR وابدأ بجمع العملاء.',
       loading: 'جاري التحميل...',
       messageLabel: 'نص الإشعار',
@@ -94,6 +95,7 @@ const T = {
       selectAll: 'Select all',
       clear: 'Clear',
       selected: '{n} selected',
+      broadcastHint: 'Currently sends to all your shop’s customers (per-customer targeting coming soon).',
       none: 'No customers yet — share your QR code to start collecting cardholders.',
       loading: 'Loading...',
       messageLabel: 'Notification copy',
@@ -786,7 +788,7 @@ function HistoryTable({ tt }) {
 }
 
 /* ─── Recipients (real customers) ─── */
-function RecipientsSection({ tt, lang, shopId, onChange }) {
+function RecipientsSection({ tt, lang, shopId, shopName, onChange }) {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -848,18 +850,38 @@ function RecipientsSection({ tt, lang, shopId, onChange }) {
     return d.toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })
   }
 
-  const send = () => {
+  const send = async () => {
     if (selected.size === 0) { setErrMsg(tt.recipients.noSelection); setTimeout(() => setErrMsg(''), 2200); return }
-    if (!msg.trim()) return
+    if (!msg.trim() || !shopId) return
     setSending(true)
     setErrMsg('')
-    // Backend dispatch isn't wired yet — UI-only confirmation. The customer
-    // list and selection are real; the actual push pipeline lands separately.
-    setTimeout(() => {
-      setSending(false)
+    try {
+      // Calls the send-notification edge function. Body is the user's typed
+      // message (≤240 chars per server validation); title is the shop name.
+      // Backend currently broadcasts to all customers for the shop —
+      // per-customer targeting needs a backend change (customer_pass_ids param).
+      const trimmedBody = msg.trim().slice(0, 240)
+      const trimmedTitle = (shopName || 'Waya').slice(0, 80)
+      const { data, error } = await supabase.functions.invoke('send-notification', {
+        body: {
+          shop_id: shopId,
+          title: trimmedTitle,
+          body: trimmedBody,
+          client_request_id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        },
+      })
+      if (error) throw error
+      if (data && data.success === false) throw new Error(data.error || 'Send failed')
       setSent(true)
-      setTimeout(() => setSent(false), 2400)
-    }, 900)
+      setMsg('')
+      setSelected(new Set())
+      setTimeout(() => setSent(false), 2800)
+    } catch (e) {
+      setErrMsg(e?.message || 'Send failed')
+      setTimeout(() => setErrMsg(''), 4000)
+    } finally {
+      setSending(false)
+    }
   }
 
   const tdCss = { padding: '10px 14px', textAlign: lang === 'ar' ? 'right' : 'left' }
@@ -1014,6 +1036,17 @@ function RecipientsSection({ tt, lang, shopId, onChange }) {
           </div>
         </Field>
 
+        <div style={{
+          display: 'flex', gap: 10,
+          padding: '10px 12px', borderRadius: 10,
+          background: 'var(--nt-green-soft)',
+          border: '1px solid rgba(16,185,129,0.18)',
+          fontSize: 12, color: 'var(--nt-text-2)', lineHeight: 1.5,
+        }}>
+          <span style={{ color: 'var(--nt-green)', flexShrink: 0, marginTop: 1 }}>{Ic.spark}</span>
+          <span>{tt.recipients.broadcastHint}</span>
+        </div>
+
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           {errMsg && <span style={{ color: 'var(--nt-warn)', fontSize: 12.5 }}>{errMsg}</span>}
           <button
@@ -1121,7 +1154,7 @@ export default function NotificationsTab({ lang = 'ar', shopName, shopId }) {
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-          <RecipientsSection tt={tt} lang={lang} shopId={shopId} onChange={markDirty} />
+          <RecipientsSection tt={tt} lang={lang} shopId={shopId} shopName={effectiveShopName} onChange={markDirty} />
           <LocationSection   tt={tt} lang={lang} on={locOn}  setOn={(v) => { setLocOn(v); markDirty() }}  onChange={markDirty} />
           <InstantSection    tt={tt} lang={lang} shopName={effectiveShopName} on={instOn} setOn={(v) => { setInstOn(v); markDirty() }} onChange={markDirty} />
           <HistoryTable      tt={tt} />
