@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 // eslint-disable-next-line no-unused-vars -- `motion` is referenced via JSX as <motion.div>; the lint rule misses that for this rename pattern.
 import { motion } from 'framer-motion'
+import QRCode from 'qrcode'
 import { supabase } from '../../lib/supabase'
-import ApplePassPreview from '../pass-designer/ApplePassPreview'
-import GooglePassPreview from '../pass-designer/GooglePassPreview'
-import PlatformToggle from '../pass-designer/PlatformToggle'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
@@ -18,6 +16,76 @@ const STYLE_PRESETS = [
   { key: 'minimal',    en: 'Minimal',      ar: 'بسيط' },
   { key: 'revolut',    en: 'Revolut Glass', ar: 'ريفولوت' },
 ]
+
+// Minimalistic card preview — just the AI background, holder name, brand logo
+// in the corner (Mastercard-style), and a QR code. No stamp counter, no
+// reward labels, no progress dots. Matches the "premium credit card" aesthetic
+// the admin asked for.
+function MinimalCardPreview({ backgroundUrl, textColor, holderName, T }) {
+  const [qrDataUrl, setQrDataUrl] = useState('')
+  useEffect(() => {
+    QRCode.toDataURL('https://trywaya.com', { margin: 1, width: 200, color: { dark: '#111111', light: '#ffffff' } })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(''))
+  }, [])
+
+  const isDarkText = (textColor || '#ffffff').toLowerCase().startsWith('#f') ||
+                     (textColor || '#ffffff').toLowerCase() === '#ffffff' ||
+                     (textColor || '').toLowerCase() === '#fff'
+  // Subtle gradient scrim so name/logo stay readable regardless of the AI image.
+  const scrim = isDarkText
+    ? 'linear-gradient(to bottom, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 65%, rgba(0,0,0,.45) 100%)'
+    : 'linear-gradient(to bottom, rgba(255,255,255,.30) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 65%, rgba(255,255,255,.40) 100%)'
+
+  const fallbackBg = 'linear-gradient(135deg, #1a1a2e, #2d2d4f)'
+  return (
+    <div style={{
+      width: 380,
+      maxWidth: '100%',
+      aspectRatio: '1.586',
+      borderRadius: 18,
+      backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : fallbackBg,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      position: 'relative',
+      overflow: 'hidden',
+      color: textColor || '#ffffff',
+      boxShadow: '0 12px 32px rgba(0,0,0,.18)',
+    }}>
+      <div style={{ position: 'absolute', inset: 0, background: scrim, pointerEvents: 'none' }} />
+
+      {/* top row: holder name + corner logo */}
+      <div style={{
+        position: 'absolute', top: 16, insetInlineStart: 16, insetInlineEnd: 16,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+      }}>
+        <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: 0.4, textShadow: '0 1px 2px rgba(0,0,0,.2)' }}>
+          {holderName || T('Card Holder', 'حامل البطاقة')}
+        </div>
+        <div style={{
+          width: 38, height: 38, borderRadius: 9,
+          background: 'rgba(255,255,255,.95)', color: '#111',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: 800, fontSize: 16,
+          boxShadow: '0 2px 8px rgba(0,0,0,.15)',
+        }}>W</div>
+      </div>
+
+      {/* QR centered at bottom */}
+      <div style={{
+        position: 'absolute', bottom: 14, insetInlineStart: 0, insetInlineEnd: 0,
+        display: 'flex', justifyContent: 'center',
+      }}>
+        <div style={{ background: '#ffffff', padding: 5, borderRadius: 6, boxShadow: '0 2px 8px rgba(0,0,0,.18)' }}>
+          {qrDataUrl
+            ? <img src={qrDataUrl} alt="QR" style={{ width: 64, height: 64, display: 'block' }} />
+            : <div style={{ width: 64, height: 64, background: '#f3f4f6' }} />
+          }
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function base64ToBlob(b64, mimeType) {
   const bin = atob(b64)
@@ -63,8 +131,6 @@ export default function AdminDesignStudioPage({ lang = 'en', onBack }) {
   const [saveError, setSaveError] = useState(null)
   const [toast, setToast] = useState(null)
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 3000) }
-
-  const [platform, setPlatform] = useState('apple')
 
   // Saved templates
   const [templates, setTemplates] = useState([])
@@ -200,24 +266,8 @@ export default function AdminDesignStudioPage({ lang = 'en', onBack }) {
     )
   }
 
-  // Build preview data shape that ApplePassPreview / GooglePassPreview expect.
   const previewBg = draft?.imageDataUrl || null
-  const previewTheme = draft?.theme || null
-  const previewData = {
-    name: draftName || T('Sample Card', 'بطاقة عينة'),
-    stampsRequired: 10,
-    rewardTitle: T('Free reward', 'مكافأة مجانية'),
-    cardColor: previewTheme?.card_color || '#1a1a2e',
-    cardGradient: previewTheme?.gradient
-      ? { from: previewTheme.gradient.from, to: previewTheme.gradient.to, angle: previewTheme.gradient.angle }
-      : null,
-    textColor: previewTheme?.text_color || '#ffffff',
-    logoUrl: null,
-    backgroundUrl: previewBg,
-    rewardIconUrl: null,
-    sampleBalance: 4,
-    darkPreview: false,
-  }
+  const previewTextColor = draft?.theme?.text_color || '#ffffff'
 
   return (
     <div className="ads-page" dir={isAr ? 'rtl' : 'ltr'} style={{ padding: '24px 16px', maxWidth: 1280, margin: '0 auto' }}>
@@ -325,14 +375,13 @@ export default function AdminDesignStudioPage({ lang = 'en', onBack }) {
       {/* Preview + save controls — only render once we have a generated draft, so a broken preview can never hide the prompt. */}
       {draft && (
         <div style={{ background: '#ffffff', borderRadius: 16, padding: 20, border: '1px solid #e5e7eb', marginBottom: 32, color: '#111827' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-            <PlatformToggle value={platform} onChange={setPlatform} T={T} />
-          </div>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-            {platform === 'apple'
-              ? <ApplePassPreview data={previewData} sampleName="Waya" T={T} />
-              : <GooglePassPreview data={previewData} sampleName="Waya" T={T} />
-            }
+            <MinimalCardPreview
+              backgroundUrl={previewBg}
+              textColor={previewTextColor}
+              holderName={draftName || T('Card Holder', 'حامل البطاقة')}
+              T={T}
+            />
           </div>
 
           <div style={{ paddingTop: 20, borderTop: '1px solid #e5e7eb' }}>
