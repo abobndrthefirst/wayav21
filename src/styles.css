@@ -5245,3 +5245,648 @@ html.ltr-mode .scan-stamp-counter { text-align: left; }
   padding: 40px 12px !important;
   color: var(--gray-dim) !important;
 }
+
+/* ============================================================
+   Marketer affiliate program
+   - Public landing page (/marketers)
+   - Marketer dashboard (/marketer/dashboard)
+   - Merchant subscribe page (/subscribe)
+   - Shared form helpers (auth-helper, marketer-radio)
+   Mobile-first; ≥768px adds desktop layout.
+   ============================================================ */
+
+/* Shared helpers used by inline auth pages too */
+.auth-helper {
+  font-size: 12px;
+  color: var(--gray-dim, #888);
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+.marketer-radio-row {
+  display: flex;
+  gap: 10px;
+}
+.marketer-radio {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-weight: 500;
+  background: var(--bg-card-inner);
+}
+.marketer-radio input { accent-color: var(--green); }
+.marketer-radio:hover { border-color: var(--green); }
+.marketer-radio.active {
+  border-color: var(--green);
+  background: var(--green-glow);
+  color: var(--green);
+}
+
+/* ───── Public landing ───── */
+.marketer-landing {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.marketer-landing-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 16px;
+}
+.marketer-landing-brand {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.marketer-landing-brand img {
+  height: 44px;
+  width: auto;
+  display: block;
+}
+.marketer-landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.marketer-landing-login {
+  background: none;
+  border: 1.5px solid var(--border);
+  color: var(--white);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.18s ease;
+}
+.marketer-landing-login:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+.marketer-landing-cta {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.18s ease;
+}
+.marketer-landing-cta:hover {
+  background: var(--green-bright);
+  transform: translateY(-1px);
+}
+
+.marketer-hero {
+  padding: 56px 24px 64px;
+  text-align: center;
+  background: radial-gradient(ellipse at top, var(--green-glow) 0%, transparent 60%);
+}
+.marketer-hero-inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.marketer-hero-title {
+  font-size: clamp(28px, 6vw, 48px);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+}
+.marketer-hero-subtitle {
+  font-size: clamp(15px, 3.5vw, 18px);
+  line-height: 1.7;
+  color: var(--gray-dim, #999);
+  margin: 0 0 32px;
+}
+.marketer-hero-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.marketer-btn-primary {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px var(--green-glow);
+}
+.marketer-btn-primary:hover {
+  background: var(--green-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3);
+}
+.marketer-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.marketer-btn-large {
+  padding: 16px 40px;
+  font-size: 17px;
+}
+.marketer-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  color: var(--white);
+  border: 1.5px solid var(--border);
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.marketer-btn-secondary:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+.marketer-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.marketer-badge {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--gray-dim, #999);
+}
+
+.marketer-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 56px 24px;
+}
+.marketer-section-title {
+  font-size: clamp(22px, 5vw, 32px);
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 32px;
+  letter-spacing: -0.01em;
+}
+.marketer-section-body {
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--gray-dim, #999);
+  max-width: 720px;
+  margin: 0 auto 32px;
+}
+.marketer-section-split {
+  display: grid;
+  gap: 40px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .marketer-section-split {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.marketer-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 600px) {
+  .marketer-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .marketer-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+  .marketer-grid-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+.marketer-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.2s ease;
+}
+.marketer-card:hover {
+  border-color: var(--green);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(16, 185, 129, 0.08);
+}
+.marketer-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  color: var(--white);
+}
+.marketer-card-body {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--gray-dim, #999);
+  margin: 0;
+}
+
+.marketer-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  margin-inline: auto;
+}
+.marketer-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 24px;
+}
+.marketer-step-num {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--green);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+.marketer-step-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.marketer-step-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--gray-dim, #999);
+  margin: 0;
+}
+
+.marketer-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.marketer-bullets li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 15px;
+}
+.marketer-bullet-check {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background: var(--green-glow);
+  color: var(--green);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marketer-commission-card {
+  text-align: center;
+  padding: 28px 16px;
+}
+.marketer-commission-count {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--green);
+  margin-bottom: 8px;
+  direction: ltr;
+}
+.marketer-commission-label {
+  font-size: 14px;
+  color: var(--gray-dim, #999);
+}
+.marketer-note {
+  text-align: center;
+  font-size: 13px;
+  color: var(--gray-dim, #999);
+  margin-top: 24px;
+  font-style: italic;
+}
+
+.marketer-final-cta {
+  padding: 64px 24px;
+  background: linear-gradient(135deg, var(--green-glow) 0%, transparent 100%);
+}
+.marketer-final-cta-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 48px 32px;
+}
+.marketer-final-cta-inner h2 {
+  font-size: clamp(22px, 5vw, 30px);
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+.marketer-final-cta-inner p {
+  color: var(--gray-dim, #999);
+  margin: 0 0 28px;
+  line-height: 1.7;
+}
+
+.marketer-landing-footer {
+  padding: 40px 24px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+.marketer-landing-footer p {
+  margin: 0 0 8px;
+  color: var(--gray-dim, #999);
+  font-size: 14px;
+}
+.marketer-landing-footer-copy {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+/* ───── Merchant subscribe page ───── */
+.merchant-subscribe-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+}
+.merchant-subscribe-card {
+  max-width: 540px;
+  margin: 24px auto 80px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 28px;
+}
+.merchant-subscribe-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 8px;
+  text-align: center;
+}
+.merchant-subscribe-subtitle {
+  font-size: 14px;
+  color: var(--gray-dim, #999);
+  text-align: center;
+  margin: 0 0 28px;
+  line-height: 1.6;
+}
+
+/* ───── Marketer dashboard ───── */
+.marketer-dash-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+}
+.marketer-dash-loading {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--gray-dim, #888);
+  font-size: 24px;
+}
+.marketer-dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.marketer-dash-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.marketer-dash-welcome {
+  font-size: 14px;
+  font-weight: 600;
+}
+.marketer-dash-logout {
+  background: none;
+  border: 1.5px solid var(--border);
+  color: var(--white);
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+.marketer-dash-logout:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+.marketer-dash-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.marketer-dash-code-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--green-glow) 100%);
+  border: 1px solid var(--green);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+}
+.marketer-dash-code-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-dim, #999);
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.marketer-dash-code-display {
+  font-family: 'Courier New', monospace;
+  font-size: clamp(40px, 10vw, 64px);
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--green);
+  margin: 8px 0 16px;
+  user-select: all;
+}
+.marketer-dash-code-helper {
+  font-size: 13px;
+  color: var(--gray-dim, #999);
+  line-height: 1.6;
+  max-width: 480px;
+  margin: 0 auto 20px;
+}
+.marketer-dash-share {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: var(--bg-card-inner);
+  border-radius: 10px;
+  text-align: start;
+  font-size: 12px;
+}
+.marketer-dash-share-label {
+  display: block;
+  color: var(--gray-dim, #999);
+  margin-bottom: 6px;
+}
+.marketer-dash-share-link {
+  display: block;
+  font-family: 'Courier New', monospace;
+  color: var(--green);
+  word-break: break-all;
+  user-select: all;
+}
+
+.marketer-dash-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 16px;
+}
+.marketer-dash-stats-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+}
+@media (min-width: 768px) {
+  .marketer-dash-stats-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+.marketer-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 14px;
+  text-align: center;
+}
+.marketer-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+.marketer-stat-label {
+  font-size: 12px;
+  color: var(--gray-dim, #999);
+  line-height: 1.4;
+}
+
+.marketer-dash-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-card);
+}
+.marketer-dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 640px;
+}
+.marketer-dash-table thead th {
+  background: var(--bg-card-inner);
+  text-align: start;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--gray-dim, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+}
+.marketer-dash-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.marketer-dash-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.marketer-dash-empty {
+  background: var(--bg-card);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--gray-dim, #999);
+}
+
+.marketer-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.marketer-status-pending,
+.marketer-status-c-pending { background: rgba(234, 179, 8, 0.15); color: #ca8a04; }
+.marketer-status-active,
+.marketer-status-c-approved { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+.marketer-status-c-paid { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+.marketer-status-rejected,
+.marketer-status-cancelled,
+.marketer-status-c-cancelled { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+.marketer-dash-payment {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+.marketer-dash-payment-helper {
+  font-size: 13px;
+  color: var(--gray-dim, #999);
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+

@@ -33,6 +33,9 @@ const BillingPage = lazy(() => import('./components/BillingPage'))
 const BillingReturnPage = lazy(() => import('./components/BillingReturnPage'))
 const BillingCancelPage = lazy(() => import('./components/BillingCancelPage'))
 const GuidePage = lazy(() => import('./pages/GuidePage'))
+const MarketerLandingPage = lazy(() => import('./pages/MarketerLandingPage'))
+const MarketerDashboardPage = lazy(() => import('./pages/MarketerDashboardPage'))
+const MerchantSubscribePage = lazy(() => import('./pages/MerchantSubscribePage'))
 
 const LazyFallback = () => (
   <div style={{ padding: 48, textAlign: 'center', color: '#888' }}>Loading…</div>
@@ -659,6 +662,184 @@ const content = {
         },
       ],
     },
+    marketer: {
+      landingTitle: 'انضم إلى فريق مسوّقي Waya بالعمولة',
+      landingSubtitle: 'فرصة عمل مرنة في جميع مناطق المملكة، بعمولات مجزية قد تصل إلى 15,000 ريال شهرياً.',
+      ctaPrimary: 'ابدأ الآن',
+      ctaSecondary: 'تعرّف على طريقة العمل',
+      badges: { age: 'فوق 18 سنة', regions: 'جميع مناطق المملكة', flexible: 'عمل مرن', payout: 'تحويل العمولة كل أسبوعين' },
+      whyTitle: 'لماذا تنضم معنا؟',
+      whyCards: [
+        { title: 'دخل إضافي مرن', body: 'اعمل في الوقت والمكان المناسب لك، وحقّق دخلاً إضافياً حسب عدد المتاجر التي تسجّلها.' },
+        { title: 'عمولات مجزية', body: 'تحصل على عمولة مقابل كل متجر يشترك من خلالك، مع إمكانية تحقيق دخل شهري يصل إلى 15,000 ريال.' },
+        { title: 'بدون دوام ثابت', body: 'لا تحتاج إلى الالتزام بساعات عمل محددة. اعمل حسب جدولك اليومي.' },
+        { title: 'تحويل العمولة كل أسبوعين', body: 'تُحتسب العمولات وتُحوَّل بشكل دوري كل أسبوعين للمتاجر المؤهّلة.' },
+      ],
+      howTitle: 'كيف تعمل؟',
+      howSteps: [
+        { title: 'سجّل بياناتك', body: 'أنشئ حسابك كمسوّق في Waya خلال دقائق.' },
+        { title: 'احصل على كودك الخاص', body: 'بعد تسجيل الدخول ستحصل على كود مكوّن من 4 أحرف خاص بك.' },
+        { title: 'شارك Waya مع المتاجر', body: 'قم بزيارة أو التواصل مع المتاجر وعرّفهم على خدمة Waya.' },
+        { title: 'المتجر يشترك باستخدام كودك', body: 'عند اشتراك المتجر يُدخل كودك في صفحة الاشتراك.' },
+        { title: 'استلم عمولتك', body: 'بعد تأكيد الاشتراك وتفعيل المتجر تُحتسب عمولتك وتُحوَّل كل أسبوعين.' },
+      ],
+      requirementsTitle: 'الشروط والمتطلبات',
+      requirements: [
+        'العمر 18 سنة فأكثر',
+        'متاح في جميع مناطق المملكة',
+        'الجدية والالتزام',
+        'مهارات تواصل جيدة',
+        'توفّر رقم جوال وواتساب',
+        'القدرة على التواصل مع أصحاب المتاجر',
+      ],
+      suitableTitle: 'مناسبة لمن؟',
+      suitableFor: [
+        'الطلاب والطالبات',
+        'الموظفون الباحثون عن دخل إضافي',
+        'المسوّقون المستقلّون',
+        'من لديهم علاقات مع المتاجر',
+        'من يرغب في عمل مرن بالعمولة',
+      ],
+      commissionTitle: 'كم يمكن أن تحقّق؟',
+      commissionBody: 'يعتمد دخلك على عدد المتاجر التي تسجّلها وتفعّلها. كلما زاد عدد المتاجر التي تنضم من خلالك، زادت أرباحك.',
+      commissionExamples: [
+        { count: '10 متاجر', label: 'دخل إضافي بسيط' },
+        { count: '50 متجر', label: 'دخل ممتاز' },
+        { count: '+100 متجر', label: 'فرصة لتحقيق عمولات عالية' },
+      ],
+      commissionNote: 'الأرقام تعتمد على المتاجر المؤهّلة والمفعّلة حسب سياسة العمولة.',
+      finalCtaTitle: 'ابدأ الآن واحصل على كودك الخاص',
+      finalCtaBody: 'سجّل كمسوّق في Waya وابدأ بمشاركة الخدمة مع المتاجر في منطقتك.',
+      finalCtaBtn: 'سجّل كمسوّق الآن',
+      footerNote: 'Waya — برنامج ولاء رقمي للمتاجر الصغيرة في السعودية.',
+      navHome: 'الرئيسية',
+      navLogin: 'تسجيل الدخول',
+      navSignup: 'سجّل كمسوّق',
+      signupTitle: 'إنشاء حساب مسوّق',
+      signupSubtitle: 'سجّل بياناتك للانضمام إلى فريق مسوّقي Waya.',
+      fullName: 'الاسم الكامل',
+      fullNamePh: 'مثلاً: أحمد علي',
+      phone: 'رقم الجوال',
+      phonePh: '05xxxxxxxx',
+      email: 'البريد الإلكتروني',
+      emailPh: 'name@example.com',
+      city: 'المدينة',
+      cityPh: 'مثلاً: الرياض',
+      age: 'العمر',
+      agePh: '20',
+      experience: 'هل لديك خبرة في التسويق؟',
+      experienceYes: 'نعم',
+      experienceNo: 'لا',
+      password: 'كلمة المرور',
+      passwordPh: 'لا تقل عن 8 أحرف',
+      confirmPassword: 'تأكيد كلمة المرور',
+      confirmPasswordPh: 'أعد كتابة كلمة المرور',
+      signupBtn: 'إنشاء الحساب',
+      signupSubmitting: 'جاري الإنشاء...',
+      signupSuccessTitle: 'تم إنشاء حسابك بنجاح',
+      signupSuccessMsg: 'يرجى تفعيل بريدك الإلكتروني للمتابعة.',
+      hasAccount: 'لديك حساب؟',
+      goLogin: 'تسجيل الدخول',
+      errFullName: 'الاسم الكامل مطلوب.',
+      errPhone: 'رقم الجوال غير صحيح. يجب أن يبدأ بـ 05 ويتكون من 10 أرقام.',
+      errEmail: 'البريد الإلكتروني غير صحيح.',
+      errCity: 'المدينة مطلوبة.',
+      errAge: 'يجب أن يكون عمرك 18 سنة فأكثر.',
+      errPassword: 'كلمة المرور لا تقل عن 8 أحرف.',
+      errPasswordMatch: 'كلمتا المرور غير متطابقتين.',
+      verifyTitle: 'تفعيل البريد الإلكتروني',
+      verifyBody: 'أرسلنا رابط التفعيل إلى بريدك الإلكتروني. يرجى فتح الرسالة والضغط على رابط التفعيل لتفعيل حسابك.',
+      verifyResend: 'إعادة إرسال رابط التفعيل',
+      verifyResending: 'جاري الإرسال...',
+      verifyResendSent: 'تم إرسال الرابط مرة أخرى. تفقّد بريدك.',
+      verifyResendCooldown: 'يمكنك الإرسال مرة أخرى بعد {n} ثانية.',
+      verifyDone: 'تم تفعيل بريدك الإلكتروني بنجاح. يمكنك الآن الدخول إلى حسابك.',
+      verifyGoLogin: 'تسجيل الدخول',
+      loginTitle: 'تسجيل دخول المسوّقين',
+      loginSubtitle: 'ادخل لحسابك للوصول إلى لوحة التحكم.',
+      loginBtn: 'تسجيل الدخول',
+      loginSubmitting: 'جاري الدخول...',
+      forgot: 'نسيت كلمة المرور؟',
+      noAccount: 'ليس لديك حساب؟',
+      goSignup: 'سجّل كمسوّق',
+      errLoginInvalid: 'البريد الإلكتروني أو كلمة المرور غير صحيح.',
+      errLoginUnverified: 'يرجى تفعيل بريدك الإلكتروني قبل الدخول إلى لوحة التحكم.',
+      errLoginNoAccount: 'لم يتم العثور على حساب مسوّق بهذا البريد.',
+      dashWelcome: 'مرحباً، {name}',
+      dashLogout: 'تسجيل الخروج',
+      dashCodeTitle: 'كودك الخاص',
+      dashCodeHelper: 'شارك هذا الكود مع المتاجر. عند اشتراك المتجر يجب عليه إدخال الكود في صفحة الاشتراك حتى تُحتسب العمولة لك.',
+      dashCodeCopy: 'نسخ الكود',
+      dashCodeCopied: 'تم النسخ ✓',
+      dashCodeShareLabel: 'رابط مباشر للمشاركة:',
+      dashStatsTitle: 'إحصائياتك',
+      statTotal: 'عدد المتاجر المسجّلة من خلالك',
+      statActive: 'المتاجر المفعّلة',
+      statPending: 'بانتظار التفعيل',
+      statOwed: 'العمولات المستحقة',
+      statPaid: 'العمولات المدفوعة',
+      currency: 'ريال',
+      dashTableTitle: 'سجل المتاجر المُحالة',
+      colBusiness: 'اسم المتجر',
+      colPhone: 'رقم الجوال',
+      colDate: 'تاريخ التسجيل',
+      colStatus: 'حالة المتجر',
+      colCommission: 'العمولة',
+      colPayment: 'حالة الدفع',
+      noReferrals: 'لم تسجّل أي متجر بعد. ابدأ بمشاركة كودك مع المتاجر في منطقتك.',
+      msStatusPending: 'بانتظار التفعيل',
+      msStatusActive: 'مفعّل',
+      msStatusRejected: 'مرفوض',
+      msStatusCancelled: 'ملغى',
+      cStatusPending: 'بانتظار الاعتماد',
+      cStatusApproved: 'معتمد',
+      cStatusPaid: 'مدفوع',
+      cStatusCancelled: 'ملغى',
+      noAmountYet: '—',
+      dashPaymentTitle: 'بيانات الدفع',
+      dashPaymentHelper: 'أضف بياناتك البنكية حتى نتمكن من تحويل العمولات المستحقة لك كل أسبوعين.',
+      paymentAccountName: 'اسم صاحب الحساب',
+      paymentBankName: 'اسم البنك',
+      paymentIban: 'رقم الآيبان',
+      paymentIbanPh: 'SA0000000000000000000000',
+      paymentSave: 'حفظ بيانات الدفع',
+      paymentSaving: 'جاري الحفظ...',
+      paymentSaved: 'تم حفظ بياناتك البنكية ✓',
+      errIban: 'رقم الآيبان غير صحيح. يجب أن يبدأ بـ SA ويتكون من 24 خانة.',
+    },
+    merchantSubscribe: {
+      title: 'اشترك في Waya',
+      subtitle: 'املأ النموذج وسنتواصل معك قريباً لتفعيل اشتراك متجرك.',
+      businessName: 'اسم النشاط',
+      businessNamePh: 'مثلاً: كوفي لاونج',
+      contactName: 'اسم المسؤول',
+      contactNamePh: 'مثلاً: أحمد علي',
+      phone: 'رقم الجوال',
+      phonePh: '05xxxxxxxx',
+      email: 'البريد الإلكتروني',
+      emailPh: 'name@example.com',
+      city: 'المدينة',
+      cityPh: 'مثلاً: الرياض',
+      category: 'نوع النشاط',
+      categoryPh: 'اختر نوع النشاط',
+      categories: ['مقهى', 'مطعم', 'صالون', 'بقالة', 'ملابس', 'إلكترونيات', 'أخرى'],
+      referralCode: 'كود المسوّق',
+      referralCodePh: 'مثال: ABCD',
+      referralCodeHelper: 'إذا وصلك Waya عن طريق أحد المسوّقين، أدخل الكود الخاص به هنا.',
+      submit: 'إرسال الاشتراك',
+      submitting: 'جاري الإرسال...',
+      errBusinessName: 'اسم النشاط مطلوب.',
+      errContactName: 'اسم المسؤول مطلوب.',
+      errPhone: 'رقم الجوال غير صحيح.',
+      errEmail: 'البريد الإلكتروني غير صحيح.',
+      errCity: 'المدينة مطلوبة.',
+      errCategory: 'اختر نوع النشاط.',
+      errReferralCodeFormat: 'كود المسوّق يجب أن يكون 4 أحرف إنجليزية.',
+      errReferralCodeNotFound: 'كود المسوّق غير صحيح. يرجى التأكد من الكود أو ترك الحقل فارغاً.',
+      thanksTitle: 'شكراً لاهتمامك بـ Waya',
+      thanksBody: 'استلمنا طلبك بنجاح. سيتواصل معك فريقنا خلال 24-48 ساعة لتفعيل اشتراك متجرك.',
+      thanksHome: 'العودة إلى الرئيسية',
+    },
     footer: {
       copy: '2026 وايا.',
       links: { privacy: 'الخصوصية', terms: 'الشروط' },
@@ -1188,6 +1369,184 @@ const content = {
           ],
         },
       ],
+    },
+    marketer: {
+      landingTitle: 'Join the Waya Commission Marketers',
+      landingSubtitle: 'Flexible work across the Kingdom, with rewarding commissions of up to 15,000 SAR per month.',
+      ctaPrimary: 'Get Started',
+      ctaSecondary: 'How It Works',
+      badges: { age: '18+', regions: 'All KSA regions', flexible: 'Flexible work', payout: 'Bi-weekly payouts' },
+      whyTitle: 'Why Join Us?',
+      whyCards: [
+        { title: 'Flexible side income', body: 'Work where and when it suits you, and earn based on the merchants you sign up.' },
+        { title: 'Rewarding commissions', body: 'Earn for every merchant who subscribes through you — up to 15,000 SAR per month.' },
+        { title: 'No fixed hours', body: "You don't need to commit to set hours. Work around your daily schedule." },
+        { title: 'Bi-weekly payouts', body: 'Commissions are calculated and paid out every two weeks for qualifying merchants.' },
+      ],
+      howTitle: 'How It Works',
+      howSteps: [
+        { title: 'Sign up', body: 'Create your Waya marketer account in minutes.' },
+        { title: 'Get your code', body: 'After login, you receive your unique 4-letter code.' },
+        { title: 'Share Waya', body: 'Visit or message merchants and tell them about Waya.' },
+        { title: 'Merchant subscribes with your code', body: 'When the merchant subscribes, they enter your code on the subscribe page.' },
+        { title: 'Get paid', body: 'Once the subscription is confirmed and the merchant is active, your commission is calculated and paid every two weeks.' },
+      ],
+      requirementsTitle: 'Requirements',
+      requirements: [
+        '18 years or older',
+        'Available across the Kingdom',
+        'Serious and committed',
+        'Good communication skills',
+        'Active mobile and WhatsApp number',
+        'Comfortable contacting merchant owners',
+      ],
+      suitableTitle: 'Who Is It For?',
+      suitableFor: [
+        'Students',
+        'Employees looking for extra income',
+        'Independent marketers',
+        'People with relationships with local merchants',
+        'Anyone looking for flexible commission-based work',
+      ],
+      commissionTitle: 'How Much Can You Earn?',
+      commissionBody: 'Your income depends on how many merchants you sign up and activate. The more merchants who join through you, the more you earn.',
+      commissionExamples: [
+        { count: '10 stores', label: 'Modest extra income' },
+        { count: '50 stores', label: 'Strong income' },
+        { count: '100+ stores', label: 'Opportunity for high commissions' },
+      ],
+      commissionNote: 'Numbers depend on qualifying activated merchants per the commission policy.',
+      finalCtaTitle: 'Get Started and Receive Your Code',
+      finalCtaBody: 'Sign up as a Waya marketer and start sharing the service with merchants in your area.',
+      finalCtaBtn: 'Sign Up as a Marketer',
+      footerNote: 'Waya — a digital loyalty program for small businesses in Saudi Arabia.',
+      navHome: 'Home',
+      navLogin: 'Log In',
+      navSignup: 'Sign Up as Marketer',
+      signupTitle: 'Create a Marketer Account',
+      signupSubtitle: 'Enter your details to join the Waya marketing team.',
+      fullName: 'Full name',
+      fullNamePh: 'e.g. Ahmed Ali',
+      phone: 'Mobile number',
+      phonePh: '05xxxxxxxx',
+      email: 'Email',
+      emailPh: 'name@example.com',
+      city: 'City',
+      cityPh: 'e.g. Riyadh',
+      age: 'Age',
+      agePh: '20',
+      experience: 'Do you have marketing experience?',
+      experienceYes: 'Yes',
+      experienceNo: 'No',
+      password: 'Password',
+      passwordPh: 'At least 8 characters',
+      confirmPassword: 'Confirm password',
+      confirmPasswordPh: 'Re-enter your password',
+      signupBtn: 'Create Account',
+      signupSubmitting: 'Creating...',
+      signupSuccessTitle: 'Account created',
+      signupSuccessMsg: 'Please verify your email to continue.',
+      hasAccount: 'Already have an account?',
+      goLogin: 'Log in',
+      errFullName: 'Full name is required.',
+      errPhone: 'Invalid phone number. Must start with 05 and be 10 digits.',
+      errEmail: 'Invalid email address.',
+      errCity: 'City is required.',
+      errAge: 'You must be 18 years or older.',
+      errPassword: 'Password must be at least 8 characters.',
+      errPasswordMatch: 'Passwords do not match.',
+      verifyTitle: 'Verify Your Email',
+      verifyBody: 'We sent a verification link to your email. Please open the message and click the link to activate your account.',
+      verifyResend: 'Resend verification link',
+      verifyResending: 'Sending...',
+      verifyResendSent: 'Link resent. Check your inbox.',
+      verifyResendCooldown: 'You can resend in {n} seconds.',
+      verifyDone: 'Your email has been verified. You can now log in.',
+      verifyGoLogin: 'Log in',
+      loginTitle: 'Marketer Sign In',
+      loginSubtitle: 'Sign in to access your dashboard.',
+      loginBtn: 'Log In',
+      loginSubmitting: 'Logging in...',
+      forgot: 'Forgot password?',
+      noAccount: "Don't have an account?",
+      goSignup: 'Sign up as a marketer',
+      errLoginInvalid: 'Invalid email or password.',
+      errLoginUnverified: 'Please verify your email before signing in.',
+      errLoginNoAccount: 'No marketer account found for this email.',
+      dashWelcome: 'Welcome, {name}',
+      dashLogout: 'Log Out',
+      dashCodeTitle: 'Your Code',
+      dashCodeHelper: 'Share this code with merchants. When they subscribe, they enter the code on the subscribe page so your commission is tracked.',
+      dashCodeCopy: 'Copy code',
+      dashCodeCopied: 'Copied ✓',
+      dashCodeShareLabel: 'Direct share link:',
+      dashStatsTitle: 'Your Stats',
+      statTotal: 'Merchants signed up via your code',
+      statActive: 'Active merchants',
+      statPending: 'Awaiting activation',
+      statOwed: 'Commissions owed',
+      statPaid: 'Commissions paid',
+      currency: 'SAR',
+      dashTableTitle: 'Referral Log',
+      colBusiness: 'Business name',
+      colPhone: 'Phone',
+      colDate: 'Signup date',
+      colStatus: 'Merchant status',
+      colCommission: 'Commission',
+      colPayment: 'Payment status',
+      noReferrals: "You haven't signed up any merchants yet. Start by sharing your code with merchants in your area.",
+      msStatusPending: 'Awaiting activation',
+      msStatusActive: 'Active',
+      msStatusRejected: 'Rejected',
+      msStatusCancelled: 'Cancelled',
+      cStatusPending: 'Awaiting approval',
+      cStatusApproved: 'Approved',
+      cStatusPaid: 'Paid',
+      cStatusCancelled: 'Cancelled',
+      noAmountYet: '—',
+      dashPaymentTitle: 'Payment Information',
+      dashPaymentHelper: 'Add your bank details so we can transfer your commissions every two weeks.',
+      paymentAccountName: 'Account holder name',
+      paymentBankName: 'Bank name',
+      paymentIban: 'IBAN',
+      paymentIbanPh: 'SA0000000000000000000000',
+      paymentSave: 'Save payment details',
+      paymentSaving: 'Saving...',
+      paymentSaved: 'Payment details saved ✓',
+      errIban: 'Invalid IBAN. Must start with SA and be 24 characters.',
+    },
+    merchantSubscribe: {
+      title: 'Subscribe to Waya',
+      subtitle: "Fill out the form and we'll contact you to activate your store's subscription.",
+      businessName: 'Business name',
+      businessNamePh: 'e.g. Coffee Lounge',
+      contactName: 'Contact name',
+      contactNamePh: 'e.g. Ahmed Ali',
+      phone: 'Mobile number',
+      phonePh: '05xxxxxxxx',
+      email: 'Email',
+      emailPh: 'name@example.com',
+      city: 'City',
+      cityPh: 'e.g. Riyadh',
+      category: 'Business category',
+      categoryPh: 'Select a category',
+      categories: ['Café', 'Restaurant', 'Salon', 'Grocery', 'Clothing', 'Electronics', 'Other'],
+      referralCode: 'Marketer code',
+      referralCodePh: 'e.g. ABCD',
+      referralCodeHelper: 'If a Waya marketer referred you, enter their code here.',
+      submit: 'Submit',
+      submitting: 'Submitting...',
+      errBusinessName: 'Business name is required.',
+      errContactName: 'Contact name is required.',
+      errPhone: 'Invalid phone number.',
+      errEmail: 'Invalid email address.',
+      errCity: 'City is required.',
+      errCategory: 'Select a business category.',
+      errReferralCodeFormat: 'Marketer code must be 4 English letters.',
+      errReferralCodeNotFound: 'Invalid marketer code. Please check or leave the field empty.',
+      thanksTitle: 'Thanks for your interest in Waya',
+      thanksBody: "We've received your request. Our team will contact you within 24-48 hours to activate your subscription.",
+      thanksHome: 'Back to home',
     },
     footer: {
       copy: '2026 Waya.',
@@ -3214,6 +3573,325 @@ function SetupPage({ t, lang, setLang, theme, setTheme }) {
   )
 }
 
+/* ─── Marketer Auth Pages ─── */
+
+// Shared top bar for marketer auth pages — back to /marketers landing,
+// theme + lang toggles. Mirrors the LoginPage/SignupPage auth-top-bar.
+function MarketerAuthTopBar({ lang, setLang, theme, setTheme, m }) {
+  return (
+    <div className="auth-top-bar">
+      <button onClick={() => navigate('/marketers')} className="auth-back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d={lang === 'ar' ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'}/></svg>
+        {m.navHome}
+      </button>
+      <div className="auth-top-actions">
+        <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
+          {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+        </button>
+        <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
+          <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function MarketerSignupPage({ t, lang, setLang, theme, setTheme }) {
+  const m = t.marketer
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [city, setCity] = useState('')
+  const [age, setAge] = useState('')
+  const [hasExperience, setHasExperience] = useState(null) // null | true | false
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [errorField, setErrorField] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const setErr = (msg, field = '') => { setError(msg); setErrorField(field) }
+  const clearErr = () => { setError(''); setErrorField('') }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!fullName.trim()) return setErr(m.errFullName, 'full_name')
+    if (!isValidKsaPhone(phone)) return setErr(m.errPhone, 'phone')
+    if (!email.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setErr(m.errEmail, 'email')
+    if (!city.trim()) return setErr(m.errCity, 'city')
+    const ageNum = parseInt(age, 10)
+    if (!Number.isFinite(ageNum) || ageNum < 18) return setErr(m.errAge, 'age')
+    if (password.length < 8) return setErr(m.errPassword, 'password')
+    if (password !== confirmPassword) return setErr(m.errPasswordMatch, 'confirm_password')
+
+    setLoading(true); clearErr()
+    const { data, error: fnErr } = await supabase.functions.invoke('marketer-signup', {
+      body: {
+        full_name: fullName.trim(),
+        phone,
+        email: email.trim().toLowerCase(),
+        password,
+        city: city.trim(),
+        age: ageNum,
+        has_marketing_experience: hasExperience === true,
+      },
+    })
+
+    if (fnErr) {
+      // Try to surface the function's structured error if present
+      let msg = fnErr.message
+      let field = ''
+      try {
+        const ctx = fnErr.context
+        if (ctx && typeof ctx.json === 'function') {
+          const body = await ctx.json()
+          if (body?.error) msg = body.error
+          if (body?.field) field = body.field
+        }
+      } catch { /* keep generic msg */ }
+      setErr(msg, field); setLoading(false); return
+    }
+    if (!data?.success) {
+      setErr(data?.error || 'Error', data?.field || ''); setLoading(false); return
+    }
+    navigate(`/marketer/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`)
+  }
+
+  return (
+    <div className="auth-page">
+      <MarketerAuthTopBar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} m={m} />
+      <motion.div className="auth-card" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="auth-brand"><Logo size={100} /></div>
+        <h1 className="auth-title">{m.signupTitle}</h1>
+        <p className="auth-subtitle">{m.signupSubtitle}</p>
+
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="auth-field">
+            <label>{m.fullName}</label>
+            <input type="text" value={fullName} onChange={e => { setFullName(e.target.value); clearErr() }} placeholder={m.fullNamePh} aria-invalid={errorField === 'full_name'} />
+          </div>
+          <div className="auth-field">
+            <label>{m.phone}</label>
+            <input type="tel" value={phone} onChange={e => { setPhone(handlePhoneChange(e.target.value)); clearErr() }} placeholder={m.phonePh} dir="ltr" aria-invalid={errorField === 'phone'} />
+          </div>
+          <div className="auth-field">
+            <label>{m.email}</label>
+            <input type="email" value={email} onChange={e => { setEmail(e.target.value); clearErr() }} placeholder={m.emailPh} dir="ltr" aria-invalid={errorField === 'email'} />
+          </div>
+          <div className="auth-field">
+            <label>{m.city}</label>
+            <input type="text" value={city} onChange={e => { setCity(e.target.value); clearErr() }} placeholder={m.cityPh} aria-invalid={errorField === 'city'} />
+          </div>
+          <div className="auth-field">
+            <label>{m.age}</label>
+            <input type="number" min="18" max="100" value={age} onChange={e => { setAge(e.target.value); clearErr() }} placeholder={m.agePh} dir="ltr" aria-invalid={errorField === 'age'} />
+          </div>
+
+          <div className="auth-field">
+            <label>{m.experience}</label>
+            <div className="marketer-radio-row">
+              <label className={`marketer-radio ${hasExperience === true ? 'active' : ''}`}>
+                <input type="radio" name="has_experience" checked={hasExperience === true} onChange={() => { setHasExperience(true); clearErr() }} />
+                <span>{m.experienceYes}</span>
+              </label>
+              <label className={`marketer-radio ${hasExperience === false ? 'active' : ''}`}>
+                <input type="radio" name="has_experience" checked={hasExperience === false} onChange={() => { setHasExperience(false); clearErr() }} />
+                <span>{m.experienceNo}</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="auth-field">
+            <label>{m.password}</label>
+            <input type="password" value={password} onChange={e => { setPassword(e.target.value); clearErr() }} placeholder={m.passwordPh} dir="ltr" aria-invalid={errorField === 'password'} />
+          </div>
+          <div className="auth-field">
+            <label>{m.confirmPassword}</label>
+            <input type="password" value={confirmPassword} onChange={e => { setConfirmPassword(e.target.value); clearErr() }} placeholder={m.confirmPasswordPh} dir="ltr" aria-invalid={errorField === 'confirm_password'} />
+          </div>
+
+          {error && <p className="auth-error">{error}</p>}
+          <button type="submit" disabled={loading} className="auth-submit-btn">
+            {loading ? m.signupSubmitting : m.signupBtn}
+          </button>
+        </form>
+
+        <p className="auth-switch">{m.hasAccount} <button onClick={() => navigate('/marketer/login')}>{m.goLogin}</button></p>
+      </motion.div>
+    </div>
+  )
+}
+
+function MarketerLoginPage({ t, lang, setLang, theme, setTheme }) {
+  const m = t.marketer
+  const { user } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+
+  // If a session already exists when this page mounts, route based on the
+  // marketers row + email-verified state.
+  useEffect(() => {
+    if (!user) return
+    ;(async () => {
+      const { data: marketer } = await supabase.from('marketers').select('id').eq('user_id', user.id).maybeSingle()
+      if (!marketer) { setError(m.errLoginNoAccount); return }
+      if (!user.email_confirmed_at) { navigate(`/marketer/verify-email?email=${encodeURIComponent(user.email || email)}`); return }
+      navigate('/marketer/dashboard')
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
+
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    if (!email.trim() || !password.trim()) return setError(m.errLoginInvalid)
+    setLoading(true); setError('')
+    const { data, error: err } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
+    if (err) { setError(m.errLoginInvalid); setLoading(false); return }
+
+    const signedInUser = data?.user
+    const { data: marketer } = await supabase.from('marketers').select('id').eq('user_id', signedInUser.id).maybeSingle()
+    if (!marketer) {
+      await supabase.auth.signOut()
+      setError(m.errLoginNoAccount); setLoading(false); return
+    }
+    if (!signedInUser.email_confirmed_at) {
+      navigate(`/marketer/verify-email?email=${encodeURIComponent(signedInUser.email)}`); return
+    }
+    navigate('/marketer/dashboard')
+  }
+
+  const handleForgot = async () => {
+    if (!email.trim()) { setError(t.auth.errEmailFirst); return }
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo: window.location.origin + '/reset-password' })
+    if (!err) { setError(''); setResetSent(true) } else setError(err.message)
+  }
+
+  return (
+    <div className="auth-page">
+      <MarketerAuthTopBar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} m={m} />
+      <motion.div className="auth-card" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="auth-brand"><Logo size={100} /></div>
+        <h1 className="auth-title">{m.loginTitle}</h1>
+        <p className="auth-subtitle">{m.loginSubtitle}</p>
+
+        <form onSubmit={handleLogin} className="auth-form">
+          <div className="auth-field">
+            <label>{m.email}</label>
+            <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError('') }} placeholder={m.emailPh} dir="ltr" />
+          </div>
+          <div className="auth-field">
+            <label>{m.password}</label>
+            <input type="password" value={password} onChange={e => { setPassword(e.target.value); setError('') }} placeholder={t.auth.passwordPh} dir="ltr" />
+          </div>
+          <button type="button" onClick={handleForgot} className="auth-forgot">{m.forgot}</button>
+          {error && <p className="auth-error">{error}</p>}
+          {resetSent && <p className="auth-success">{t.auth.resetSent}</p>}
+          <button type="submit" disabled={loading} className="auth-submit-btn">
+            {loading ? m.loginSubmitting : m.loginBtn}
+          </button>
+        </form>
+
+        <p className="auth-switch">{m.noAccount} <button onClick={() => navigate('/marketer/signup')}>{m.goSignup}</button></p>
+      </motion.div>
+    </div>
+  )
+}
+
+function MarketerVerifyEmailPage({ t, lang, setLang, theme, setTheme }) {
+  const m = t.marketer
+  const { user } = useAuth()
+  const [email, setEmail] = useState('')
+  const [resending, setResending] = useState(false)
+  const [resentMsg, setResentMsg] = useState('')
+  const [cooldown, setCooldown] = useState(0)
+  const [error, setError] = useState('')
+
+  // Pull email from query param first, then from session if available.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const fromQuery = params.get('email')
+    if (fromQuery) setEmail(fromQuery)
+    else if (user?.email) setEmail(user.email)
+  }, [user])
+
+  // If the user is already verified (e.g., they clicked the link and landed
+  // back here), bounce to the dashboard.
+  useEffect(() => {
+    if (user?.email_confirmed_at) navigate('/marketer/dashboard')
+  }, [user])
+
+  // Cooldown timer for resend button (60s).
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const id = setTimeout(() => setCooldown(c => c - 1), 1000)
+    return () => clearTimeout(id)
+  }, [cooldown])
+
+  const handleResend = async () => {
+    if (cooldown > 0 || resending) return
+    if (!email) { setError(t.auth.errEmailFirst); return }
+    setResending(true); setError(''); setResentMsg('')
+    const { error: err } = await supabase.auth.resend({ type: 'signup', email })
+    setResending(false)
+    if (err) { setError(err.message); return }
+    setResentMsg(m.verifyResendSent)
+    setCooldown(60)
+  }
+
+  return (
+    <div className="auth-page">
+      <MarketerAuthTopBar lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} m={m} />
+      <motion.div className="auth-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>📧</div>
+        <h1 className="auth-title">{m.verifyTitle}</h1>
+        <p className="auth-subtitle" style={{ marginBottom: 8 }}>{m.verifyBody}</p>
+        {email && <p style={{ color: '#10b981', fontWeight: 600, direction: 'ltr', fontSize: '0.95rem' }}>{email}</p>}
+        {error && <p className="auth-error" style={{ marginTop: 16 }}>{error}</p>}
+        {resentMsg && <p className="auth-success" style={{ marginTop: 16 }}>{resentMsg}</p>}
+        <button onClick={handleResend} disabled={resending || cooldown > 0} className="auth-submit-btn" style={{ marginTop: 24 }}>
+          {resending
+            ? m.verifyResending
+            : cooldown > 0
+              ? m.verifyResendCooldown.replace('{n}', String(cooldown))
+              : m.verifyResend}
+        </button>
+        <p className="auth-switch" style={{ marginTop: 16 }}><button onClick={() => navigate('/marketer/login')}>{m.verifyGoLogin}</button></p>
+      </motion.div>
+    </div>
+  )
+}
+
+function MerchantSubscribeThanksPage({ t, lang, setLang, theme, setTheme }) {
+  const m = t.merchantSubscribe
+  return (
+    <div className="auth-page">
+      <div className="auth-top-bar">
+        <button onClick={() => navigate('/')} className="auth-back-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d={lang === 'ar' ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'}/></svg>
+          {t.auth.back}
+        </button>
+        <div className="auth-top-actions">
+          <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
+          <button className="lang-toggle" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}>
+            <GlobeIcon /><span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
+          </button>
+        </div>
+      </div>
+      <motion.div className="auth-card" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
+        <h1 className="auth-title">{m.thanksTitle}</h1>
+        <p className="auth-subtitle">{m.thanksBody}</p>
+        <button onClick={() => navigate('/')} className="auth-submit-btn" style={{ marginTop: 24 }}>{m.thanksHome}</button>
+      </motion.div>
+    </div>
+  )
+}
+
 /* ─── Dashboard (Demo View with Sidebar) ─── */
 /* ─── Google Wallet Icon ─── */
 function GoogleWalletIcon() {
@@ -4825,6 +5503,13 @@ export default function App() {
     if (p === '/admin/metrics') return 'admin-metrics'
     if (p === '/admin/design-studio') return 'admin-design-studio'
     if (p === '/reset-password') return 'reset-password'
+    if (p === '/marketers' || p === '/marketers/') return 'marketer-landing'
+    if (p === '/marketer/signup') return 'marketer-signup'
+    if (p === '/marketer/login') return 'marketer-login'
+    if (p === '/marketer/verify-email') return 'marketer-verify'
+    if (p === '/marketer/dashboard') return 'marketer-dashboard'
+    if (p === '/subscribe') return 'merchant-subscribe'
+    if (p === '/subscribe/thanks') return 'merchant-subscribe-thanks'
     if (p === '/programs' || p.startsWith('/programs/')) return 'programs'
     if (p.startsWith('/w/')) return 'enroll'
     if (p.startsWith('/wallet/')) return 'wallet'
@@ -4877,6 +5562,13 @@ export default function App() {
   if (page === 'admin-metrics') return <AuthProvider><AdminMetricsPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'admin-design-studio') return <AuthProvider><Suspense fallback={<LazyFallback />}><AdminDesignStudioPage lang={lang} onBack={() => navigate('/dashboard')} /></Suspense></AuthProvider>
   if (page === 'guide') return <Suspense fallback={<LazyFallback />}><GuidePage /></Suspense>
+  if (page === 'marketer-landing') return <Suspense fallback={<LazyFallback />}><MarketerLandingPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></Suspense>
+  if (page === 'marketer-signup') return <AuthProvider><MarketerSignupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'marketer-login') return <AuthProvider><MarketerLoginPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'marketer-verify') return <AuthProvider><MarketerVerifyEmailPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
+  if (page === 'marketer-dashboard') return <AuthProvider><Suspense fallback={<LazyFallback />}><MarketerDashboardPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></Suspense></AuthProvider>
+  if (page === 'merchant-subscribe') return <Suspense fallback={<LazyFallback />}><MerchantSubscribePage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></Suspense>
+  if (page === 'merchant-subscribe-thanks') return <MerchantSubscribeThanksPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
 
   return (
     <AuthProvider>

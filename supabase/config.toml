@@ -34,3 +34,12 @@ verify_jwt = false
 # enforces is_platform_admin() inside the handler. Same ES256 workaround.
 [functions.admin-design-studio]
 verify_jwt = false
+
+# marketer-signup and submit-merchant-subscription are public endpoints —
+# they accept anonymous form submissions and do their own validation +
+# uniqueness checks, then write via the service-role client.
+[functions.marketer-signup]
+verify_jwt = false
+
+[functions.submit-merchant-subscription]
+verify_jwt = false
