@@ -1,10 +1,19 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M22 28H10C7.8 28 6 26.2 6 24V10.6C6 9.9 6.25 9.2 6.7 8.7L14.2 0.8C15.4-0.3 17.3-0.3 18.5 0.8L26 8.7C26.5 9.2 26.7 9.9 26.7 10.6V24C26.7 26.2 24.9 28 22.7 28H22Z" fill="url(#g)"/>
+  <path d="M22.5 28.5H9.5C6.74 28.5 4.5 26.26 4.5 23.5V10.4C4.5 9.34 4.91 8.32 5.66 7.59L13.41 0.34C14.85 -1.04 17.15 -1.04 18.59 0.34L26.34 7.59C27.09 8.32 27.5 9.34 27.5 10.4V23.5C27.5 26.26 25.26 28.5 22.5 28.5Z" fill="url(#waya-shield)"/>
+  <path d="M19.4 7.4C20.85 6.95 22.35 7.94 22.51 9.45L23.15 15.67H23.14L23.16 15.84C23.21 16.32 23.11 16.81 22.88 17.23L22.78 17.41L16.85 26.4C16.12 27.51 14.63 27.81 13.52 27.08L13.51 27.08L6.71 22.6L6.61 22.53C5.58 21.78 5.31 20.34 6.02 19.27L11.95 10.27C12.22 9.86 12.6 9.55 13.05 9.37L13.24 9.30L19.4 7.40ZM21.07 8.24C20.15 7.63 18.91 7.89 18.30 8.81C17.69 9.73 17.95 10.97 18.87 11.58C19.79 12.18 21.03 11.93 21.64 11.01C22.25 10.09 21.99 8.85 21.07 8.24Z" fill="url(#waya-glass)" stroke="url(#waya-glass-stroke)" stroke-width="0.3"/>
   <defs>
-    <linearGradient id="g" x1="16" y1="28" x2="16" y2="0" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#559D36"/>
-      <stop offset="0.52" stop-color="#39B139"/>
-      <stop offset="1" stop-color="#35A977"/>
+    <linearGradient id="waya-shield" x1="16" y1="-1" x2="16" y2="28.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#35A977"/>
+      <stop offset="0.48" stop-color="#39B139"/>
+      <stop offset="1" stop-color="#559D36"/>
+    </linearGradient>
+    <linearGradient id="waya-glass" x1="6" y1="26" x2="24" y2="10" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="white" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="waya-glass-stroke" x1="6" y1="8" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
     </linearGradient>
   </defs>
 </svg>
