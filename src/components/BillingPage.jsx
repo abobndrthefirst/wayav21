@@ -157,6 +157,12 @@ export default function BillingPage({ lang = 'ar' }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const phoneInputRef = useRef(null)
+  // Referral code: 4 uppercase letters tied to a marketer. Optional — empty
+  // means no referral. We validate via the lookup_marketer_by_code RPC and
+  // surface a ✓/✗ next to the field; the actual marketer_id resolution is
+  // re-done server-side for safety in streampay-create-checkout.
+  const [referralCode, setReferralCode] = useState('')
+  const [referralStatus, setReferralStatus] = useState('idle') // idle | checking | valid | invalid
 
   // Pre-fill phone from the shop record (collected during /setup).
   // If the shop already has a valid KSA phone, keep it read-only with an
@@ -191,7 +197,29 @@ export default function BillingPage({ lang = 'ar' }) {
         setInterval(match[2])
       }
     }
+    const codeQ = params.get('ref')
+    if (codeQ) {
+      const sanitized = codeQ.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4)
+      if (sanitized.length === 4) setReferralCode(sanitized)
+    }
   }, [])
+
+  // Debounced referral code validation. Empty = idle (no referral).
+  // 1–3 chars = idle (still typing). 4 chars = check via RPC.
+  useEffect(() => {
+    if (referralCode.length === 0) { setReferralStatus('idle'); return }
+    if (referralCode.length < 4)   { setReferralStatus('idle'); return }
+    let cancelled = false
+    setReferralStatus('checking')
+    const t = window.setTimeout(() => {
+      supabase.rpc('lookup_marketer_by_code', { p_code: referralCode }).then(({ data, error }) => {
+        if (cancelled) return
+        if (error) { setReferralStatus('invalid'); return }
+        setReferralStatus(data ? 'valid' : 'invalid')
+      })
+    }, 250)
+    return () => { cancelled = true; window.clearTimeout(t) }
+  }, [referralCode])
 
   const phoneValid = isValidKsaPhone(phone)
   const strings = useMemo(() => ({
@@ -217,6 +245,11 @@ export default function BillingPage({ lang = 'ar' }) {
       'You already have a subscription in progress.',
       'لديك اشتراك قائم بالفعل.',
     ),
+    referralLabel: T('Referral code (optional)', 'رمز الإحالة (اختياري)'),
+    referralHint: T('4 letters from a Waya marketer. Leave empty if you don’t have one.', '4 أحرف من مسوّق وايا. اتركها فارغة إذا ما عندك واحد.'),
+    referralChecking: T('Checking…', 'جارٍ التحقق…'),
+    referralValid: T('Valid code — your marketer will be credited.', 'رمز صحيح — سيُحتسب لمسوّقك.'),
+    referralInvalid: T('We couldn’t find that code.', 'ما حصلنا الرمز هذا.'),
   }), [isAr])
 
   // Never let a raw object bubble up as "[object Object]" — always return a
@@ -280,6 +313,11 @@ export default function BillingPage({ lang = 'ar' }) {
       }
       return
     }
+    // Don't send a referral code that we know is bad. Empty + valid both go through.
+    if (referralCode.length > 0 && referralStatus === 'invalid') {
+      setError(strings.referralInvalid)
+      return
+    }
     setSelectedTier(tier)
     setSubmitting(true)
     setError(null)
@@ -287,6 +325,7 @@ export default function BillingPage({ lang = 'ar' }) {
       const res = await createCheckout({
         plan_id: `tier${tier}_${interval}`,
         phone: normalized,
+        referral_code: referralStatus === 'valid' ? referralCode : null,
       })
       if (!res?.checkout_url || typeof res.checkout_url !== 'string') {
         setError(T('Checkout URL missing from server response.', 'لم يتم استلام رابط الدفع من الخادم.'))
@@ -397,6 +436,68 @@ export default function BillingPage({ lang = 'ar' }) {
                 </button>
               </div>
             )}
+          </motion.div>
+        )}
+
+        {/* Optional marketer referral code. Validated live via the
+            lookup_marketer_by_code RPC; the actual marketer_id resolution
+            re-runs server-side in streampay-create-checkout. */}
+        {!hasActive && (
+          <motion.div
+            className="billing-phone-card"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            transition={{ delay: 0.18, duration: 0.5 }}
+          >
+            <label className="billing-phone-label" htmlFor="billing-referral">{strings.referralLabel}</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="billing-referral"
+                type="text"
+                inputMode="latin"
+                dir="ltr"
+                autoCapitalize="characters"
+                autoComplete="off"
+                spellCheck="false"
+                maxLength={4}
+                value={referralCode}
+                onChange={(e) => {
+                  const v = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4)
+                  setReferralCode(v)
+                  setError(null)
+                }}
+                placeholder="ABCD"
+                className="billing-phone-input"
+                style={{
+                  letterSpacing: '0.4em',
+                  fontFamily: 'ui-monospace, Menlo, monospace',
+                  paddingInlineEnd: 36,
+                  borderColor:
+                    referralStatus === 'valid'   ? '#10B981' :
+                    referralStatus === 'invalid' ? '#b91c1c' :
+                    'var(--border)',
+                }}
+              />
+              {referralStatus === 'checking' && (
+                <span style={{ position: 'absolute', insetInlineEnd: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-dim)', fontSize: '0.85rem' }}>…</span>
+              )}
+              {referralStatus === 'valid' && (
+                <span style={{ position: 'absolute', insetInlineEnd: 12, top: '50%', transform: 'translateY(-50%)', color: '#10B981', fontWeight: 700 }}>✓</span>
+              )}
+              {referralStatus === 'invalid' && (
+                <span style={{ position: 'absolute', insetInlineEnd: 12, top: '50%', transform: 'translateY(-50%)', color: '#b91c1c', fontWeight: 700 }}>✗</span>
+              )}
+            </div>
+            <p className="billing-phone-hint" style={{
+              color:
+                referralStatus === 'valid'   ? '#10B981' :
+                referralStatus === 'invalid' ? '#b91c1c' :
+                undefined,
+            }}>
+              {referralStatus === 'checking' ? strings.referralChecking
+                : referralStatus === 'valid' ? strings.referralValid
+                : referralStatus === 'invalid' ? strings.referralInvalid
+                : strings.referralHint}
+            </p>
           </motion.div>
         )}
 
