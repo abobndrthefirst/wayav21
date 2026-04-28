@@ -5,7 +5,14 @@
 //
 // Auth:   Bearer <supabase-user-jwt>
 // Method: POST
-// Body:   { plan_id: string, phone: string }
+// Body:   { plan_id: string, phone: string, referral_code?: string }
+//
+// referral_code: optional 4-letter marketer code. If valid, we resolve it to
+// a marketer_id and persist both on the subscription row. When the
+// subscription later transitions to status='active' (in
+// streampay-verify-payment), the trigger added in migration
+// 20260428170000_subscription_referral_attribution auto-creates a row in
+// `commissions` so the marketer dashboard reflects the referral immediately.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -20,6 +27,7 @@ import {
 } from "../_shared/streampay.ts";
 
 const PLAN_ID_RE = /^tier[1-3]_(monthly|annual)$/;
+const REFERRAL_RE = /^[A-Z]{4}$/;
 
 function json(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -64,12 +72,27 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => ({}));
     const planId = String(body?.plan_id ?? "").trim();
     const phone = normalizeKsaPhone(body?.phone);
+    const rawReferral = String(body?.referral_code ?? "").trim().toUpperCase();
+    const referralCode = REFERRAL_RE.test(rawReferral) ? rawReferral : null;
 
     if (!PLAN_ID_RE.test(planId)) {
       return json(req, { error: "invalid plan_id" }, 400);
     }
     if (!phone) {
       return json(req, { error: "invalid phone" }, 400);
+    }
+
+    // Resolve referral code → marketer_id. We silently drop unknown codes
+    // rather than blocking checkout — payment shouldn't fail because the
+    // user mistyped a referral. Front-end already validates against the
+    // same RPC and shows ✓/✗.
+    let marketerId: string | null = null;
+    if (referralCode) {
+      const { data: rpcData } = await supabase
+        .rpc("lookup_marketer_by_code", { p_code: referralCode });
+      if (typeof rpcData === "string" && rpcData.length > 0) {
+        marketerId = rpcData;
+      }
     }
 
     // ── Resolve shop for this user ──
@@ -207,6 +230,11 @@ Deno.serve(async (req: Request) => {
         plan_id: plan.id,
         streampay_consumer_id: consumer!.id,
         status: "pending",
+        // Referral attribution. Both columns are nullable: an unknown or
+        // missing code stores nothing. Resolved marketer_id is only filled
+        // when the code matches a row in `marketers`.
+        referral_code: marketerId ? referralCode : null,
+        marketer_id: marketerId,
       })
       .select("id")
       .single();

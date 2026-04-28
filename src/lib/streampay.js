@@ -67,11 +67,10 @@ async function callFn(name, { method, body } = {}) {
   return parsed
 }
 
-export function createCheckout({ plan_id, phone }) {
-  return callFn('streampay-create-checkout', {
-    method: 'POST',
-    body: { plan_id, phone },
-  })
+export function createCheckout({ plan_id, phone, referral_code }) {
+  const body = { plan_id, phone }
+  if (referral_code) body.referral_code = referral_code
+  return callFn('streampay-create-checkout', { method: 'POST', body })
 }
 
 export function verifyPayment({ subscription_id, sig, ts, invoice_id, payment_id, subscription_id_sp }) {
