@@ -141,7 +141,7 @@ async function submitLead({ contact, store_name, industry }) {
 /* ─── i18n content ─── */
 const content = {
   ar: {
-    nav: { cta: 'ابدأ مجاناً', pricing: 'الأسعار', features: 'المميزات', how: 'كيف يعمل', why: 'لماذا وايا', faq: 'الأسئلة', login: 'دخول', signup: 'سجّل', logout: 'خروج', hi: 'مرحباً', dashboard: 'لوحة التحكم', subscription: 'الاشتراك' },
+    nav: { cta: 'ابدأ مجاناً', pricing: 'الأسعار', features: 'المميزات', how: 'كيف يعمل', why: 'لماذا وايا', faq: 'الأسئلة', careers: 'وظائف', login: 'دخول', signup: 'سجّل', logout: 'خروج', hi: 'مرحباً', dashboard: 'لوحة التحكم', subscription: 'الاشتراك' },
     auth: {
       loginTitle: 'تسجيل الدخول', loginSub: 'ادخل لحسابك وابدأ تدير برنامج الولاء',
       signupTitle: 'إنشاء حساب', signupSub: 'سجّل الحين وابدأ أسبوعك المجاني',
@@ -663,7 +663,12 @@ const content = {
       ],
     },
     marketer: {
-      landingTitle: 'انضم إلى فريق مسوّقي Waya بالعمولة',
+      brand: 'وايا',
+      // The {brand} token is replaced at render time with a styled span so
+      // the brand name renders in the accent color in the hero. Keep it in
+      // every Arabic string where the brand appears so a future rebrand is
+      // a single-key change.
+      landingTitle: 'انضم إلى فريق مسوّقي {brand} بالعمولة',
       landingSubtitle: 'فرصة عمل مرنة في جميع مناطق المملكة، بعمولات مجزية قد تصل إلى 15,000 ريال شهرياً.',
       ctaPrimary: 'ابدأ الآن',
       ctaSecondary: 'تعرّف على طريقة العمل',
@@ -677,9 +682,9 @@ const content = {
       ],
       howTitle: 'كيف تعمل؟',
       howSteps: [
-        { title: 'سجّل بياناتك', body: 'أنشئ حسابك كمسوّق في Waya خلال دقائق.' },
+        { title: 'سجّل بياناتك', body: 'أنشئ حسابك كمسوّق في وايا خلال دقائق.' },
         { title: 'احصل على كودك الخاص', body: 'بعد تسجيل الدخول ستحصل على كود مكوّن من 4 أحرف خاص بك.' },
-        { title: 'شارك Waya مع المتاجر', body: 'قم بزيارة أو التواصل مع المتاجر وعرّفهم على خدمة Waya.' },
+        { title: 'شارك وايا مع المتاجر', body: 'قم بزيارة أو التواصل مع المتاجر وعرّفهم على خدمة وايا.' },
         { title: 'المتجر يشترك باستخدام كودك', body: 'عند اشتراك المتجر يُدخل كودك في صفحة الاشتراك.' },
         { title: 'استلم عمولتك', body: 'بعد تأكيد الاشتراك وتفعيل المتجر تُحتسب عمولتك وتُحوَّل كل أسبوعين.' },
       ],
@@ -709,9 +714,9 @@ const content = {
       ],
       commissionNote: 'الأرقام تعتمد على المتاجر المؤهّلة والمفعّلة حسب سياسة العمولة.',
       finalCtaTitle: 'ابدأ الآن واحصل على كودك الخاص',
-      finalCtaBody: 'سجّل كمسوّق في Waya وابدأ بمشاركة الخدمة مع المتاجر في منطقتك.',
+      finalCtaBody: 'سجّل كمسوّق في وايا وابدأ بمشاركة الخدمة مع المتاجر في منطقتك.',
       finalCtaBtn: 'سجّل كمسوّق الآن',
-      footerNote: 'Waya — برنامج ولاء رقمي للمتاجر الصغيرة في السعودية.',
+      footerNote: 'وايا — برنامج ولاء رقمي للمتاجر الصغيرة في السعودية.',
       navHome: 'الرئيسية',
       navLogin: 'تسجيل الدخول',
       navSignup: 'سجّل كمسوّق',
@@ -808,7 +813,7 @@ const content = {
       errIban: 'رقم الآيبان غير صحيح. يجب أن يبدأ بـ SA ويتكون من 24 خانة.',
     },
     merchantSubscribe: {
-      title: 'اشترك في Waya',
+      title: 'اشترك في وايا',
       subtitle: 'املأ النموذج وسنتواصل معك قريباً لتفعيل اشتراك متجرك.',
       businessName: 'اسم النشاط',
       businessNamePh: 'مثلاً: كوفي لاونج',
@@ -836,7 +841,7 @@ const content = {
       errCategory: 'اختر نوع النشاط.',
       errReferralCodeFormat: 'كود المسوّق يجب أن يكون 4 أحرف إنجليزية.',
       errReferralCodeNotFound: 'كود المسوّق غير صحيح. يرجى التأكد من الكود أو ترك الحقل فارغاً.',
-      thanksTitle: 'شكراً لاهتمامك بـ Waya',
+      thanksTitle: 'شكراً لاهتمامك بـ وايا',
       thanksBody: 'استلمنا طلبك بنجاح. سيتواصل معك فريقنا خلال 24-48 ساعة لتفعيل اشتراك متجرك.',
       thanksHome: 'العودة إلى الرئيسية',
     },
@@ -849,7 +854,7 @@ const content = {
     },
   },
   en: {
-    nav: { cta: 'Start Free', pricing: 'Pricing', features: 'Features', how: 'How It Works', why: 'Why Waya', faq: 'FAQ', login: 'Log In', signup: 'Sign Up', logout: 'Log Out', hi: 'Hi', dashboard: 'Dashboard', subscription: 'Subscription' },
+    nav: { cta: 'Start Free', pricing: 'Pricing', features: 'Features', how: 'How It Works', why: 'Why Waya', faq: 'FAQ', careers: 'Careers', login: 'Log In', signup: 'Sign Up', logout: 'Log Out', hi: 'Hi', dashboard: 'Dashboard', subscription: 'Subscription' },
     auth: {
       loginTitle: 'Log In', loginSub: 'Sign in to manage your loyalty program',
       signupTitle: 'Create Account', signupSub: 'Sign up and start your free trial',
@@ -1371,7 +1376,8 @@ const content = {
       ],
     },
     marketer: {
-      landingTitle: 'Join the Waya Commission Marketers',
+      brand: 'Waya',
+      landingTitle: 'Join the {brand} Commission Marketers',
       landingSubtitle: 'Flexible work across the Kingdom, with rewarding commissions of up to 15,000 SAR per month.',
       ctaPrimary: 'Get Started',
       ctaSecondary: 'How It Works',
@@ -1925,6 +1931,7 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
           <a href="#how">{t.nav.how}</a>
           <a href="#pricing">{t.nav.pricing}</a>
           <a href="#faq">{t.nav.faq}</a>
+          <a href="/marketers" onClick={(e) => { e.preventDefault(); navigate('/marketers') }}>{t.nav.careers}</a>
         </div>
         <div className="nav-left-group">
           <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
@@ -1959,6 +1966,7 @@ function Navbar({ lang, setLang, theme, setTheme, t }) {
             <a href="#how" onClick={closeMenu}>{t.nav.how}</a>
             <a href="#pricing" onClick={closeMenu}>{t.nav.pricing}</a>
             <a href="#faq" onClick={closeMenu}>{t.nav.faq}</a>
+            <a href="/marketers" onClick={(e) => { e.preventDefault(); closeMenu(); navigate('/marketers') }}>{t.nav.careers}</a>
             <MobileAuthButtons t={t} closeMenu={closeMenu} />
           </motion.div>
         )}

@@ -5372,6 +5372,14 @@ html.ltr-mode .scan-stamp-counter { text-align: left; }
   margin: 0 0 16px;
   letter-spacing: -0.02em;
 }
+/* Brand word inside the hero title — light/accent green so it pops without
+   competing with the rest of the headline weight. */
+.marketer-brand-highlight {
+  color: #34D399;
+}
+[data-theme="dark"] .marketer-brand-highlight {
+  color: #6EE7B7;
+}
 .marketer-hero-subtitle {
   font-size: clamp(15px, 3.5vw, 18px);
   line-height: 1.7;

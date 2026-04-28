@@ -47,6 +47,17 @@ function CheckIcon() {
   )
 }
 
+// Render a string that contains the literal token "{brand}" by splitting
+// at the token and wrapping the brand word in a styled span. Used in the
+// hero title so the brand renders in the accent color.
+function renderWithBrand(template, brand) {
+  if (!template || !template.includes('{brand}')) return template
+  const parts = template.split('{brand}')
+  return parts.flatMap((part, i) => i < parts.length - 1
+    ? [part, <span key={i} className="marketer-brand-highlight">{brand}</span>]
+    : [part])
+}
+
 export default function MarketerLandingPage({ t, lang, setLang, theme, setTheme }) {
   const m = t.marketer
   const isAr = lang === 'ar'
@@ -75,7 +86,7 @@ export default function MarketerLandingPage({ t, lang, setLang, theme, setTheme 
 
       <section className="marketer-hero">
         <motion.div className="marketer-hero-inner" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-          <h1 className="marketer-hero-title">{m.landingTitle}</h1>
+          <h1 className="marketer-hero-title">{renderWithBrand(m.landingTitle, m.brand)}</h1>
           <p className="marketer-hero-subtitle">{m.landingSubtitle}</p>
           <div className="marketer-hero-actions">
             <button className="marketer-btn-primary" onClick={() => navigate('/marketer/signup')}>{m.ctaPrimary}</button>
