@@ -5652,9 +5652,209 @@ html.ltr-mode .scan-stamp-counter { text-align: left; }
   color: var(--gray-dim, #999);
   font-size: 14px;
 }
+.marketer-landing-footer-links a {
+  color: var(--green);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease;
+}
+.marketer-landing-footer-links a:hover {
+  border-bottom-color: var(--green);
+}
 .marketer-landing-footer-copy {
   font-size: 12px;
   opacity: 0.6;
+}
+
+/* ───── Earnings calculator ───── */
+.marketer-calc {
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px;
+}
+.marketer-calc-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-dim, #999);
+  margin-bottom: 12px;
+}
+.marketer-calc-input-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.marketer-calc-range {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-card-inner);
+  border-radius: 999px;
+  outline: none;
+}
+.marketer-calc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--green);
+  cursor: pointer;
+  border: 3px solid var(--bg-card);
+  box-shadow: 0 2px 8px var(--green-glow);
+}
+.marketer-calc-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--green);
+  cursor: pointer;
+  border: 3px solid var(--bg-card);
+}
+.marketer-calc-number {
+  width: 84px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card-inner);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  font-family: inherit;
+}
+.marketer-calc-number:focus {
+  outline: none;
+  border-color: var(--green);
+}
+.marketer-calc-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+  margin-bottom: 20px;
+}
+@media (min-width: 640px) {
+  .marketer-calc-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.marketer-calc-cell {
+  background: var(--bg-card-inner);
+  border-radius: 14px;
+  padding: 18px 16px;
+  text-align: center;
+}
+.marketer-calc-cell-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-dim, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.marketer-calc-cell-rate {
+  font-size: 12px;
+  color: var(--gray-dim, #999);
+  margin-bottom: 8px;
+}
+.marketer-calc-cell-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--green);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.marketer-calc-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--green-glow), transparent);
+  border: 1px solid var(--green);
+  flex-wrap: wrap;
+}
+.marketer-calc-total-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+}
+.marketer-calc-total-value {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--green);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ───── Policy page ───── */
+.marketer-policy-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+}
+.marketer-policy {
+  max-width: 760px;
+  margin: 24px auto 80px;
+  padding: 32px 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  line-height: 1.9;
+}
+.marketer-policy-title {
+  font-size: clamp(22px, 5vw, 30px);
+  font-weight: 800;
+  margin: 0 0 24px;
+  text-align: center;
+}
+.marketer-policy h2 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 28px 0 12px;
+  color: var(--green);
+}
+.marketer-policy p {
+  margin: 0 0 16px;
+  font-size: 15px;
+}
+.marketer-policy ul {
+  list-style: disc;
+  padding-inline-start: 22px;
+  margin: 0 0 12px;
+}
+.marketer-policy li {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.marketer-policy strong {
+  font-weight: 800;
+  color: var(--white);
+}
+.marketer-policy-closing {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-style: italic;
+  color: var(--gray-dim, #999);
+  text-align: center;
+}
+.marketer-policy-cta {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 28px;
 }
 
 /* ───── Merchant subscribe page ───── */

@@ -35,6 +35,7 @@ const BillingCancelPage = lazy(() => import('./components/BillingCancelPage'))
 const GuidePage = lazy(() => import('./pages/GuidePage'))
 const MarketerLandingPage = lazy(() => import('./pages/MarketerLandingPage'))
 const MarketerDashboardPage = lazy(() => import('./pages/MarketerDashboardPage'))
+const MarketerPolicyPage = lazy(() => import('./pages/MarketerPolicyPage'))
 const MerchantSubscribePage = lazy(() => import('./pages/MerchantSubscribePage'))
 
 const LazyFallback = () => (
@@ -713,6 +714,18 @@ const content = {
         { count: '+100 متجر', label: 'فرصة لتحقيق عمولات عالية' },
       ],
       commissionNote: 'الأرقام تعتمد على المتاجر المؤهّلة والمفعّلة حسب سياسة العمولة.',
+      calculatorTitle: 'احسب أرباحك المتوقعة',
+      calculatorSubtitle: 'اكتب عدد المتاجر اللي تتوقع تسجلها وشف عمولتك حسب سياسة العمولة.',
+      calculatorLabel: 'عدد المتاجر اللي تتوقع تسجلها',
+      calculatorMonth1: 'الشهر الأول',
+      calculatorMonth2: 'الشهر الثاني',
+      calculatorMonth3: 'الشهر الثالث',
+      calculatorRate1: '75 لكل متجر',
+      calculatorRate2: '50 لكل متجر مستمر',
+      calculatorRate3: '25 لكل متجر مستمر',
+      calculatorTotal: 'الإجمالي خلال 3 أشهر',
+      calculatorAssumeNote: 'الأرقام تفترض أن المتاجر تستمر في الاشتراك خلال الأشهر الثلاثة.',
+      policyLink: 'سياسة التسويق بالعمولة',
       finalCtaTitle: 'ابدأ الآن واحصل على كودك الخاص',
       finalCtaBody: 'سجّل كمسوّق في وايا وابدأ بمشاركة الخدمة مع المتاجر في منطقتك.',
       finalCtaBtn: 'سجّل كمسوّق الآن',
@@ -1422,6 +1435,18 @@ const content = {
         { count: '100+ stores', label: 'Opportunity for high commissions' },
       ],
       commissionNote: 'Numbers depend on qualifying activated merchants per the commission policy.',
+      calculatorTitle: 'Estimate Your Earnings',
+      calculatorSubtitle: 'Enter how many merchants you expect to sign up and see your commission per the policy.',
+      calculatorLabel: 'Number of merchants you expect to sign up',
+      calculatorMonth1: 'Month 1',
+      calculatorMonth2: 'Month 2',
+      calculatorMonth3: 'Month 3',
+      calculatorRate1: '75 per merchant',
+      calculatorRate2: '50 per active merchant',
+      calculatorRate3: '25 per active merchant',
+      calculatorTotal: 'Total over 3 months',
+      calculatorAssumeNote: 'Numbers assume merchants stay subscribed for the full three months.',
+      policyLink: 'Affiliate Marketing Policy',
       finalCtaTitle: 'Get Started and Receive Your Code',
       finalCtaBody: 'Sign up as a Waya marketer and start sharing the service with merchants in your area.',
       finalCtaBtn: 'Sign Up as a Marketer',
@@ -5512,6 +5537,7 @@ export default function App() {
     if (p === '/admin/design-studio') return 'admin-design-studio'
     if (p === '/reset-password') return 'reset-password'
     if (p === '/marketers' || p === '/marketers/') return 'marketer-landing'
+    if (p === '/marketers/policy') return 'marketer-policy'
     if (p === '/marketer/signup') return 'marketer-signup'
     if (p === '/marketer/login') return 'marketer-login'
     if (p === '/marketer/verify-email') return 'marketer-verify'
@@ -5571,6 +5597,7 @@ export default function App() {
   if (page === 'admin-design-studio') return <AuthProvider><Suspense fallback={<LazyFallback />}><AdminDesignStudioPage lang={lang} onBack={() => navigate('/dashboard')} /></Suspense></AuthProvider>
   if (page === 'guide') return <Suspense fallback={<LazyFallback />}><GuidePage /></Suspense>
   if (page === 'marketer-landing') return <Suspense fallback={<LazyFallback />}><MarketerLandingPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></Suspense>
+  if (page === 'marketer-policy') return <Suspense fallback={<LazyFallback />}><MarketerPolicyPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></Suspense>
   if (page === 'marketer-signup') return <AuthProvider><MarketerSignupPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'marketer-login') return <AuthProvider><MarketerLoginPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
   if (page === 'marketer-verify') return <AuthProvider><MarketerVerifyEmailPage lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} /></AuthProvider>
