@@ -16,5 +16,7 @@ Disallow: /api/
 Disallow: /scan?
 Disallow: /*?token=
 Disallow: /*?ref=
+Disallow: /apple-review-qr.html
+Disallow: /demo-customer-*.png
 
 Sitemap: https://trywaya.com/sitemap.xml

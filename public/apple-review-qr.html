@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Waya — App Review Demo QR Codes</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+    padding: 32px 16px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  header { margin-bottom: 32px; }
+  h1 { font-size: 1.8rem; margin: 0 0 6px; letter-spacing: -0.02em; }
+  header p { margin: 6px 0 0; color: #475569; font-size: 1rem; }
+  .creds {
+    display: inline-block;
+    background: #0f172a;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.9rem;
+    margin-top: 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 22px;
+    text-align: center;
+  }
+  .card img {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    border-radius: 8px;
+    background: #fff;
+  }
+  .card h2 { font-size: 1.1rem; margin: 14px 0 4px; }
+  .card .meta { color: #475569; font-size: 0.9rem; margin: 0 0 8px; }
+  .card .ser {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+  .steps {
+    margin-top: 32px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 22px 26px;
+  }
+  .steps h2 { margin-top: 0; }
+  .steps ol { padding-inline-start: 22px; margin: 12px 0 0; }
+  .steps li { margin-bottom: 8px; }
+  .footer { color: #64748b; font-size: 0.85rem; margin-top: 32px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Waya — App Review Demo QR Codes</h1>
+    <p>Three demo customer loyalty pass QR codes for the <strong>Waya Demo Cafe</strong> account. Scan any QR with the merchant app's <em>Scan Customer</em> feature to verify the full add-stamp / redeem-reward flow.</p>
+    <p class="creds">apple-review@trywaya.com &nbsp;·&nbsp; WayaApple#2026</p>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <img src="/demo-customer-a-4of5.png" alt="QR for Demo Customer A — 4 of 5 stamps" />
+      <h2>Demo Customer A</h2>
+      <p class="meta">4 of 5 stamps · phone +966 50 000 0001<br>One stamp away from a free coffee</p>
+      <span class="ser">waya-demo-pass-a-4of5</span>
+    </div>
+
+    <div class="card">
+      <img src="/demo-customer-b-fresh.png" alt="QR for Demo Customer B — fresh customer" />
+      <h2>Demo Customer B</h2>
+      <p class="meta">0 of 5 stamps · phone +966 50 000 0002<br>Fresh customer — best to demonstrate first-stamp flow</p>
+      <span class="ser">waya-demo-pass-b-fresh</span>
+    </div>
+
+    <div class="card">
+      <img src="/demo-customer-c-ready.png" alt="QR for Demo Customer C — ready to redeem" />
+      <h2>Demo Customer C</h2>
+      <p class="meta">5 of 5 stamps · phone +966 50 000 0003<br>Ready to redeem — best to demonstrate the redeem flow</p>
+      <span class="ser">waya-demo-pass-c-ready</span>
+    </div>
+  </div>
+
+  <section class="steps">
+    <h2>Suggested review flow</h2>
+    <ol>
+      <li>Sign into the app with the credentials above.</li>
+      <li>From the home screen tap <strong>Scan Customer</strong> to open the camera.</li>
+      <li>Display this page on a second device (or print it) and scan <strong>Customer C</strong>'s QR — the customer is at 5/5 stamps. Tap <strong>Redeem reward</strong> to demonstrate the full reward flow.</li>
+      <li>Repeat for <strong>Customer A</strong> (tap <strong>Add stamp</strong> — this brings them to 5/5 and triggers a redemption-ready state).</li>
+      <li>Repeat for <strong>Customer B</strong> (tap <strong>Add stamp</strong> — first stamp from zero).</li>
+      <li>Phone-search fallback: tap <strong>Search by Phone</strong> and enter <code>0500000003</code>.</li>
+    </ol>
+  </section>
+
+  <p class="footer">This page is unlisted (noindex,nofollow) and only intended for App Review.</p>
+</div>
+</body>
+</html>
